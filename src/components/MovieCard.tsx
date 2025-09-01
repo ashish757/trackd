@@ -94,7 +94,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, showActions = true, onEdit
           <div className="flex items-center space-x-1">
             {getStatusIcon(movie.status)}
             <span className="capitalize">
-              {movie.status.replace('_', ' ')}
+              {movie.status.replaceAll('_', ' ')}
             </span>
           </div>
         </div>

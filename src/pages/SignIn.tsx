@@ -63,7 +63,7 @@ const SignIn: React.FC = () => {
 
         {/* Form */}
         <div className="card">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
             {/* Email Field */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-text-primary mb-2">
@@ -76,7 +76,6 @@ const SignIn: React.FC = () => {
                   name="email"
                   type="email"
                   autoComplete="email"
-                  required
                   value={formData.email}
                   onChange={handleChange}
                   className="input input-with-left-icon"
@@ -97,7 +96,6 @@ const SignIn: React.FC = () => {
                   name="password"
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
-                  required
                   value={formData.password}
                   onChange={handleChange}
                   className="input input-with-both-icons"

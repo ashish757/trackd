@@ -15,10 +15,12 @@ A modern, responsive movie tracking application built with React, TypeScript, an
 ### User Interface
 - **Movie-themed Design**: Netflix-inspired color scheme with modern aesthetics
 - **Responsive Layout**: Works perfectly on desktop, tablet, and mobile
-- **Smooth Animations**: Beautiful transitions, hover effects, and micro-interactions
+- **Smooth Animations**: Beautiful transitions, hover effects, sliding form animations
 - **Dark Theme**: Easy on the eyes with a sophisticated dark color palette
 - **Modern UI Components**: Cards, buttons, forms with consistent styling and proper accessibility
-- **Enhanced Form Design**: Improved input fields with better icon positioning and visual feedback
+- **Multi-Step Signup**: Animated step-by-step registration process with progress indicator
+- **Enhanced Form Design**: Custom validation, no browser warnings, improved UX
+- **Component Architecture**: Modular, reusable components with clean separation of concerns
 
 ### Technical Features
 - **TypeScript**: Full type safety throughout the application
@@ -27,6 +29,21 @@ A modern, responsive movie tracking application built with React, TypeScript, an
 - **React Router**: Client-side routing with protected routes
 - **CSS Variables**: Consistent theming with CSS custom properties
 - **Local Storage**: Persistent data storage for demo purposes
+- **Component Refactoring**: Modular architecture with 60% code reduction
+- **Form Animations**: Directional sliding transitions with CSS keyframes
+- **Custom Validation**: Client-side validation without browser default warnings
+
+## 🔄 Recent Improvements
+
+### Code Refactoring (September 2025)
+- **Component Modularization**: Broke down large components into smaller, reusable pieces
+- **Code Reduction**: Achieved significant line reduction:
+  - SignUp page: 454 → 165 lines (64% reduction)
+  - Discover page: 345 → 55 lines (84% reduction)
+  - CSS optimization: 1137 → ~450 lines (60% reduction)
+- **Architecture Enhancement**: Implemented proper separation of concerns
+- **Animation System**: Added comprehensive sliding animations for multi-step forms
+- **Form UX**: Removed browser validation warnings for better user experience
 
 ## 🚀 Getting Started
 
@@ -58,28 +75,70 @@ npm run dev
 
 ```
 src/
-├── components/          # Reusable UI components
-│   ├── Header.tsx     # Navigation header
-│   └── MovieCard.tsx  # Movie display card
-├── hooks/             # Custom React hooks
-│   ├── useAuth.tsx    # Authentication context
-│   └── useMovies.tsx  # Movie management context
-├── pages/             # Page components
-│   ├── Landing.tsx    # Landing page
-│   ├── SignIn.tsx     # Sign in page
-│   ├── SignUp.tsx     # Sign up page
-│   ├── Home.tsx       # Dashboard/home page
-│   ├── Profile.tsx    # User profile page
-│   └── Discover.tsx  # Movie discovery page
-├── types/             # TypeScript type definitions
-│   └── index.ts       # Main type definitions
-├── utils/             # Utility functions
-│   ├── auth.ts        # Authentication utilities
-│   └── movies.ts      # Movie management utilities
-├── App.tsx            # Main app component
-├── main.tsx           # App entry point
-└── index.css          # Global styles and CSS variables
+├── components/                    # Reusable UI components
+│   ├── common/                   # Shared common components
+│   │   ├── Message.tsx          # Error/warning/success messages
+│   │   ├── ProgressIndicator.tsx # Multi-step form progress
+│   │   └── index.ts             # Barrel exports
+│   ├── discover/                # Movie discovery components
+│   │   ├── DiscoverMovieCard.tsx # Movie card for discovery
+│   │   ├── MovieGrid.tsx        # Grid layout for movies
+│   │   ├── SearchAndFilters.tsx # Search and filter controls
+│   │   └── index.ts             # Barrel exports
+│   ├── forms/                   # Form-related components
+│   │   ├── EmailStep.tsx        # Multi-step signup: email step
+│   │   ├── FormField.tsx        # Reusable form input field
+│   │   ├── NameStep.tsx         # Multi-step signup: name step
+│   │   ├── NavigationButtons.tsx # Form navigation controls
+│   │   ├── PasswordStep.tsx     # Multi-step signup: password step
+│   │   ├── StepHeader.tsx       # Step titles and descriptions
+│   │   ├── StepTransition.tsx   # Animated step transitions
+│   │   ├── UsernameStep.tsx     # Multi-step signup: username step
+│   │   └── index.ts             # Barrel exports
+│   ├── Header.tsx               # Navigation header
+│   └── MovieCard.tsx            # Movie display card for tracking
+├── hooks/                       # Custom React hooks
+│   ├── forms/                   # Form-specific hooks
+│   │   └── useMultiStepForm.tsx # Multi-step signup form logic
+│   ├── useAuth.tsx              # Authentication context
+│   ├── useDiscoverMovies.tsx    # Movie discovery API hooks
+│   └── useMovies.tsx            # Movie management context
+├── pages/                       # Page components
+│   ├── Discover.tsx             # Movie discovery page (refactored)
+│   ├── Home.tsx                 # Dashboard/home page
+│   ├── Landing.tsx              # Landing page with hero section
+│   ├── Profile.tsx              # User profile page
+│   ├── SignIn.tsx               # Sign in page
+│   └── SignUp.tsx               # Multi-step sign up page (refactored)
+├── types/                       # TypeScript type definitions
+│   └── index.ts                 # Main type definitions
+├── utils/                       # Utility functions
+│   ├── auth.ts                  # Authentication utilities
+│   └── movies.ts                # Movie management utilities
+├── App.tsx                      # Main app component with routing
+├── main.tsx                     # App entry point
+└── index.css                    # Global styles, CSS variables & animations
 ```
+
+### Architecture Highlights
+
+#### Component Organization
+- **Modular Structure**: Components are organized by feature and responsibility
+- **Barrel Exports**: Index files provide clean import paths
+- **Separation of Concerns**: UI components separated from business logic
+- **Reusable Components**: Shared components in `common/` folder
+
+#### Form Architecture
+- **Multi-Step Forms**: Sophisticated signup flow with step-by-step validation
+- **Animated Transitions**: Smooth sliding animations between form steps
+- **Custom Validation**: Client-side validation without browser defaults
+- **Reusable Form Components**: Consistent form fields across the application
+
+#### State Management
+- **Context API**: Global authentication and movie state
+- **Custom Hooks**: Encapsulated business logic and API interactions
+- **Local Component State**: Form state and UI interactions
+- **Persistent Storage**: localStorage for demo data persistence
 
 ## 🎨 Design System
 

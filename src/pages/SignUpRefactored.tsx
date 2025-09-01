@@ -6,7 +6,6 @@ import { useMultiStepForm, type SignUpFormData } from '../hooks/forms/useMultiSt
 import { ProgressIndicator } from '../components/common/ProgressIndicator';
 import { MessageContainer } from '../components/common/Message';
 import { NavigationButtons } from '../components/forms/NavigationButtons';
-import { StepTransition } from '../components/forms/StepTransition';
 import { NameStep } from '../components/forms/NameStep';
 import { UsernameStep } from '../components/forms/UsernameStep';
 import { EmailStep } from '../components/forms/EmailStep';
@@ -39,7 +38,6 @@ const SignUp: React.FC = () => {
     localError,
     localWarning,
     usernameChecking,
-    direction,
     handleChange,
     handleNext,
     handleBack
@@ -116,20 +114,16 @@ const SignUp: React.FC = () => {
 
         {/* Form */}
         <div className="card p-8">
-          <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-3" noValidate>
+          <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-8">
             <div className="min-h-[200px] flex flex-col justify-center">
-              <StepTransition currentStep={currentStep} direction={direction}>
-                {getStepContent()}
-              </StepTransition>
+              {getStepContent()}
             </div>
 
             {/* Messages */}
-            <div className="">
-              <MessageContainer 
-                error={localError || error || undefined} 
-                warning={localWarning} 
-              />
-            </div>
+            <MessageContainer 
+              error={localError || error || undefined} 
+              warning={localWarning} 
+            />
 
             {/* Navigation Buttons */}
             <NavigationButtons
