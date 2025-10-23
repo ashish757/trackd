@@ -1,0 +1,20 @@
+/* Background Utilities */
+.bg-background-primary {
+    background-color: var(--background-primary);
+}
+
+.bg-background-secondary {
+    background-color: var(--background-secondary);
+}
+
+.bg-background-tertiary {
+    background-color: var(--background-tertiary);
+}
+
+.bg-error-color {
+    background-color: var(--error-color);
+}
+
+.bg-opacity-10 {
+    background-color: rgba(239, 68, 68, 0.1);
+}

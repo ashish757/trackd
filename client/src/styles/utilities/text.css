@@ -1,0 +1,59 @@
+
+/* Link Styles */
+.link {
+    color: var(--link-primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.link:hover {
+    color: var(--link-hover);
+}
+
+.link-secondary {
+    color: var(--link-secondary);
+}
+
+.link-accent {
+    color: var(--link-accent);
+}
+
+.link-accent:hover {
+    color: var(--accent-hover);
+}
+
+/* Text Utilities */
+.text-primary {
+    color: var(--text-primary);
+}
+
+.text-secondary {
+    color: var(--text-secondary);
+}
+
+.text-text-primary {
+    color: var(--text-primary);
+}
+
+.text-text-secondary {
+    color: var(--text-secondary);
+}
+
+.text-text-muted {
+    color: var(--text-muted);
+}
+
+.text-primary-color {
+    color: var(--primary-color);
+}
+
+.text-error-color {
+    color: var(--error-color);
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}

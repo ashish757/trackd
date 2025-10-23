@@ -1,0 +1,43 @@
+
+.userMenu {
+    background-color: rgba(110, 53, 53, 0.89);
+    border-radius: 50%;
+    color: var(--text-primary);
+    padding: .4rem;
+    border: 2px solid #d35c5c;
+
+}
+
+.userDropdown {
+    background-color: rgba(51, 25, 25, 0.89);
+    top: 3.5rem;
+}
+.userDropdown .item {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    padding: .5rem;
+    gap: .8rem;
+    flex-grow: 1;
+    cursor: pointer;
+    min-width: max-content;
+    background-color: transparent;
+    color: #ffffff;
+    font-size: 1rem;
+
+}
+
+.userDropdown .item:hover {
+    background-color: rgba(227, 61, 61, 0.78);
+}
+
+.userDropdown .item:last-child {
+    border-bottom-left-radius: .3rem;
+    border-bottom-right-radius: .3rem;
+}
+
+.userDropdown .line {
+    background-color: rgb(82, 82, 82);
+    border: none;
+    height: .05rem;
+}

@@ -1,0 +1,23 @@
+a {
+    text-decoration: none;
+    color: var(--link-secondary);
+}
+
+input {
+    border: none;
+    outline: none;
+}
+input::placeholder {
+    color: var(--text-muted);
+}
+input:focus {
+    outline: none;
+}
+
+button {
+    border: none;
+    outline: none;
+}
+button:focus {
+    outline: none;
+}

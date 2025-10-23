@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { 
+import style from "./Header.module.css";
+import {
   Film, 
   Home, 
   Search, 
   User, 
-  LogOut, 
-  Settings, 
+  LogOut,
   Menu, 
   X
 } from 'lucide-react';
 
 const Header: React.FC = () => {
-  const { user, isAuthenticated, signOut } = useAuth();
+  const { isAuthenticated, signOut } = useAuth();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const navigation = [
-    { name: 'Home', href: '/', icon: Home },
+    { name: 'Home', href: '/home', icon: Home },
     { name: 'Discover', href: '/discover', icon: Search },
     { name: 'My Lists', href: '/lists', icon: Film },
   ];
@@ -68,39 +68,27 @@ const Header: React.FC = () => {
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center space-x-3 p-2 rounded-lg hover:bg-background-tertiary transition-colors duration-200"
+                  className={` ${style.userMenu} flex items-center space-x-3 p-2 rounded-lg `}
                 >
-                  <div className="w-9 h-9 bg-primary-color rounded-full flex items-center justify-center shadow-md">
-                    <User className="h-4 w-4 text-white" />
-                  </div>
-                  <span className="hidden sm:block text-sm font-medium text-text-primary">
-                    {user?.name}
-                  </span>
+                    <User className="text-white" />
                 </button>
 
                 {/* User Dropdown */}
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-background-secondary rounded-lg shadow-xl border border-border-color py-2">
+                  <div className={`${style.userDropdown} absolute right-0 mt-2 bg-background-secondary rounded-lg shadow-xl border border-border-color`}>
                     <Link
                       to="/profile"
-                      className="flex items-center space-x-3 px-4 py-3 text-sm text-text-secondary hover:text-text-primary hover:bg-background-tertiary transition-colors duration-200"
+                      className={style.item}
                       onClick={() => setIsUserMenuOpen(false)}
                     >
                       <User className="h-4 w-4" />
                       <span>Profile</span>
                     </Link>
-                    <Link
-                      to="/settings"
-                      className="flex items-center space-x-3 px-4 py-3 text-sm text-text-secondary hover:text-text-primary hover:bg-background-tertiary transition-colors duration-200"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      <Settings className="h-4 w-4" />
-                      <span>Settings</span>
-                    </Link>
-                    <hr className="my-2 border-border-color" />
+
+                    <hr className={style.line}/>
                     <button
                       onClick={handleSignOut}
-                      className="flex items-center space-x-3 px-4 py-3 text-sm text-error-color hover:bg-error-color hover:bg-opacity-10 transition-colors duration-200 w-full text-left"
+                      className={style.item}
                     >
                       <LogOut className="h-4 w-4" />
                       <span>Sign Out</span>
