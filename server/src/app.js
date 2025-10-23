@@ -1,4 +1,4 @@
-import express, { type Application, type Request, type Response } from 'express';
+import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
@@ -6,18 +6,18 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Initialize the app
-const app: Application = express();
+const app = express();
 
 // --- Basic Middleware Setup ---
 
 // 1. Enable CORS for all requests
 app.use(cors({
-  origin: process.env.NODE_ENV === 'development'
-    ? 'http://localhost:3000'
-    : process.env.PRODUCTION_FRONTEND_URL, // use environment variable for production URL
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
+    origin: process.env.NODE_ENV === 'development' ? '*' : process.env.PRODUCTION_FRONTEND_URL,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
 }));
+
+
 
 // 2. Body Parser: Allows Express to read JSON data sent in the request body
 app.use(express.json());
@@ -28,7 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 // --- Routes Setup ---
 
 // Example Root Route (Health Check)
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (req, res) => {
   res.status(200).json({
     message: 'Movie Tracker API is running smoothly!',
     environment: process.env.NODE_ENV
@@ -36,7 +36,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // Example API Route
-app.get('/api/v1/movies/test', (req: Request, res: Response) => {
+app.get('/api/v1/movies/test', (req, res) => {
   res.status(200).json({
     data: [
       { id: 1, title: 'Inception' },
@@ -45,8 +45,14 @@ app.get('/api/v1/movies/test', (req: Request, res: Response) => {
   });
 });
 
+
+
+
+
+
+
 // --- Server Start ---
-const PORT: number = parseInt(process.env.PORT || '8080', 10);
+const PORT = parseInt(process.env.PORT || '8080', 10);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
