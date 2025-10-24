@@ -2,6 +2,13 @@
 /*!* Import this file in your components when you need custom styles *!*/
 @import "tailwindcss";
 
+@tailwind utilities;
+
+@theme {
+    --color-primary: rebeccapurple;
+
+}
+
 
 
 /*@layer components {*/

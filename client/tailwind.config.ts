@@ -11,9 +11,8 @@ export default {
         extend: {
             colors: {
                 // Custom Colors
-                'primary': '#5211d4',
-                'background-light': '#f6f6f8',
-                'background-dark': '#161022',
+                primary: "rebeccapurple",       // your main accent color
+                secondary: "#ff6b6b",
             },
             fontFamily: {
                 // Custom Font
