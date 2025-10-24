@@ -7,7 +7,7 @@ export default function LandingPage() {
             <nav aria-label="Global" className="flex items-center justify-between p-6 lg:px-32">
                     <div className="flex lg:flex-1">
                         <a href="#" className="flex justify-center items-center gap-2">
-                            <img alt="" src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600" className="h-8 w-auto" />
+                            <img alt="" src="/logo.svg" className="h-8 w-auto" />
                             <span>Trackd</span>
 
                         </a>

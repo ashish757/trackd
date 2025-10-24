@@ -1,0 +1,13 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <style>
+            .blue-rectangle {
+            fill: #4285F4; /* A vibrant blue */
+            }
+        </style>
+    </defs>
+
+    <rect x="50" y="30" width="40" height="100" class="blue-rectangle"/>
+
+    <rect x="110" y="70" width="40" height="100" class="blue-rectangle"/>
+</svg>

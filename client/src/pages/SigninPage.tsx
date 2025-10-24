@@ -38,7 +38,7 @@ function SigninPage() {
                     <Link to="/" className="inline-flex items-center gap-2 mb-6">
                         <img
                             alt="Trackd"
-                            src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
+                            src="/logo.svg"
                             className="h-10 w-auto"
                         />
                         <span className="text-2xl font-bold text-gray-900">Trackd</span>
