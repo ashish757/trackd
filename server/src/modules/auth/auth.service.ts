@@ -1,75 +1,64 @@
-import { Injectable } from '@nestjs/common';
-import {RegisterDto} from "./DTO/register.dto";
-import {LoginDto} from "./DTO/login.dto";
-import {getJWTToken, verifyJWTToken} from "./jwt.strategy";
+import {Injectable, UnauthorizedException} from '@nestjs/common';
+import {VerifyOtpDto,OtpDto, RegisterDto, UserDto} from './DTO/register.dto';
+import { LoginDto } from './DTO/login.dto';
+import { JwtService} from './jwt.service';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
 
-    validateLoginReq(data: LoginDto): {email: string} {
+    constructor(private readonly jwtService: JwtService) {
+    }
+
+    validateLoginReq(data: LoginDto): { email: string } {
         // validate user credentials from DB (this is just a placeholder)
-        return {email: data.email};
+        return { email: data.email };
     }
 
-    login(req: LoginDto): { accessToken: string, refreshToken: string } {
-        const email = this.validateLoginReq(req);
+    login(loginDto: LoginDto): { accessToken: string; refreshToken: string } {
+        const email = this.validateLoginReq(loginDto);
 
-        const payload = { email: email };
+        const payload = { sub: 1, email: email };
         return {
-            accessToken: getJWTToken(payload),
-            refreshToken: getJWTToken(payload),
+            accessToken: this.jwtService.sign(payload, {expiresIn: '10min'}),
+            refreshToken: this.jwtService.sign(payload, {expiresIn: '7d'}),
         };
-
     }
+
     async getHash(password: string): Promise<string> {
         const saltRounds = 5; // higher = more secure but slower
         return await bcrypt.hash(password, saltRounds);
     }
 
-    async sendOtp(data: RegisterDto): Promise<{ statusCode: number,  otpToken: string, error?: string }>  {
+    async sendOtp(otpDto: OtpDto) {
         // send OTP code (this is just a placeholder)
-        console.log("Sending OTP to ", data.email);
-        try {
-            const otp = 123456;
-            console.log("OTP ", otp);
-            const payload = {
-                email: data.email,
-                passwordH: await this.getHash(data.password),
-                otp: await this.getHash(otp.toString())
-            }
-
-            return {statusCode: 200, otpToken: getJWTToken(payload)};
-        }
-        catch (error) {
-            return {statusCode: 500, otpToken: "", error: error};
-        }
+        console.log('Sending OTP to ', otpDto.email);
+        const otp = 123456;
+        console.log('OTP ', otp);
+        const payload = {
+            email: otpDto.email,
+            otp: await this.getHash(otp.toString()),
+        };
+        return { otpToken: this.jwtService.sign(payload) };
     }
 
-    register(data: RegisterDto): { accessToken: string; refreshToken: string }  {
+    register(userDto: UserDto) {
         // save user to DB (this is just a placeholder)
 
-        const accessToken = getJWTToken({ email: data.email });
-        const refreshToken = getJWTToken({ email: data.email });
+        const accessToken = this.jwtService.sign({ email: userDto.email }, {expiresIn: '10min'});
+        const refreshToken = this.jwtService.sign({ email: userDto.email }, {expiresIn: '7d'});
 
-        return { accessToken, refreshToken} ;
+        return { accessToken, refreshToken };
     }
 
-    verifyOtp(req:{ otpToken: string, otp: number, user: RegisterDto}): { status: boolean, message?: string }  {{
-        // verify OTP code (this is just a placeholder)
-        const payload = verifyJWTToken(req.otpToken);
-        if(payload) {
-            if(payload.email === req.user.email) {
-                this.register(req.user);
-                return {status: true, message: "User Registered successfully"};
-            } else {
-                return {status: false, message: "Invalid or expired OTP token"};
-            }
-        }
+    async verifyOtp(verifyOtpDto: VerifyOtpDto)  {
+            // verify OTP code (this is just a placeholder)
+            const {payload, error} = this.jwtService.verify(verifyOtpDto.token) as { error: boolean | object,  payload : VerifyOtpDto };
+            if(error) return false
 
-        return {status: false, message: "No OTP token"};
+            if (payload.email === verifyOtpDto.email && await bcrypt.compare(verifyOtpDto.otp, payload.otp)) return true;
+
+            return false;
     }
 
-
-    }
 }

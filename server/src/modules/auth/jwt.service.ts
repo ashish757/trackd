@@ -1,20 +1,24 @@
 import * as jwt from 'jsonwebtoken';
+import {Injectable} from "@nestjs/common";
+import {SignOptions} from "jsonwebtoken";
 
-export const getJWTToken = (payload) => {
-    return jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: '3min'});
-}
+@Injectable()
+export class JwtService {
+    sign(payload: object, options?: SignOptions): string {
+        return jwt.sign(payload, process.env.JWT_SECRET, options);
 
-export const verifyJWTToken = (token) => {
-    // verify token
-    try {
-        const payload = jwt.verify(token, process.env.JWT_SECRET) as {email: string};
-        console.log('Token is valid. Payload:', payload);
-        return payload;
-    } catch (err) {
-        console.error('Token invalid or expired:', err.message);
-        return false;
+    }
+
+    verify(token: string) {
+        try {
+            const payload = jwt.verify(token, process.env.JWT_SECRET);
+            return {payload, error: false};
+        } catch (err) {
+            return {error: {name: err.name, message: err.message}};
+        }
     }
 }
+
 
 
 
