@@ -1,15 +1,17 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import {useLoginMutation} from "../redux/authApi.ts";
 
 function SigninPage() {
     const [formData, setFormData] = useState({
         email: '',
         password: '',
     });
-
+ const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+
+    const [login, {isLoading}] = useLoginMutation();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({
@@ -18,16 +20,16 @@ function SigninPage() {
         });
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true);
 
-        // Simulate API call
-        setTimeout(() => {
-            console.log('Signin data:', formData);
-            setIsLoading(false);
-            // Handle signin logic here
-        }, 1000);
+         try {
+             await login(formData).unwrap();
+             navigate('/');
+         } catch (e){
+            console.log("ERROR ", e);
+         }
+
     };
 
     return (
