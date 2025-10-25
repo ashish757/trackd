@@ -1,9 +1,10 @@
 import './App.css'
 import './styles/custom.css'
-import LandingPage from "./pages/LandingPage.tsx";
 import SigninPage from "./pages/SigninPage.tsx";
 import SignupPage from "./pages/SignupPage.tsx";
 import {Routes, Route} from "react-router-dom";
+import Home from "./pages/Home.tsx";
+import ProtectedRoute from "./components/ProtectedRoute.tsx";
 // import Navbar from "./components/Navbar.tsx";
 
 function App() {
@@ -13,7 +14,7 @@ function App() {
           {/*<Navbar />*/}
           <main>
               <Routes>
-                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/" element={<ProtectedRoute authorized={<Home />} />} />
                   <Route path="/signin" element={<SigninPage />} />
                   <Route path="/signup" element={<SignupPage />} />
               </Routes>
