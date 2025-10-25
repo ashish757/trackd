@@ -35,7 +35,8 @@ export default function LandingPage() {
 
                     <div className="text-center">
                         <h1 className="text-5xl tr text-gray-900 sm:text-7xl">
-                            Track what you watch. Discover what to watch next.
+                            Track <span className="text-indigo-700">what you watch.</span> Discover <span className="text-indigo-700">what to watch.</span>
+
                         </h1>
                         <p className="mt-8 text-lg font-medium text-pretty text-gray-500 sm:text-xl/8">
                             Track what you watch. Discover what to watch next.
