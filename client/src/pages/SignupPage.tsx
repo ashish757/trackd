@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {Link, useNavigate} from 'react-router-dom';
 import { Mail, Lock, User, X, Loader, Eye, EyeOff, Clock } from 'lucide-react';
-import { useRequestOtpMutation, useVerifyOtpAndRegisterMutation } from "../redux/authApi.ts";
+import { useRequestOtpMutation, useVerifyOtpMutation, useRegisterMutation } from "../redux/authApi.ts";
 import { validateEmail, validatePassword, validateName } from "../utils/validation.ts";
 import { storage } from "../utils/config.ts";
 
@@ -17,8 +17,10 @@ function SignupPage() {
     const [passwordStrength, setPasswordStrength] = useState<'weak' | 'medium' | 'strong'>('weak');
     const [resendTimer, setResendTimer] = useState(0);
     const [canResend, setCanResend] = useState(false);
+    const [isCreatingAccount, setIsCreatingAccount] = useState(false);
     const [ reqOtp, {isLoading}] = useRequestOtpMutation();
-    const [verifyAndRegister, {isLoading: isVerifying}] = useVerifyOtpAndRegisterMutation();
+    const [verifyOtp, {isLoading: isVerifying}] = useVerifyOtpMutation();
+    const [register] = useRegisterMutation();
 
     // Timer countdown effect
     useEffect(() => {
@@ -163,19 +165,39 @@ function SignupPage() {
 
         try {
             const token = storage.getItem("otpToken");
-            if(token) {
-                const res = await verifyAndRegister({otpToken: token, otp: otpString, user: formData}).unwrap();
-                console.log(res);
-                if(res.status == 'success') {
-                    navigate('/')
-                } else {
-                    setError(res.message || 'Invalid OTP. Please try again.');
-                }
-            } else {
+            if(!token) {
                 setError('No OTP token found. Please resend OTP.');
+                return;
             }
-        } catch {
-            setError('Error occurred while verifying OTP');
+
+            // Step 1: Verify OTP
+            const verifyRes = await verifyOtp({otpToken: token, otp: otpString, user: formData}).unwrap();
+            console.log('OTP Verification Response:', verifyRes);
+
+            if(verifyRes.statusCode !== 200) {
+                setError(verifyRes.message || 'Invalid OTP. Please try again.');
+                return;
+            }
+
+            // Step 2: Register the user after successful OTP verification
+            setIsCreatingAccount(true);
+            const registerRes = await register({otpToken: token, otp: otpString, user: formData}).unwrap();
+            console.log('Registration Response:', registerRes);
+
+            if(registerRes.status === 'success' || registerRes.statusCode === 201) {
+                // Clear OTP token from storage
+                storage.removeItem("otpToken");
+                // Redirect to home page
+                navigate('/');
+            } else {
+                setError(registerRes.message || 'Registration failed. Please try again.');
+            }
+        } catch (e: unknown) {
+            console.error('Error during verification/registration:', e);
+            const errorMessage = (e as { data?: { message?: string } })?.data?.message || 'An error occurred. Please try again.';
+            setError(errorMessage);
+        } finally {
+            setIsCreatingAccount(false);
         }
     };
 
@@ -388,7 +410,8 @@ function SignupPage() {
                                         <button
                                             type="button"
                                             onClick={handleEditDetails}
-                                            className="text-primary hover:text-primary/80 text-sm font-medium transition-colors"
+                                            disabled={isVerifying || isCreatingAccount}
+                                            className="text-primary hover:text-primary/80 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             Edit
                                         </button>
@@ -412,7 +435,7 @@ function SignupPage() {
                                                 onChange={(e) => handleOtpChange(index, e.target.value)}
                                                 onKeyDown={(e) => handleOtpKeyDown(index, e)}
                                                 onPaste={handleOtpPaste}
-                                                disabled={isVerifying}
+                                                disabled={isVerifying || isCreatingAccount}
                                                 className="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
                                                 aria-label={`Digit ${index + 1}`}
                                                 autoFocus={index === 0}
@@ -434,7 +457,7 @@ function SignupPage() {
                                         <button
                                             type="button"
                                             onClick={handleResendOtp}
-                                            disabled={isLoading || !canResend}
+                                            disabled={isLoading || !canResend || isVerifying || isCreatingAccount}
                                             className="text-sm text-primary hover:text-primary/80 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             Didn't receive the code? Resend
@@ -445,13 +468,13 @@ function SignupPage() {
                                 {/* Verify Button */}
                                 <button
                                     type="submit"
-                                    disabled={isVerifying || otp.some(digit => !digit)}
+                                    disabled={isVerifying || isCreatingAccount || otp.some(digit => !digit)}
                                     className="w-full bg-primary text-white py-3 px-4 rounded-lg font-semibold hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
-                                    {isVerifying ? (
+                                    {isVerifying || isCreatingAccount ? (
                                         <>
                                             <Loader className="h-5 w-5 animate-spin" />
-                                            Verifying...
+                                            {isCreatingAccount ? 'Creating Account...' : 'Verifying...'}
                                         </>
                                     ) : (
                                         'Verify & Create Account'

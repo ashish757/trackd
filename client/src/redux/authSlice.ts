@@ -48,7 +48,7 @@ const authSlice = createSlice({
 
         // Handle successful server-side logout
         builder.addMatcher(
-            authApi.endpoints.verifyOtpAndRegister.matchFulfilled,
+            authApi.endpoints.register.matchFulfilled,
             (state, {payload}) => {
 
                 state.user = payload.user;

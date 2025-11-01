@@ -42,7 +42,7 @@ export const authApi = createApi({
         }),
 
         // Registration Step 2: OTP Verification and Registration
-        verifyOtpAndRegister: builder.mutation({
+        register: builder.mutation({
             query: (registerData) => ({
                 url: 'register',
                 method: 'POST',
@@ -50,10 +50,18 @@ export const authApi = createApi({
             }),
 
         }),
+        verifyOtp: builder.mutation({
+        query: (veifyOtpData) => ({
+            url: 'verify-otp',
+            method: 'POST',
+            body: veifyOtpData,
+        }),
+
+}),
 
 
     }),
 });
 
 // Auto-generated hooks for your components
-export const { useLoginMutation, useRequestOtpMutation, useVerifyOtpAndRegisterMutation } = authApi;
+export const { useLoginMutation, useRequestOtpMutation, useRegisterMutation , useVerifyOtpMutation} = authApi;
