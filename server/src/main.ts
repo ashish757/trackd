@@ -2,19 +2,23 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 dotenv.config();
+import cookieParser from 'cookie-parser';
 import { AllExceptionsFilter } from './comman/filters/AllExceptionsFilter';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
 
-    // Enable CORS
+    // Enable cookie parser for HttpOnly cookies
+    app.use(cookieParser());
+
+    // Enable CORS with credentials
     app.enableCors({
         origin:
             process.env.ENV === 'development'
                 ? 'http://localhost:5173'
                 : process.env.FRONTEND_URL || 'https://yourdomain.com',
-        credentials: true,
+        credentials: true, // CRITICAL: Allow cookies to be sent
     });
 
     // Global validation pipe - CRITICAL for DTO validation
