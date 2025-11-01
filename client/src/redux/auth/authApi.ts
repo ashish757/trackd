@@ -10,12 +10,10 @@ export const authApi = apiSlice.injectEndpoints({
         // 1. Initial Login/Registration
         login: builder.mutation({
             query: (credentials) => ({
-                url: 'login',
+                url: '/login',
                 method: 'POST',
                 body: credentials,
             }),
-            // This is a key step: successful verification finalizes auth,
-            // so we use a standard slice matcher to handle the token/user update.
         }),
 
         // Registration Step 1: Req OTP

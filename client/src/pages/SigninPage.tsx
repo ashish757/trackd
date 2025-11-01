@@ -9,7 +9,7 @@ function SigninPage() {
         email: '',
         password: '',
     });
- const navigate = useNavigate();
+    const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
 
@@ -24,7 +24,7 @@ function SigninPage() {
         if (error) setError('');
     };
 
-     const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
 
@@ -46,15 +46,19 @@ function SigninPage() {
             return;
         }
 
-         try {
-             await login(formData).unwrap();
-             navigate('/');
-         } catch (e){
-            console.log("ERROR ", e);
-            const error = e as { data?: { message?: string } };
-            setError(error?.data?.message || 'Invalid email or password. Please try again.');
-         }
-
+        try {
+            console.log('Attempting login...');
+            const result = await login(formData).unwrap();
+            console.log('Login successful:', result);
+            // Only navigate on success
+            navigate('/');
+        } catch (err: any) {
+            console.error('Login error:', err);
+            // Handle RTK Query error object
+            const errorMessage = err?.data?.message || err?.message || 'Login failed. Please try again.';
+            setError(errorMessage);
+            // IMPORTANT: Don't navigate or reload on error
+        }
     };
 
     return (

@@ -139,7 +139,9 @@ function SignupPage() {
         }
 
         try {
-            const res = await reqOtp(formData).unwrap();
+            const res = await reqOtp(
+                { email: formData.email }
+            ).unwrap();
 
             if(res.statusCode === 200) {
                 setOtpSent(true);
