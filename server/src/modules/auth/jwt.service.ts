@@ -18,7 +18,7 @@ interface VerifyResult {
 @Injectable()
 export class JwtService {
     private readonly expType: Record<TokenType, string> = {
-        access: '10min',
+        access: '15min',
         refresh: '7d',
         otp: '2min',
     };

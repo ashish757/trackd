@@ -36,15 +36,23 @@ export class AuthService {
 
 
         const data = {
-            accessToken: this.jwtService.sign(payload, 'access', { expiresIn: '10min' }),
+            accessToken: this.jwtService.sign(payload, 'access', { expiresIn: '15min' }),
             refreshToken: this.jwtService.sign(payload, 'refresh', { expiresIn: '7d' }),
         }
 
         const hashed = await this.getHash(data.refreshToken);
 
+        // Limit refresh tokens to max 5 (cleanup old tokens)
+        let updatedTokens = [...user.refreshTokens];
+        if (updatedTokens.length >= 5) {
+            // Remove oldest tokens
+            updatedTokens = updatedTokens.slice(-4); // Keep last 4
+        }
+        updatedTokens.push(hashed);
+
         await this.prisma.user.update({
             where: { id: user.id },
-            data: { refreshTokens: [...user.refreshTokens, hashed] },
+            data: { refreshTokens: updatedTokens },
         });
 
         return data;
@@ -59,7 +67,7 @@ export class AuthService {
         // Generate random 6-digit OTP
         const otp = Math.floor(100000 + Math.random() * 900000);
         console.log('Sending OTP to', otpDto.email);
-        console.log('OTP:', otp); // TODO: Remove in production, send via email/SMS
+        console.log('OTP:', otp);
 
         const payload = {
             email: otpDto.email,
@@ -89,7 +97,7 @@ export class AuthService {
 
         const accessToken = this.jwtService.sign(
             { sub: user.id, email: user.email }, 'access',
-            { expiresIn: '10min' },
+            { expiresIn: '15min' },
         );
         const refreshToken = this.jwtService.sign(
             { sub: user.id, email: user.email }, 'refresh',
@@ -107,6 +115,39 @@ export class AuthService {
         return { accessToken, refreshToken };
     }
 
+    // ...existing code...
+
+    async logout(userId: number, refreshToken: string): Promise<void> {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { refreshTokens: true },
+        });
+
+        if (!user) return;
+
+        // Remove the specific refresh token
+        const updatedTokens: string[] = [];
+        for (const hashedToken of user.refreshTokens) {
+            const matches = await bcrypt.compare(refreshToken, hashedToken);
+            if (!matches) {
+                updatedTokens.push(hashedToken);
+            }
+        }
+
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { refreshTokens: updatedTokens },
+        });
+    }
+
+    async logoutAll(userId: number): Promise<void> {
+        // Invalidate all refresh tokens for a user
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { refreshTokens: [] },
+        });
+    }
+
     async verifyOtp(verifyOtpDto: VerifyOtpDto) {
         // verify OTP code (this is just a placeholder)
         const { payload, error } = this.jwtService.verify(
@@ -114,13 +155,10 @@ export class AuthService {
         ) as { error: boolean | object; payload: VerifyOtpDto };
         if (error) return false;
 
-        if (
-            payload.email === verifyOtpDto.email &&
-            (await bcrypt.compare(verifyOtpDto.otp, payload.otp))
-        )
-            return true;
+        return !!(payload.email === verifyOtpDto.email &&
+            (await bcrypt.compare(verifyOtpDto.otp, payload.otp)));
 
-        return false;
+
     }
 
     async refreshToken(refreshToken: string) {
@@ -147,13 +185,19 @@ export class AuthService {
         }
 
         if (!tokenExists) {
-            throw new UnauthorizedException('Refresh token not found or has been revoked');
+            // SECURITY: Possible token reuse attack - invalidate all tokens
+            console.warn(`⚠️ Token reuse detected for user ${user.id}. Invalidating all tokens.`);
+            await this.prisma.user.update({
+                where: { id: user.id },
+                data: { refreshTokens: [] },
+            });
+            throw new UnauthorizedException('Refresh token not found or has been revoked. All sessions invalidated.');
         }
 
         // Generate new tokens
         const accessToken = this.jwtService.sign(
             { sub: user.id, email: user.email }, 'access',
-            { expiresIn: '10min' },
+            { expiresIn: '15min' },
         );
         const newRefreshToken = this.jwtService.sign(
             { sub: user.id, email: user.email }, 'refresh',
