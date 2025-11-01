@@ -3,30 +3,11 @@
  * Centralized configuration for API endpoints and base URLs
  */
 
-// Type for environment
-export type Environment = 'development' | 'production' | 'staging';
-
-export const getEnvironment = (): Environment => {
-    return (import.meta.env.ENV as Environment) || 'development';
-};
-
-export const isDevelopment = () => getEnvironment() === 'development';
-export const isProduction = () => getEnvironment() === 'production';
 
 // Base URL logic: use localhost for development, env variable for production
 const getBaseUrl = (): string => {
-    if (isProduction()) {
-        // Production: use environment variable or throw error if not set
-        const productionUrl = import.meta.env.VITE_API_URL;
-        if (!productionUrl) {
-            console.error('VITE_API_URL is not set in production environment!');
-            return 'http://localhost:3000'; // Fallback
-        }
-        return productionUrl;
-    } else {
-        // Development: always use localhost
-        return 'http://localhost:3000';
-    }
+        return import.meta.env.VITE_API_BASE_URL;
+            // || 'http://localhost:3000';
 };
 
 export const API_CONFIG = {
