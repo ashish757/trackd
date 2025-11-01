@@ -1,6 +1,7 @@
 import { fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import { tokenManager } from '../utils/tokenManager';
+import { API_CONFIG } from '../config/api.config';
 
 interface RefreshResponse {
     status: string;
@@ -17,7 +18,7 @@ let refreshPromise: Promise<void> | null = null;
 
 // Base query with token header
 const baseQuery = fetchBaseQuery({
-    baseUrl: 'http://localhost:3000/auth',
+    baseUrl: API_CONFIG.BASE_URL,
     credentials: 'include', // CRITICAL: Send HttpOnly cookies automatically
     prepareHeaders: (headers) => {
         // Get access token from memory (not localStorage)
@@ -54,7 +55,7 @@ export const baseQueryWithReauth: BaseQueryFn<
             refreshPromise = (async () => {
                 const refreshResult = await baseQuery(
                     {
-                        url: '/refresh-token',
+                        url: API_CONFIG.ENDPOINTS.AUTH.REFRESH_TOKEN,
                         method: 'POST',
                         // No body needed - refresh token is in HttpOnly cookie
                     },
@@ -116,7 +117,7 @@ export const baseQueryWithReauth: BaseQueryFn<
             refreshPromise = (async () => {
                 const refreshResult = await baseQuery(
                     {
-                        url: '/refresh-token',
+                        url: API_CONFIG.ENDPOINTS.AUTH.REFRESH_TOKEN,
                         method: 'POST',
                     },
                     api,

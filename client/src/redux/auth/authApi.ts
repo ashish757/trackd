@@ -1,4 +1,5 @@
 import {apiSlice} from "../apiSlice.ts";
+import { API_CONFIG } from "../../config/api.config";
 
 export const authApi = apiSlice.injectEndpoints({
     // reducerPath: 'userApi', // The name of the slice in the store
@@ -10,7 +11,7 @@ export const authApi = apiSlice.injectEndpoints({
         // 1. Initial Login/Registration
         login: builder.mutation({
             query: (credentials) => ({
-                url: '/login',
+                url: API_CONFIG.ENDPOINTS.AUTH.LOGIN,
                 method: 'POST',
                 body: credentials,
             }),
@@ -19,34 +20,33 @@ export const authApi = apiSlice.injectEndpoints({
         // Registration Step 1: Req OTP
         requestOtp: builder.mutation({
             query: (otpData) => ({
-                url: 'send-otp',
+                url: API_CONFIG.ENDPOINTS.AUTH.SEND_OTP,
                 method: 'POST',
                 body: otpData,
             }),
-
         }),
 
         // Registration Step 2: OTP Verification and Registration
         register: builder.mutation({
             query: (registerData) => ({
-                url: 'register',
+                url: API_CONFIG.ENDPOINTS.AUTH.REGISTER,
                 method: 'POST',
                 body: registerData,
             }),
-
         }),
+
         verifyOtp: builder.mutation({
-        query: (veifyOtpData) => ({
-            url: 'verify-otp',
-            method: 'POST',
-            body: veifyOtpData,
+            query: (verifyOtpData) => ({
+                url: API_CONFIG.ENDPOINTS.AUTH.VERIFY_OTP,
+                method: 'POST',
+                body: verifyOtpData,
             }),
-       }),
+        }),
 
         // Logout
         logout: builder.mutation({
             query: (logoutData) => ({
-                url: 'logout',
+                url: API_CONFIG.ENDPOINTS.AUTH.LOGOUT,
                 method: 'POST',
                 body: logoutData
             }),
