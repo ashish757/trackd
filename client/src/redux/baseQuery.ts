@@ -35,8 +35,17 @@ export const baseQueryWithReauth: BaseQueryFn<
     unknown,
     FetchBaseQueryError
 > = async (args, api, extraOptions) => {
+    // Debug logging
+    console.log('🔍 baseQueryWithReauth called with:', {
+        args,
+        hasToken: tokenManager.getAccessToken() !== null,
+    });
+
+    // Only check token expiry if we have a token (skip for login/register endpoints)
+    const hasToken = tokenManager.getAccessToken() !== null;
+
     // Check if token is expired before making request (proactive refresh)
-    if (tokenManager.isTokenExpired(60)) {
+    if (hasToken && tokenManager.isTokenExpired(60)) {
         console.log('🔄 Access token expired/expiring soon, refreshing proactively...');
 
         // Use mutex to prevent race conditions
@@ -85,10 +94,20 @@ export const baseQueryWithReauth: BaseQueryFn<
     }
 
     // Make the actual request
+    console.log('📡 Making request to baseQuery...');
     let result = await baseQuery(args, api, extraOptions)
+    console.log('📥 baseQuery result:', {
+        hasError: !!result.error,
+        status: result.error?.status,
+        data: result.data,
+    });
 
-    // If still get 401, try to refresh one more time
-    if (result?.error?.status === 401) {
+    // Check if this is a login/register/send-otp/verify-otp request
+    const url = typeof args === 'string' ? args : args.url;
+    const isAuthEndpoint = url.includes('/login') || url.includes('/register') || url.includes('/send-otp') || url.includes('/verify-otp');
+
+    // If still get 401, try to refresh one more time (but NOT for auth endpoints)
+    if (result?.error?.status === 401 && !isAuthEndpoint) {
         console.warn('⚠️ Received 401, attempting token refresh...')
 
         // Use mutex to prevent race conditions
