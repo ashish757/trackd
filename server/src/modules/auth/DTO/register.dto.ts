@@ -1,12 +1,11 @@
-import { IsEmail, IsString, MinLength, ValidateNested, } from 'class-validator';
+import { IsEmail, IsString, MinLength, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UserDto {
     @IsEmail() email: string;
     @IsString() @MinLength(3) name: string;
-    @IsString() @MinLength(4) password: string;
+    @IsString() @MinLength(6) password: string;
 }
-
 
 export class RegisterDto {
     @IsString() otpToken: string;
@@ -16,7 +15,6 @@ export class RegisterDto {
 
 export class OtpDto {
     @IsEmail() email: string;
-    @IsString() otp: string;
 }
 
 export class VerifyOtpDto {
