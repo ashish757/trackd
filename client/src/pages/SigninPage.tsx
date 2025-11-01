@@ -52,10 +52,11 @@ function SigninPage() {
             console.log('Login successful:', result);
             // Only navigate on success
             navigate('/');
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Login error:', err);
             // Handle RTK Query error object
-            const errorMessage = err?.data?.message || err?.message || 'Login failed. Please try again.';
+            const error = err as { data?: { message?: string }; message?: string };
+            const errorMessage = error?.data?.message || error?.message || 'Login failed. Please try again.';
             setError(errorMessage);
             // IMPORTANT: Don't navigate or reload on error
         }

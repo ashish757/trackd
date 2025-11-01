@@ -140,7 +140,7 @@ function SignupPage() {
 
         try {
             const res = await reqOtp(
-                { email: formData.email }
+                { email: formData.email, name: formData.name },
             ).unwrap();
 
             if(res.statusCode === 200) {
