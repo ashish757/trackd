@@ -14,6 +14,7 @@ export class RegisterDto {
 }
 
 export class SendOtpDto {
+    @IsString() name: string; // e.g., 'register', 'reset-password'
     @IsEmail() email: string;
 }
 

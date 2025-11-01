@@ -8,6 +8,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './DTO/login.dto';
 import { JwtService } from './jwt.service';
 import * as bcrypt from 'bcrypt';
+import {generateOTP} from "../../utils/otp";
+import {sendEmail} from "../../utils/email";
 
 @Injectable()
 export class AuthService {
@@ -65,13 +67,15 @@ export class AuthService {
 
     async sendOtp(otpDto: SendOtpDto) {
         // Generate random 6-digit OTP
-        const otp = Math.floor(100000 + Math.random() * 900000);
+        const otp = generateOTP();
+
         console.log('Sending OTP to', otpDto.email);
+        sendEmail(otpDto.email, 'Trackd - Email Verification Code', `Hello <strong> ${otpDto.name} </strong>, <br/> <br/> Your One Time Verification code is: <strong>${otp} </strong>. <br/> It is valid for 03 minutes.`);
         console.log('OTP:', otp);
 
         const payload = {
             email: otpDto.email,
-            otp: await this.getHash(otp.toString()),
+            otp: await this.getHash(otp),
         };
         return { otpToken: this.jwtService.sign(payload, 'otp') };
     }
