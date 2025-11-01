@@ -1,10 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
-import {authApi} from "./authApi.ts";
-
+import { authApi } from "./authApi.ts";
+import { tokenManager } from "../../utils/tokenManager.ts";
 
 const initialState = {
     user: {},
-    isAuthenticated: !!localStorage.getItem('accessToken'),
+    isAuthenticated: tokenManager.isAuthenticated(),
 };
 
 const authSlice = createSlice({
@@ -14,53 +14,63 @@ const authSlice = createSlice({
         // Optional: for updating user details once logged in
         setUser: (state, action) => {
             state.user = action.payload;
+        },
+        // Manual logout action
+        logout: (state) => {
+            state.user = {};
+            state.isAuthenticated = false;
+            tokenManager.clearAccessToken();
         }
     },
 
     // Listen to the RTK Query mutation results
     extraReducers: (builder) => {
 
-        // Handle both successful Login AND successful OTP Verification (both return tokens)
+        // Handle successful Login
         builder.addMatcher(
-            // Match successful outcome for EITHER the login or the verifyOtp mutation
             authApi.endpoints.login.matchFulfilled,
             (state, { payload }) => {
-                // Assume API returns { token: '...', user: { ... } }
-                state.user = payload.user;
+                state.user = payload.user || {};
                 state.isAuthenticated = true;
-                localStorage.setItem('accessToken', payload.data.accessToken);
-                localStorage.setItem('refreshToken', payload.data.refreshToken);
 
+                // Store access token in memory (not localStorage!)
+                tokenManager.setAccessToken(payload.data.accessToken);
+
+                // Refresh token is in HttpOnly cookie - no need to store in JS
+                console.log('✅ Login successful - tokens secured');
             }
         );
 
-        // Handle successful server-side logout
+        // Handle successful registration
         builder.addMatcher(
             authApi.endpoints.register.matchFulfilled,
-            (state, {payload}) => {
-
-                state.user = payload.user;
+            (state, { payload }) => {
+                state.user = payload.user || {};
                 state.isAuthenticated = true;
-                localStorage.setItem('accessToken', payload.data.accessToken);
-                localStorage.setItem('refreshToken', payload.data.refreshToken);
+
+                // Store access token in memory
+                tokenManager.setAccessToken(payload.data.accessToken);
+
+                console.log('✅ Registration successful - tokens secured');
             }
         );
 
-        // handle client side logout after server confirms logout
+        // Handle successful logout
         builder.addMatcher(
             authApi.endpoints.logout.matchFulfilled,
             (state) => {
                 state.user = {};
                 state.isAuthenticated = false;
-                localStorage.removeItem('accessToken');
-                localStorage.removeItem('refreshToken');
+
+                // Clear access token from memory
+                tokenManager.clearAccessToken();
+
+                // HttpOnly cookie will be cleared by server
+                console.log('✅ Logged out successfully');
             }
-        )
-
+        );
     },
-
-
 });
 
-export const { setUser } = authSlice.actions;
+export const { setUser, logout } = authSlice.actions;
 export default authSlice.reducer;

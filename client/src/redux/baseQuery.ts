@@ -1,5 +1,6 @@
 import { fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query'
+import { tokenManager } from '../utils/tokenManager';
 
 interface RefreshResponse {
     status: string;
@@ -7,16 +8,20 @@ interface RefreshResponse {
     message: string;
     data: {
         accessToken: string;
-        refreshToken: string;
     };
 }
 
+// Mutex to prevent multiple simultaneous refresh requests
+let isRefreshing = false;
+let refreshPromise: Promise<void> | null = null;
+
 // Base query with token header
 const baseQuery = fetchBaseQuery({
-    baseUrl: 'http://localhost:3000',
-    credentials: 'include', // send cookies for refresh
+    baseUrl: 'http://localhost:3000/auth',
+    credentials: 'include', // CRITICAL: Send HttpOnly cookies automatically
     prepareHeaders: (headers) => {
-        const token = localStorage.getItem('accessToken');
+        // Get access token from memory (not localStorage)
+        const token = tokenManager.getAccessToken();
         if (token) {
             headers.set('authorization', `Bearer ${token}`)
         }
@@ -24,52 +29,111 @@ const baseQuery = fetchBaseQuery({
     },
 })
 
-// Add Reauth logic (refresh)
+// Add Reauth logic with race condition protection
 export const baseQueryWithReauth: BaseQueryFn<
     string | FetchArgs,
     unknown,
     FetchBaseQueryError
 > = async (args, api, extraOptions) => {
+    // Check if token is expired before making request (proactive refresh)
+    if (tokenManager.isTokenExpired(60)) {
+        console.log('🔄 Access token expired/expiring soon, refreshing proactively...');
+
+        // Use mutex to prevent race conditions
+        if (!isRefreshing) {
+            isRefreshing = true;
+            refreshPromise = (async () => {
+                const refreshResult = await baseQuery(
+                    {
+                        url: '/refresh-token',
+                        method: 'POST',
+                        // No body needed - refresh token is in HttpOnly cookie
+                    },
+                    api,
+                    extraOptions
+                );
+
+                if (refreshResult?.data) {
+                    const responseData = refreshResult.data as RefreshResponse;
+                    const newAccessToken = responseData.data.accessToken;
+
+                    // Store new access token in memory
+                    tokenManager.setAccessToken(newAccessToken);
+                    console.log('✅ Token refreshed successfully');
+                } else {
+                    // Refresh failed, clear token and redirect to login
+                    console.error('❌ Token refresh failed');
+                    tokenManager.clearAccessToken();
+                    window.location.href = '/signin';
+                }
+            })();
+
+            try {
+                await refreshPromise;
+            } catch (error) {
+                console.error('❌ Token refresh error:', error);
+                tokenManager.clearAccessToken();
+                window.location.href = '/signin';
+            } finally {
+                isRefreshing = false;
+                refreshPromise = null;
+            }
+        } else {
+            // Wait for ongoing refresh to complete
+            await refreshPromise;
+        }
+    }
+
+    // Make the actual request
     let result = await baseQuery(args, api, extraOptions)
 
+    // If still get 401, try to refresh one more time
     if (result?.error?.status === 401) {
-        console.warn('Access token expired. Trying to refresh...')
+        console.warn('⚠️ Received 401, attempting token refresh...')
 
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (!refreshToken) {
-            // No refresh token, log out
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            window.location.href = '/signin';
-            return result;
-        }
+        // Use mutex to prevent race conditions
+        if (!isRefreshing) {
+            isRefreshing = true;
+            refreshPromise = (async () => {
+                const refreshResult = await baseQuery(
+                    {
+                        url: '/refresh-token',
+                        method: 'POST',
+                    },
+                    api,
+                    extraOptions
+                );
 
-        const refreshResult = await baseQuery(
-            {
-                url: '/auth/refresh-token',
-                method: 'POST',
-                body: { refreshToken }
-            },
-            api,
-            extraOptions
-        )
+                if (refreshResult?.data) {
+                    const responseData = refreshResult.data as RefreshResponse;
+                    const newAccessToken = responseData.data.accessToken;
 
-        if (refreshResult?.data) {
-            // save new tokens
-            const responseData = refreshResult.data as RefreshResponse;
-            const newAccessToken = responseData.data.accessToken;
-            const newRefreshToken = responseData.data.refreshToken;
+                    tokenManager.setAccessToken(newAccessToken);
+                    console.log('✅ Token refreshed after 401');
 
-            localStorage.setItem('accessToken', newAccessToken);
-            localStorage.setItem('refreshToken', newRefreshToken);
+                    // Retry original request with new token
+                    result = await baseQuery(args, api, extraOptions)
+                } else {
+                    console.error('❌ Refresh failed after 401');
+                    tokenManager.clearAccessToken();
+                    window.location.href = '/signin';
+                }
+            })();
 
-            // Retry original query with new token
-            result = await baseQuery(args, api, extraOptions)
+            try {
+                await refreshPromise;
+            } catch (error) {
+                console.error('❌ Refresh error after 401:', error);
+                tokenManager.clearAccessToken();
+                window.location.href = '/signin';
+            } finally {
+                isRefreshing = false;
+                refreshPromise = null;
+            }
         } else {
-            // Refresh failed, log out
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            window.location.href = '/signin';
+            // Wait for ongoing refresh to complete, then retry
+            await refreshPromise;
+            result = await baseQuery(args, api, extraOptions);
         }
     }
 
