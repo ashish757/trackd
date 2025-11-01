@@ -1,10 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import {authApi} from "./authApi.ts";
-//
-// interface state {
-//     user: object,
-//     isAuthenticated: boolean,
-// }
+
 
 const initialState = {
     user: {},
@@ -15,14 +11,6 @@ const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
-        // Reducer for a client-side logout action (clears state immediately)
-        clientLogout: (state) => {
-            state.user = {};
-            state.isAuthenticated = false;
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-
-        },
         // Optional: for updating user details once logged in
         setUser: (state, action) => {
             state.user = action.payload;
@@ -57,10 +45,22 @@ const authSlice = createSlice({
                 localStorage.setItem('refreshToken', payload.data.refreshToken);
             }
         );
+
+        // handle client side logout after server confirms logout
+        builder.addMatcher(
+            authApi.endpoints.logout.matchFulfilled,
+            (state) => {
+                state.user = {};
+                state.isAuthenticated = false;
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+            }
+        )
+
     },
 
 
 });
 
-export const { clientLogout, setUser } = authSlice.actions;
+export const { setUser } = authSlice.actions;
 export default authSlice.reducer;

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {Link, useNavigate} from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, X } from 'lucide-react';
-import {useLoginMutation} from "../redux/authApi.ts";
+import {useLoginMutation} from "../redux/auth/authApi.ts";
 import { validateEmail } from "../utils/validation.ts";
 
 function SigninPage() {

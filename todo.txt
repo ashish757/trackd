@@ -1,0 +1,9 @@
+CLIENT
+TODO: set refresh token in httponly cookie
+TODO: store access token in memory
+
+
+SERVER
+TODO: Implement SMTP server for otp
+TODO: Rate Limiting
+TODO: Setup logout endpoint to clear refresh token from DB and cookie

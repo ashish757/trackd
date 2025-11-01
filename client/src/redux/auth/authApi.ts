@@ -1,23 +1,10 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import {apiSlice} from "../apiSlice.ts";
 
-export const authApi = createApi({
-    reducerPath: 'userApi', // The name of the slice in the store
-
-    // Set the base URL for all requests
-    baseQuery: fetchBaseQuery({
-        baseUrl: 'http://localhost:3000/auth/',
-        // Common requirement: Add authorization header to every request
-        prepareHeaders: (headers) => {
-            const token = localStorage.getItem('token'); // or get it from your Redux state
-            if (token) {
-                headers.set('authorization', `Bearer ${token}`);
-            }
-            return headers;
-        },
-    }),
+export const authApi = apiSlice.injectEndpoints({
+    // reducerPath: 'userApi', // The name of the slice in the store
 
     // Define data types for cache invalidation
-    tagTypes: ['Auth'] ,
+    // tagTypes: ['Auth'] ,
 
     endpoints: (builder) => ({
         // 1. Initial Login/Registration
@@ -55,13 +42,21 @@ export const authApi = createApi({
             url: 'verify-otp',
             method: 'POST',
             body: veifyOtpData,
-        }),
+            }),
+       }),
 
-}),
+        // Logout
+        logout: builder.mutation({
+            query: (logoutData) => ({
+                url: 'logout',
+                method: 'POST',
+                body: logoutData
+            }),
+        }),
 
 
     }),
 });
 
 // Auto-generated hooks for your components
-export const { useLoginMutation, useRequestOtpMutation, useRegisterMutation , useVerifyOtpMutation} = authApi;
+export const { useLoginMutation, useRequestOtpMutation, useRegisterMutation , useVerifyOtpMutation, useLogoutMutation} = authApi;

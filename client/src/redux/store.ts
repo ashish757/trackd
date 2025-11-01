@@ -1,18 +1,18 @@
 import { configureStore } from '@reduxjs/toolkit';
-import {authApi} from './authApi.ts';
-import userReducer from './userSlice';
-import authReducer from './authSlice';
+import { apiSlice } from './apiSlice.ts';
+import authReducer from './auth/authSlice.ts';
+import userReducer from "./user/userSlice.ts";
 
 export const store = configureStore({
     reducer: {
-        user: userReducer,
+        [apiSlice.reducerPath]: apiSlice.reducer,
         auth: authReducer,
-        [authApi.reducerPath]: authApi.reducer,
+        user: userReducer,
     },
 
     // Add the API middleware to enable caching, fetching, and listener management
     middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(authApi.middleware),
+        getDefaultMiddleware().concat(apiSlice.middleware),
 });
 
 

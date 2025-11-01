@@ -1,13 +1,11 @@
-import {useDispatch} from "react-redux";
-import {clientLogout} from "../redux/authSlice.ts";
+import {useLogoutMutation} from "../redux/auth/authApi.ts";
 
 export default function Home() {
-    const dispatch = useDispatch();
+    const [logout] = useLogoutMutation();
 
 
-
-    const logoutHandler = () => {
-            dispatch(clientLogout());
+    const logoutHandler = async () => {
+        await logout({ refreshToken: localStorage.getItem('refreshToken') });
     }
 
 

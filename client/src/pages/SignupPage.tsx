@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {Link, useNavigate} from 'react-router-dom';
 import { Mail, Lock, User, X, Loader, Eye, EyeOff, Clock } from 'lucide-react';
-import { useRequestOtpMutation, useVerifyOtpMutation, useRegisterMutation } from "../redux/authApi.ts";
+import { useRequestOtpMutation, useVerifyOtpMutation, useRegisterMutation } from "../redux/auth/authApi.ts";
 import { validateEmail, validatePassword, validateName } from "../utils/validation.ts";
 import { storage } from "../utils/config.ts";
 
