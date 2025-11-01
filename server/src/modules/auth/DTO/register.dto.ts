@@ -13,7 +13,7 @@ export class RegisterDto {
     @ValidateNested() @Type(() => UserDto) user: UserDto;
 }
 
-export class OtpDto {
+export class SendOtpDto {
     @IsEmail() email: string;
 }
 

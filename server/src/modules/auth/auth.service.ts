@@ -3,7 +3,7 @@ import {
     UnauthorizedException,
     ConflictException,
 } from '@nestjs/common';
-import { VerifyOtpDto, OtpDto, UserDto } from './DTO/register.dto';
+import { VerifyOtpDto, SendOtpDto, UserDto } from './DTO/register.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './DTO/login.dto';
 import { JwtService } from './jwt.service';
@@ -63,7 +63,7 @@ export class AuthService {
         return await bcrypt.hash(password, saltRounds);
     }
 
-    async sendOtp(otpDto: OtpDto) {
+    async sendOtp(otpDto: SendOtpDto) {
         // Generate random 6-digit OTP
         const otp = Math.floor(100000 + Math.random() * 900000);
         console.log('Sending OTP to', otpDto.email);

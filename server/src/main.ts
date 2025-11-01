@@ -14,10 +14,9 @@ async function bootstrap() {
 
     // Enable CORS with credentials
     app.enableCors({
-        origin:
-            process.env.ENV === 'development'
-                ? 'http://localhost:5173'
-                : process.env.FRONTEND_URL || 'https://yourdomain.com',
+        origin: process.env.ENV === 'development'
+            ? ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175']
+            : process.env.FRONTEND_URL || 'https://yourdomain.com',
         credentials: true, // CRITICAL: Allow cookies to be sent
     });
 

@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
-import { OtpDto, RegisterDto } from './DTO/register.dto';
+import { SendOtpDto, RegisterDto } from './DTO/register.dto';
 import { LoginDto } from './DTO/login.dto';
 import { AuthGuard } from '../../comman/guards/auth.guard';
 
@@ -75,7 +75,7 @@ export class AuthController {
     }
 
     @Post('/send-otp')
-    async sendOtp(@Body() req: OtpDto) {
+    async sendOtp(@Body() req: SendOtpDto) {
         const data = await this.authService.sendOtp(req);
         return {
             status: 'success',
