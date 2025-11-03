@@ -1,22 +1,25 @@
-import {useLogoutMutation} from "../redux/auth/authApi.ts";
+// filepath: /Users/ashish/Developer/Trackd/client/src/pages/Home.tsx
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 
 export default function Home() {
-    const [logout] = useLogoutMutation();
+    const navigate = useNavigate();
 
-
-    const logoutHandler = async () => {
-        await logout({ refreshToken: localStorage.getItem('refreshToken') });
-    }
-
+    useEffect(() => {
+        // Redirect to discover page on initial load
+        navigate('/discover');
+    }, [navigate]);
 
     return (
-        <main>
-            <div className="container">
-                Logged in
-            </div>
-            <button onClick={logoutHandler}>Log Out</button>
-        </main>
-    )
-
-
+        <>
+            <Navbar />
+            <main className="min-h-screen bg-gray-50">
+                <div className="container mx-auto px-4 py-8">
+                    <p className="text-center text-gray-600">Redirecting to Discover...</p>
+                </div>
+            </main>
+        </>
+    );
 }
+

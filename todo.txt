@@ -1,9 +1,10 @@
 CLIENT
-TODO: set refresh token in httponly cookie
-TODO: store access token in memory
+TODO: Design Home
+TODO: Home -> Movie Hub , options -> profile, logout, 
+TODO: Movie Hub -> 
 
 
 SERVER
-TODO: Implement SMTP server for otp
+TODO: Implement SMTP server for OTP
 TODO: Rate Limiting
 TODO: Setup logout endpoint to clear refresh token from DB and cookie

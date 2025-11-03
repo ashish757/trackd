@@ -1,13 +1,37 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useLogoutMutation } from '../redux/auth/authApi';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { logout as logoutAction } from '../redux/auth/authSlice';
-import { LogOut } from 'lucide-react';
+import { LogOut, User, Settings, ChevronDown } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import type { RootState } from '../redux/store';
+
+interface UserType {
+    name?: string;
+    email?: string;
+}
 
 const Navbar = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const dispatch = useDispatch();
     const [logout, { isLoading }] = useLogoutMutation();
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    const user = useSelector((state: RootState) => state.auth.user) as UserType;
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const handleLogout = async () => {
         try {
@@ -27,24 +51,91 @@ const Navbar = () => {
         }
     };
 
+    const isActive = (path: string) => location.pathname === path;
+
     return (
         <nav className="bg-white shadow-sm border-b border-gray-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
-                    <Link to="/" className="flex items-center gap-2">
-                        <img alt="Trackd" src="/logo.svg" className="h-8 w-auto" />
-                        <span className="text-xl font-bold text-gray-900">Trackd</span>
-                    </Link>
+                    {/* Logo */}
+                    <div className="flex items-center gap-8">
+                        <Link to="/" className="flex items-center gap-2">
+                            <img alt="Trackd" src="/logo.svg" className="h-8 w-auto" />
+                            <span className="text-xl font-bold text-gray-900">Trackd</span>
+                        </Link>
 
-                    <div className="flex items-center gap-4">
+                        {/* Nav Links */}
+                        <div className="hidden md:flex items-center gap-6">
+                            <Link
+                                to="/discover"
+                                className={`text-sm font-medium transition-colors ${
+                                    isActive('/discover')
+                                        ? 'text-blue-600'
+                                        : 'text-gray-700 hover:text-gray-900'
+                                }`}
+                            >
+                                Discover
+                            </Link>
+                            <Link
+                                to="/my-list"
+                                className={`text-sm font-medium transition-colors ${
+                                    isActive('/my-list')
+                                        ? 'text-blue-600'
+                                        : 'text-gray-700 hover:text-gray-900'
+                                }`}
+                            >
+                                My List
+                            </Link>
+                        </div>
+                    </div>
+
+                    {/* User Dropdown */}
+                    <div className="relative" ref={dropdownRef}>
                         <button
-                            onClick={handleLogout}
-                            disabled={isLoading}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={() => setDropdownOpen(!dropdownOpen)}
+                            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                         >
-                            <LogOut className="h-4 w-4" />
-                            {isLoading ? 'Logging out...' : 'Logout'}
+                            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
+                                {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
+                            </div>
+                            <span className="hidden md:inline">{user?.name || user?.email || 'User'}</span>
+                            <ChevronDown className={`h-4 w-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
                         </button>
+
+                        {/* Dropdown Menu */}
+                        {dropdownOpen && (
+                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                                <button
+                                    onClick={() => {
+                                        setDropdownOpen(false);
+                                        navigate('/profile');
+                                    }}
+                                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                >
+                                    <User className="h-4 w-4" />
+                                    Profile
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setDropdownOpen(false);
+                                        navigate('/settings');
+                                    }}
+                                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                >
+                                    <Settings className="h-4 w-4" />
+                                    Settings
+                                </button>
+                                <hr className="my-1 border-gray-200" />
+                                <button
+                                    onClick={handleLogout}
+                                    disabled={isLoading}
+                                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <LogOut className="h-4 w-4" />
+                                    {isLoading ? 'Logging out...' : 'Logout'}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

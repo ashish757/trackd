@@ -11,6 +11,8 @@ interface ProtectedRouteProps {
     unauthorized?: React.ReactElement;
 }
 
+
+
 export default function ProtectedRoute({ authorized, unauthorized }: ProtectedRouteProps) {
 
     // 1. Authorization Check
@@ -18,6 +20,11 @@ export default function ProtectedRoute({ authorized, unauthorized }: ProtectedRo
 
     // 2. Decide which component to render upon unauthorized access
     let FallbackComponent: React.ReactElement;
+
+    const env = import.meta.env.VITE_AUTH_ENABLED;
+    if (env === 'false') {
+        return <>{authorized}</>;
+    }
 
     if (isAuthenticated) {
         // A. Authorized: Render the protected content (children)
