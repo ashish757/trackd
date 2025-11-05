@@ -1,33 +1,55 @@
-import {Query, Get, HttpStatus} from "@nestjs/common";
-import {MovieService} from "./movie.services";
-import {Controller} from "@nestjs/common";
-
+import { Controller, Get, Query, Param, HttpStatus, ParseIntPipe } from '@nestjs/common';
+import MovieService from './movie.services';
 
 @Controller('movies')
 export class MovieController {
     constructor(private readonly movieService: MovieService) {}
 
-    @Get('/search')
-    async getMovies(@Query('query') query: string) {
-        const data = await this.movieService.getMovies(query);
+    /**
+     * Search for movies
+     * GET /movies/search?query=inception
+     */
+    @Get('search')
+    async searchMovies(@Query('query') query: string) {
+        const data = await this.movieService.searchMovies(query);
 
         return {
             status: 'success',
             statusCode: HttpStatus.OK,
-            message: 'Movie Search',
-            data: data,
-        }
+            message: 'Movie search results',
+            data,
+        };
     }
 
-    @Get('/trending')
-    async getTrending() {
+    /**
+     * Get trending movies
+     * GET /movies/trending
+     */
+    @Get('trending')
+    async getTrendingMovies() {
         const data = await this.movieService.getTrending();
 
         return {
             status: 'success',
             statusCode: HttpStatus.OK,
-            message: 'Trending Movies',
-            data: data,
-        }
+            message: 'Trending movies',
+            data,
+        };
+    }
+
+    /**
+     * Get movie details by ID
+     * GET /movies/:id
+     */
+    @Get(':id')
+    async getMovieById(@Param('id', ParseIntPipe) id: number) {
+        const data = await this.movieService.getMovieById(id);
+
+        return {
+            status: 'success',
+            statusCode: HttpStatus.OK,
+            message: 'Movie details',
+            data,
+        };
     }
 }

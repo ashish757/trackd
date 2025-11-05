@@ -45,8 +45,21 @@ export const movieApi = apiSlice.injectEndpoints({
                 return response as MovieSearchResponse;
             },
         }),
+        getMovieById: builder.query<Movie, number>({
+            query: (movieId) => ({
+                url: `/movies/${movieId}`,
+                method: 'GET',
+            }),
+            // Transform the response
+            transformResponse: (response: { data?: Movie }) => {
+                if (response?.data) {
+                    return response.data;
+                }
+                return response as Movie;
+            },
+        }),
     }),
 });
 
-export const { useLazySearchMoviesQuery, useGetTrendingMoviesQuery } = movieApi;
+export const { useLazySearchMoviesQuery, useGetTrendingMoviesQuery, useGetMovieByIdQuery } = movieApi;
 

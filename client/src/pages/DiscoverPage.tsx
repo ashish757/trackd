@@ -1,8 +1,11 @@
 // filepath: /Users/ashish/Developer/Trackd/client/src/pages/DiscoverPage.tsx
 import { useState, useEffect, useRef } from 'react';
-import { Search, Film, X, TrendingUp } from 'lucide-react';
+import { Search, Film, X } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { useLazySearchMoviesQuery, useGetTrendingMoviesQuery, type Movie } from '../redux/movie/movieApi';
+import MovieInfoModel from "../components/MovieInfoModel.tsx";
+import TrendingMoviesSection from "../components/TrendingMoviesSection.tsx";
+
 
 export default function DiscoverPage() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -10,6 +13,8 @@ export default function DiscoverPage() {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
+    const [showMovieInfo, setShowMovieInfo] = useState(false);
+    const [infoMovie, setInfoMovie] = useState<Movie | null>(null);
 
     // RTK Query hooks
     const [triggerSearch, { data: searchResults, isLoading, isFetching, isError }] = useLazySearchMoviesQuery();
@@ -85,7 +90,9 @@ export default function DiscoverPage() {
         console.log('Selected movie:', movie);
         setSearchQuery(movie.title);
         setShowSuggestions(false);
-        // TODO: Navigate to movie details page or show movie info
+        setShowMovieInfo(true);
+        setInfoMovie(movie);
+
     };
 
     const clearSearch = () => {
@@ -103,6 +110,7 @@ export default function DiscoverPage() {
             <Navbar />
             <main className="min-h-screen bg-gray-50">
                 <div className="container mx-auto px-4 py-8">
+
                     {/* Hero Section with Search */}
                     <div className="max-w-4xl mx-auto mb-12">
                         <div className="text-center mb-8">
@@ -193,65 +201,11 @@ export default function DiscoverPage() {
                         </div>
                     </div>
 
-                    {/* Trending Movies Section */}
-                    <div className="max-w-6xl mx-auto">
-                        <div className="flex items-center gap-2 mb-6">
-                            <TrendingUp className="h-6 w-6 text-blue-600" />
-                            <h2 className="text-2xl font-bold text-gray-900">Trending Today</h2>
-                        </div>
+                    {/*{Movie info model}*/}
+                    {showMovieInfo ? (<MovieInfoModel onClose={setShowMovieInfo} movie={infoMovie} />) : null}
 
-                        {isTrendingLoading ? (
-                            <div className="flex justify-center items-center py-20">
-                                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
-                            </div>
-                        ) : isTrendingError ? (
-                            <div className="text-center py-20">
-                                <p className="text-red-500">Failed to load trending movies. Please try again later.</p>
-                            </div>
-                        ) : trendingData?.results && trendingData.results.length > 0 ? (
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                                {trendingData.results.slice(0, 10).map((movie) => (
-                                    <div
-                                        key={movie.id}
-                                        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer group"
-                                        onClick={() => handleSuggestionClick(movie)}
-                                    >
-                                        <div className="aspect-[2/3] bg-gradient-to-br from-gray-300 to-gray-200 flex items-center justify-center overflow-hidden relative">
-                                            {movie.poster_path ? (
-                                                <>
-                                                    <img
-                                                        src={`https://image.tmdb.org/t/p/w342${movie.poster_path}`}
-                                                        alt={movie.title}
-                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                    />
-                                                    {movie.vote_average > 0 && (
-                                                        <div className="absolute top-2 right-2 bg-black/80 text-white px-2 py-1 rounded-md text-sm font-semibold flex items-center gap-1">
-                                                            ⭐ {movie.vote_average.toFixed(1)}
-                                                        </div>
-                                                    )}
-                                                </>
-                                            ) : (
-                                                <Film className="h-12 w-12 text-gray-400" />
-                                            )}
-                                        </div>
-                                        <div className="p-3">
-                                            <h3 className="font-semibold text-gray-900 truncate" title={movie.title}>
-                                                {movie.title}
-                                            </h3>
-                                            <p className="text-sm text-gray-600">
-                                                {movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-20">
-                                <Film className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                                <p className="text-gray-500">No trending movies available at the moment.</p>
-                            </div>
-                        )}
-                    </div>
+                    {/* Trending Movies Section */}
+                    <TrendingMoviesSection handleSuggestionClick={handleSuggestionClick} isTrendingLoading={isTrendingLoading} isTrendingError={isTrendingError} trendingData={trendingData}/>
 
                     {/* Info Box */}
                     <div className="max-w-4xl mx-auto mt-12 p-6 bg-green-50 border border-green-200 rounded-xl">
@@ -262,6 +216,8 @@ export default function DiscoverPage() {
                             Live movie search powered by TMDB API. Start typing in the search bar to see real-time suggestions with a 500ms debounce for optimal performance.
                         </p>
                     </div>
+
+
                 </div>
             </main>
         </>

@@ -3,10 +3,11 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
-import {MovieModule} from "./modules/movie/movie.module";
+import { MovieModule } from './modules/movie/movie.module';
+import { UserMovieModule } from './modules/user-movie/user-movie.module';
 
 @Module({
-    imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, MovieModule],
+    imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, MovieModule, UserMovieModule],
     controllers: [AppController],
     providers: [AppService],
 })

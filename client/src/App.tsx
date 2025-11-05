@@ -5,7 +5,7 @@ import SignupPage from "./pages/SignupPage.tsx";
 import {Routes, Route} from "react-router-dom";
 import Home from "./pages/Home.tsx";
 import DiscoverPage from "./pages/DiscoverPage.tsx";
-import MyListPage from "./pages/MyListPage.tsx";
+import MyListPage from "./pages/MyListPage/MyListPage.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
 import SettingsPage from "./pages/SettingsPage.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";

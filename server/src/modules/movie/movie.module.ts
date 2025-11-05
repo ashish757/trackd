@@ -1,10 +1,8 @@
-import {Module} from "@nestjs/common";
-import {MovieService} from "./movie.services";
-import {MovieController} from "./movie.controller";
-import {PrismaModule} from "../prisma/prisma.module";
+import { Module } from '@nestjs/common';
+import MovieService from './movie.services';
+import { MovieController } from './movie.controller';
 
 @Module({
-    imports: [PrismaModule],
     controllers: [MovieController],
     providers: [MovieService],
 })
