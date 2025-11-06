@@ -9,7 +9,7 @@ import { LoginDto } from './DTO/login.dto';
 import { JwtService } from './jwt.service';
 import * as bcrypt from 'bcrypt';
 import {generateOTP} from "../../utils/otp";
-import {sendMail} from "../../utils/email";
+import {sendEmail} from "../../utils/email";
 
 @Injectable()
 export class AuthService {
@@ -70,7 +70,7 @@ export class AuthService {
         const otp = generateOTP();
 
         console.log('Sending OTP to', otpDto.email);
-        sendMail(otpDto.email, 'Trackd - Email Verification Code', `Hello <strong> ${otpDto.name} </strong>, <br/> <br/> Your One Time Verification code is: <strong>${otp} </strong>. <br/> It is valid for 03 minutes.`);
+        await sendEmail(otpDto.email, 'Trackd - Email Verification Code', `Hello <strong> ${otpDto.name} </strong>, <br/> <br/> Your One Time Verification code is: <strong>${otp} </strong>. <br/> It is valid for 03 minutes.`);
         console.log('OTP:', otp);
 
         const payload = {

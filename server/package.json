@@ -31,8 +31,8 @@
         "class-validator": "^0.14.2",
         "cookie-parser": "^1.4.7",
         "jsonwebtoken": "^9.0.2",
+        "nodemailer": "^7.0.10",
         "reflect-metadata": "^0.2.2",
-        "resend": "^6.4.0",
         "rxjs": "^7.8.1"
     },
     "devDependencies": {
