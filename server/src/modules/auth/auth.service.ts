@@ -10,6 +10,47 @@ import { JwtService } from './jwt.service';
 import * as bcrypt from 'bcrypt';
 import {generateOTP} from "../../utils/otp";
 import {sendEmail} from "../../utils/email";
+const htmlTemplate = (name, otp) => `
+  <div style="
+    font-family: Arial, sans-serif;
+    background-color: #f6f9fc;
+    padding: 20px;
+    border-radius: 10px;
+    color: #333;
+  ">
+    <div style="
+      max-width: 500px;
+      margin: auto;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 25px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    ">
+      <h2 style="text-align:center; color:#2563eb;">Trackd - Email Verification</h2>
+      <p>Hello <strong>${name}</strong>,</p>
+      <p>Here’s your one-time verification code:</p>
+      
+      <div style="
+        text-align:center;
+        font-size: 28px;
+        font-weight: bold;
+        color: #2563eb;
+        margin: 15px 0;
+      ">
+        ${otp}
+      </div>
+      
+      <p>This code is valid for <strong>3 minutes</strong>.</p>
+      <p>If you didn’t request this, please ignore this email.</p>
+      
+      <hr style="margin-top:25px; border:none; border-top:1px solid #eee;">
+      <p style="text-align:center; font-size:12px; color:#777;">
+        © ${new Date().getFullYear()} Trackd. All rights reserved.
+      </p>
+    </div>
+  </div>
+`;
+
 
 @Injectable()
 export class AuthService {
@@ -70,7 +111,13 @@ export class AuthService {
         const otp = generateOTP();
 
         console.log('Sending OTP to', otpDto.email);
-        await sendEmail(otpDto.email, 'Trackd - Email Verification Code', `Hello <strong> ${otpDto.name} </strong>, <br/> <br/> Your One Time Verification code is: <strong>${otp} </strong>. <br/> It is valid for 03 minutes.`);
+        // await sendEmail(otpDto.email, 'Trackd - Email Verification Code', `Hello <strong> ${otpDto.name} </strong>, <br/> <br/> Your One Time Verification code is: <strong>${otp} </strong>. <br/> It is valid for 03 minutes.`);
+        await sendEmail(
+            otpDto.email,
+            'Trackd - Email Verification Code',
+            htmlTemplate(otpDto.name, otp)
+        );
+
         console.log('OTP:', otp);
 
         const payload = {

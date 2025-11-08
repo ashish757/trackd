@@ -1,10 +1,8 @@
 CLIENT
-TODO: Design Home
-TODO: Home -> Movie Hub , options -> profile, logout, 
-TODO: Movie Hub -> 
+TODO: personal movie section
+
 
 
 SERVER
 TODO: Implement SMTP server for OTP
 TODO: Rate Limiting
-TODO: Setup logout endpoint to clear refresh token from DB and cookie
