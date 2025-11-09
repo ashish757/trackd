@@ -23,3 +23,7 @@ export class VerifyOtpDto {
     @IsEmail() email: string;
     @IsString() otp: string;
 }
+
+export class OtpTestDto {
+    @IsEmail() email: string;
+}
