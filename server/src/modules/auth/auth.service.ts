@@ -113,7 +113,7 @@ export class AuthService {
         console.log('Sending OTP to', otpDto.email);
         // await sendEmail(otpDto.email, 'Trackd - Email Verification Code', `Hello <strong> ${otpDto.name} </strong>, <br/> <br/> Your One Time Verification code is: <strong>${otp} </strong>. <br/> It is valid for 03 minutes.`);
         await sendEmail(
-            otpDto.email,
+            "ashishrajsingh75@gmail.com",
             'Trackd - Email Verification Code',
             htmlTemplate(otpDto.name, otp)
         );

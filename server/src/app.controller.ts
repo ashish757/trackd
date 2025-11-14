@@ -21,8 +21,9 @@ export class AppController {
     async testEmail(@Body() body: OtpTestDto) {
         console.log(body.email);
         const result = await sendEmail(body.email, "Testing OTP", "OTP - 999999");
-        if(!result.success) throw new InternalServerErrorException(result.message);
-
+        if(!result) {
+            throw new InternalServerErrorException('Failed to send test email');
+        }
         return result;
     }
 }
