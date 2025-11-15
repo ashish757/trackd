@@ -23,7 +23,7 @@
 //         try {
 //             // Verify connection first
 //             await transporter.verify();
-//             console.log(`✅ SMTP connected successfully on port ${port}`);
+//             console.log(`SMTP connected successfully on port ${port}`);
 //
 //             // Send the actual mail
 //             await transporter.sendMail({
@@ -33,13 +33,13 @@
 //                 html: text, // supports HTML templates too
 //             });
 //
-//             console.log(`📨 Email sent successfully via port ${port}`);
+//             console.log(`Email sent successfully via port ${port}`);
 //             return {
 //                 success: true,
 //                 message: `Email sent successfully via port ${port}`,
 //             };
 //         } catch (err) {
-//             console.error(`❌ Failed to send via port ${port}:`, err.message);
+//             console.error(`Failed to send via port ${port}:`, err.message);
 //             // Try next port
 //         }
 //     }

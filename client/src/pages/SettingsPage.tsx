@@ -1,5 +1,4 @@
-// filepath: /Users/ashish/Developer/Trackd/client/src/pages/SettingsPage.tsx
-import { Bell, Lock, Eye, Globe } from 'lucide-react';
+import { Lock, Eye, Globe } from 'lucide-react';
 import Navbar from '../components/Navbar';
 
 export default function SettingsPage() {
@@ -12,23 +11,6 @@ export default function SettingsPage() {
                         <h1 className="text-4xl font-bold text-gray-900 mb-8">Settings</h1>
 
                         <div className="space-y-6">
-                            {/* Notifications */}
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <Bell className="h-6 w-6 text-gray-700" />
-                                    <h2 className="text-xl font-semibold text-gray-900">Notifications</h2>
-                                </div>
-                                <div className="space-y-4">
-                                    <label className="flex items-center justify-between cursor-pointer">
-                                        <span className="text-gray-700">Email notifications</span>
-                                        <input type="checkbox" className="toggle" />
-                                    </label>
-                                    <label className="flex items-center justify-between cursor-pointer">
-                                        <span className="text-gray-700">New releases from tracked shows</span>
-                                        <input type="checkbox" className="toggle" />
-                                    </label>
-                                </div>
-                            </div>
 
                             {/* Privacy */}
                             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -83,16 +65,6 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Info Box */}
-                        <div className="mt-6 p-6 bg-blue-50 border border-blue-200 rounded-xl">
-                            <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                                ⚙️ Settings
-                            </h3>
-                            <p className="text-blue-800">
-                                These settings are placeholder UI. Functionality will be implemented in future updates to allow customization of your experience.
-                            </p>
                         </div>
                     </div>
                 </div>
@@ -177,7 +149,7 @@ export default function SettingsPage() {
 //                         {/* Info Box */}
 //                         <div className="mt-6 p-6 bg-blue-50 border border-blue-200 rounded-xl">
 //                             <h3 className="text-lg font-semibold text-blue-900 mb-2">
-//                                 👤 Profile Management
+//                                 Profile Management
 //                             </h3>
 //                             <p className="text-blue-800">
 //                                 Profile editing functionality will be implemented soon. You'll be able to update your name, email, and other preferences.

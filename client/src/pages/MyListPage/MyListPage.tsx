@@ -163,7 +163,7 @@ export default function MyListPage() {
                     {/* Info Box */}
                     <div className="max-w-6xl mx-auto mt-8 p-6 bg-blue-50 border border-blue-200 rounded-xl">
                         <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                            📊 Simple Movie Tracking
+                            Simple Movie Tracking
                         </h3>
                         <p className="text-blue-800">
                             Mark movies as "Watched" or "Planned" to keep track of your viewing list.

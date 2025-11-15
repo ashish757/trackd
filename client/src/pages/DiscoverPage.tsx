@@ -22,7 +22,7 @@ export default function DiscoverPage() {
 
     // Debounce search query with 500ms delay
     useEffect(() => {
-        console.log('🔤 Search query changed:', searchQuery);
+        console.log('Search query changed:', searchQuery);
         if (searchQuery.length < 2) {
             setDebouncedQuery('');
             setShowSuggestions(false);
@@ -40,7 +40,7 @@ export default function DiscoverPage() {
     // Trigger API search when debounced query changes
     useEffect(() => {
         if (debouncedQuery.length >= 2) {
-            console.log('🔍 Triggering search for:', debouncedQuery);
+            console.log('Triggering search for:', debouncedQuery);
 
             // Cancel previous request if exists
             if (abortControllerRef.current) {
@@ -56,7 +56,7 @@ export default function DiscoverPage() {
 
     // Log search results
     useEffect(() => {
-        console.log('📊 Search state:', {
+        console.log('Search state:', {
             isLoading,
             isFetching,
             isError,
@@ -210,7 +210,7 @@ export default function DiscoverPage() {
                     {/* Info Box */}
                     <div className="max-w-4xl mx-auto mt-12 p-6 bg-green-50 border border-green-200 rounded-xl">
                         <h3 className="text-lg font-semibold text-green-900 mb-2">
-                            ✅ Search Integration Active
+                            Search Integration Active
                         </h3>
                         <p className="text-green-800">
                             Live movie search powered by TMDB API. Start typing in the search bar to see real-time suggestions with a 500ms debounce for optimal performance.

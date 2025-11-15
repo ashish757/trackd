@@ -12,7 +12,7 @@ const Portal: React.FC<PortalProps> = ({ children, layer = "modal" }) => {
     const layerId = `layer-${layer}`;
     const portalRoot = document.getElementById(layerId);
     if (!portalRoot) {
-        console.warn(`⚠️ Portal layer "${layerId}" not found in DOM.`);
+        console.warn(`Portal layer "${layerId}" not found in DOM.`);
         return null;
     }
 

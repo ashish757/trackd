@@ -7,7 +7,7 @@ import LandingPage from "../pages/LandingPage.tsx"; // The default unauthorized 
 // Define the props, including the optional 'fallback' element
 interface ProtectedRouteProps {
     authorized: React.ReactNode;
-    // 🚀 The new optional prop for a custom unauthorized component 🚀
+    // The new optional prop for a custom unauthorized component
     unauthorized?: React.ReactElement;
 }
 

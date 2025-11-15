@@ -14,6 +14,7 @@ const authSlice = createSlice({
         // Optional: for updating user details once logged in
         setUser: (state, action) => {
             state.user = action.payload;
+            state.isAuthenticated = true;
         },
         // Manual logout action
         logout: (state) => {
@@ -30,14 +31,15 @@ const authSlice = createSlice({
         builder.addMatcher(
             authApi.endpoints.login.matchFulfilled,
             (state, { payload }) => {
-                state.user = payload.user || {};
+                console.log(payload)
+                state.user = payload.data.user || {};
                 state.isAuthenticated = true;
 
                 // Store access token in memory (not localStorage!)
                 tokenManager.setAccessToken(payload.data.accessToken);
 
                 // Refresh token is in HttpOnly cookie - no need to store in JS
-                console.log('✅ Login successful - tokens secured');
+                console.log('Login successful - tokens secured');
             }
         );
 
@@ -45,13 +47,13 @@ const authSlice = createSlice({
         builder.addMatcher(
             authApi.endpoints.register.matchFulfilled,
             (state, { payload }) => {
-                state.user = payload.user || {};
+                state.user = payload.data.user || {};
                 state.isAuthenticated = true;
 
                 // Store access token in memory
                 tokenManager.setAccessToken(payload.data.accessToken);
 
-                console.log('✅ Registration successful - tokens secured');
+                console.log('Registration successful - tokens secured');
             }
         );
 
@@ -66,11 +68,11 @@ const authSlice = createSlice({
                 tokenManager.clearAccessToken();
 
                 // HttpOnly cookie will be cleared by server
-                console.log('✅ Logged out successfully');
+                console.log('Logged out successfully');
             }
         );
     },
 });
 
-export const { setUser, logout } = authSlice.actions;
+export const { logout, setUser } = authSlice.actions;
 export default authSlice.reducer;
