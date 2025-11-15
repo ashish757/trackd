@@ -38,7 +38,7 @@ export class AuthController {
             message: 'Login successful',
             data: {
                 accessToken: data.accessToken,
-                // DO NOT send refreshToken in body
+               user: data.user,
             },
         };
     }
@@ -70,6 +70,12 @@ export class AuthController {
             message: 'User Registered successfully',
             data: {
                 accessToken: data.accessToken,
+                user:
+                    {
+                        name: data.user.name,
+                        email: data.user.email,
+                        id: data.user.id
+                    }
             },
         };
     }
@@ -122,6 +128,7 @@ export class AuthController {
             message: 'Token refreshed successfully',
             data: {
                 accessToken: data.accessToken,
+                user: data.user,
             },
         };
     }

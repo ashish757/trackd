@@ -59,14 +59,16 @@ export class AuthService {
         private readonly prisma: PrismaService,
     ) {}
 
-    async login(dto: LoginDto): Promise<{ accessToken: string; refreshToken: string }> {
+    async login(dto: LoginDto): Promise<{ accessToken: string; refreshToken: string, user: object }> {
         // verify user from DB
         const user = await this.prisma.user.findUnique({
             where: { email: dto.email },
             select: {
                 id: true,
+                name: true,
                 email: true,
                 password: true,
+                createdAt: true,
                 refreshTokens: true,
             }
 
@@ -98,7 +100,12 @@ export class AuthService {
             data: { refreshTokens: updatedTokens },
         });
 
-        return data;
+        return {...data, user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            createdAt: user.createdAt,
+            }};
     }
 
     async getHash(password: string): Promise<string> {
@@ -131,8 +138,9 @@ export class AuthService {
         // save user to DB
         const existing = await this.prisma.user.findUnique({
             where: { email:  dto.email },
-            select: { id: true }
+            select: { id: true, },
         });
+
         if (existing) throw new ConflictException('Email already in use');
 
         const hashed = await this.getHash(dto.password);
@@ -163,10 +171,12 @@ export class AuthService {
             data: { refreshTokens: [hashedToken] },
         });
 
-        return { accessToken, refreshToken };
+        return { accessToken, refreshToken, user : {
+                name: dto.name,
+                email: dto.email,
+                id: user.id
+            }};
     }
-
-    // ...existing code...
 
     async logout(userId: number, refreshToken: string): Promise<void> {
         const user = await this.prisma.user.findUnique({
@@ -221,7 +231,9 @@ export class AuthService {
         // check if refresh token is in DB
         const user = await this.prisma.user.findUnique({
             where: { id: payload.sub },
-            select: { id: true, email: true, refreshTokens: true },
+            select: { id: true, name: true,
+                email: true,
+                createdAt: true, refreshTokens: true },
         });
         if (!user) throw new UnauthorizedException('User not found');
 
@@ -236,7 +248,7 @@ export class AuthService {
 
         if (!tokenExists) {
             // SECURITY: Possible token reuse attack - invalidate all tokens
-            console.warn(`⚠️ Token reuse detected for user ${user.id}. Invalidating all tokens.`);
+            console.warn(`Token reuse detected for user ${user.id}. Invalidating all tokens.`);
             await this.prisma.user.update({
                 where: { id: user.id },
                 data: { refreshTokens: [] },
@@ -272,6 +284,16 @@ export class AuthService {
             data: { refreshTokens: updatedTokens },
         });
 
-        return { accessToken, refreshToken: newRefreshToken };
+
+        return {
+            accessToken,
+            refreshToken: newRefreshToken,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                createdAt: user.createdAt,
+            }
+        };
     }
 }
