@@ -9,8 +9,21 @@ import MyListPage from "./pages/MyListPage/MyListPage.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
 import SettingsPage from "./pages/SettingsPage.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
+import LoadingSpinner from "./components/LoadingSpinner.tsx";
+import { useTokenRefreshOnLoad } from "./hooks/useTokenRefreshOnLoad.ts";
 
 function App() {
+  // Automatically refresh access token on page load/reload
+  const isRefreshingToken = useTokenRefreshOnLoad();
+
+  // Show loading state while attempting to refresh token on page load
+  if (isRefreshingToken) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-slate-900">
+        <LoadingSpinner size="large" message="Restoring session..." />
+      </div>
+    );
+  }
 
   return (
       <>

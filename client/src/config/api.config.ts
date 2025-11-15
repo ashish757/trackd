@@ -6,7 +6,7 @@
 
 // Base URL logic: use localhost for development, env variable for production
 const getBaseUrl = (): string => {
-        return import.meta.env.VITE_ENV == "development" ? "http://localhost:3000/" : import.meta.env.VITE_API_BASE_URL;
+        return import.meta.env.VITE_ENV == "development" ? "http://localhost:3000" : import.meta.env.VITE_API_BASE_URL;
             // || 'http://localhost:3000';
 };
 
