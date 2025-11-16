@@ -24,9 +24,9 @@ export class AuthController {
 
         // Set refresh token in HttpOnly cookie
         res.cookie('refreshToken', data.refreshToken, {
-            httpOnly: true,      // Not accessible via JavaScript
+            httpOnly: true,
             secure: process.env.ENV === 'production', // HTTPS only in production
-            sameSite: 'strict',  // CSRF protection
+            sameSite: 'none',  // CSRF protection but our client is on a different domain
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
             path: '/',
         });
