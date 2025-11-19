@@ -13,7 +13,7 @@ export class UserMovieService {
     /**
      * Mark a movie as WATCHED or PLANNED
      */
-    async markMovie(dto: MarkMovieDto, userId: number) {
+    async markMovie(dto: MarkMovieDto, userId: string) {
         // Create movie entry if it doesn't exist (movieId is TMDB ID)
         await this.prisma.movies.upsert({
             where: { id: dto.movieId },
@@ -59,7 +59,7 @@ export class UserMovieService {
     /**
      * Remove a movie entry (unmark)
      */
-    async removeMovie(dto: RemoveMovieDto, userId: number) {
+    async removeMovie(dto: RemoveMovieDto, userId: string) {
         const entry = await this.prisma.userMovieEntry.findUnique({
             where: {
                 user_id_movie_id: {
@@ -88,7 +88,7 @@ export class UserMovieService {
     /**
      * Get all movies for a user (both WATCHED and PLANNED)
      */
-    async getUserMovies(userId: number) {
+    async getUserMovies(userId: string) {
         return this.prisma.userMovieEntry.findMany({
             where: { user_id: userId },
             include: {
@@ -103,7 +103,7 @@ export class UserMovieService {
     /**
      * Get movies by status
      */
-    async getUserMoviesByStatus(userId: number, status: MovieStatus) {
+    async getUserMoviesByStatus(userId: string, status: MovieStatus) {
         return this.prisma.userMovieEntry.findMany({
             where: {
                 user_id: userId,
@@ -121,7 +121,7 @@ export class UserMovieService {
     /**
      * Get a specific movie entry
      */
-    async getMovieEntry(userId: number, movieId: number) {
+    async getMovieEntry(userId: string, movieId: number) {
         return this.prisma.userMovieEntry.findUnique({
             where: {
                 user_id_movie_id: {
@@ -138,7 +138,7 @@ export class UserMovieService {
     /**
      * Get stats for user movies
      */
-    async getUserStats(userId: number) {
+    async getUserStats(userId: string) {
         const [watchedCount, plannedCount, total] = await Promise.all([
             this.prisma.userMovieEntry.count({
                 where: { user_id: userId, status: MovieStatus.WATCHED },

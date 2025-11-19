@@ -28,7 +28,7 @@ export class UserMovieController {
     @Post('mark')
     async markMovie(
         @Body() dto: MarkMovieDto,
-        @Req() req: Request & { user?: { sub: number; email: string } }
+        @Req() req: Request & { user?: { sub: string; email: string } }
     ) {
         const userId = req.user?.sub!;
         const data = await this.userMovieService.markMovie(dto, userId);
@@ -48,7 +48,7 @@ export class UserMovieController {
     @Delete(':movieId')
     async removeMovie(
         @Param('movieId', ParseIntPipe) movieId: number,
-        @Req() req: Request & { user?: { sub: number; email: string } }
+        @Req() req: Request & { user?: { sub: string; email: string } }
     ) {
         const userId = req.user?.sub!;
         const data = await this.userMovieService.removeMovie({ movieId }, userId);
@@ -66,7 +66,7 @@ export class UserMovieController {
      * GET /user-movies
      */
     @Get()
-    async getUserMovies(@Req() req: Request & { user?: { sub: number; email: string } }) {
+    async getUserMovies(@Req() req: Request & { user?: { sub: string; email: string } }) {
         const userId = req.user?.sub!;
         const data = await this.userMovieService.getUserMovies(userId);
 
@@ -85,7 +85,7 @@ export class UserMovieController {
     @Get('by-status')
     async getUserMoviesByStatus(
         @Query('status') status: MovieStatus,
-        @Req() req: Request & { user?: { sub: number; email: string } }
+        @Req() req: Request & { user?: { sub: string; email: string } }
     ) {
         const userId = req.user?.sub!;
         const data = await this.userMovieService.getUserMoviesByStatus(userId, status);
@@ -105,7 +105,7 @@ export class UserMovieController {
     @Get('movie/:movieId')
     async getMovieEntry(
         @Param('movieId', ParseIntPipe) movieId: number,
-        @Req() req: Request & { user?: { sub: number; email: string } }
+        @Req() req: Request & { user?: { sub: string; email: string } }
     ) {
         const userId = req.user?.sub!;
         const data = await this.userMovieService.getMovieEntry(userId, movieId);
@@ -123,7 +123,7 @@ export class UserMovieController {
      * GET /user-movies/stats
      */
     @Get('stats')
-    async getUserStats(@Req() req: Request & { user?: { sub: number; email: string } }) {
+    async getUserStats(@Req() req: Request & { user?: { sub: string; email: string } }) {
         const userId = req.user?.sub!;
         const data = await this.userMovieService.getUserStats(userId);
 

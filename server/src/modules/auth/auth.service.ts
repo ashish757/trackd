@@ -178,7 +178,7 @@ export class AuthService {
             }};
     }
 
-    async logout(userId: number, refreshToken: string): Promise<void> {
+    async logout(userId: string, refreshToken: string): Promise<void> {
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
             select: { refreshTokens: true },
@@ -201,7 +201,7 @@ export class AuthService {
         });
     }
 
-    async logoutAll(userId: number): Promise<void> {
+    async logoutAll(userId: string): Promise<void> {
         // Invalidate all refresh tokens for a user
         await this.prisma.user.update({
             where: { id: userId },
