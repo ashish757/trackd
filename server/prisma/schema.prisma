@@ -7,8 +7,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+//
+//  USER MODEL
+//
+
 model User {
-  id            Int      @id() @default(autoincrement())
+  id            String   @id @default(cuid())
   email         String   @unique()
   password      String
   name          String?
@@ -18,11 +22,21 @@ model User {
   UserMovieData  UserMovieData[]
   UserMovieEntry UserMovieEntry[]
 
+  // NEW RELATIONS (Friend System)
+  sentFriendRequests     FriendRequest[] @relation("SentRequests")
+  receivedFriendRequests FriendRequest[] @relation("ReceivedRequests")
+  friendshipsA           Friendship[]    @relation("FriendA")
+  friendshipsB           Friendship[]    @relation("FriendB")
+
   @@map("users")
 }
 
+//
+//  MOVIE MODELS
+//
+
 model Movies {
-  id Int @id()
+  id Int @id
 
   UserMovieData  UserMovieData[]
   UserMovieEntry UserMovieEntry[]
@@ -31,8 +45,8 @@ model Movies {
 }
 
 model UserMovieData {
-  id          Int      @id() @default(autoincrement())
-  user_id     Int
+  id          String   @id @default(cuid())
+  user_id     String
   movie_id    Int
   rating      Int?
   description String?
@@ -47,18 +61,17 @@ model UserMovieData {
 }
 
 model UserMovieEntry {
-  id     Int      @id() @default(autoincrement())
-  user_id     Int
-  movie_id   Int
+  id        String      @id @default(cuid())
+  user_id   String
+  movie_id  Int
   status    MovieStatus
-  createdAt  DateTime @default(now())
+  createdAt DateTime    @default(now())
 
   user  User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
   movie Movies @relation(fields: [movie_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id, movie_id])
   @@map("user_movie_entries")
-
 }
 
 enum MovieStatus {
@@ -66,3 +79,40 @@ enum MovieStatus {
   PLANNED
 }
 
+//
+//  FRIEND REQUEST MODEL (Only pending requests stored)
+//
+
+model FriendRequest {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  createdAt  DateTime @default(now())
+
+  sender   User @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  // Prevent duplicate requests
+  @@unique([senderId, receiverId])
+  @@index([receiverId])
+}
+
+//
+//  FRIENDSHIP MODEL (Accepted friendships)
+//  ALWAYS INSERT SORTED: (A < B) in backend
+//
+
+model Friendship {
+  id          String   @id @default(cuid())
+  friend_a_id String
+  friend_b_id String
+  createdAt   DateTime @default(now())
+
+  friendA User @relation("FriendA", fields: [friend_a_id], references: [id], onDelete: Cascade)
+  friendB User @relation("FriendB", fields: [friend_b_id], references: [id], onDelete: Cascade)
+
+  // Prevent duplicates (A,B) != (B,A)
+  @@unique([friend_a_id, friend_b_id])
+  @@index([friend_a_id])
+  @@index([friend_b_id])
+}
