@@ -24,6 +24,9 @@ export const API_CONFIG = {
             VERIFY_OTP: '/auth/verify-otp',
             REFRESH_TOKEN: '/auth/refresh-token',
         },
+        USER: {
+            CHANGE_USERNAME: 'user/change-username',
+        },
         MOVIE: {
             SEARCH: '/movies/search',
         },
