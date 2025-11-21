@@ -20,7 +20,7 @@ export default function DiscoverPage() {
     const [triggerSearch, { data: searchResults, isLoading, isFetching, isError }] = useLazySearchMoviesQuery();
     const { data: trendingData, isLoading: isTrendingLoading, isError: isTrendingError } = useGetTrendingMoviesQuery();
 
-    // Debounce search query with 500ms delay
+    // Debounce search query with 300ms delay
     useEffect(() => {
         console.log('Search query changed:', searchQuery);
         if (searchQuery.length < 2) {
@@ -32,7 +32,7 @@ export default function DiscoverPage() {
         const timer = setTimeout(() => {
             console.log('⏰ Debounce complete, setting debounced query:', searchQuery);
             setDebouncedQuery(searchQuery);
-        }, 500); // 500ms debounce delay
+        }, 300); // 300ms debounce delay
 
         return () => clearTimeout(timer);
     }, [searchQuery]);
