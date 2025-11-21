@@ -68,6 +68,7 @@ export class AuthService {
                 name: true,
                 email: true,
                 password: true,
+                username: true,
                 createdAt: true,
                 refreshTokens: true,
             }
@@ -104,6 +105,7 @@ export class AuthService {
             id: user.id,
             name: user.name,
             email: user.email,
+                username: user.username,
             createdAt: user.createdAt,
             }};
     }
@@ -171,10 +173,12 @@ export class AuthService {
             data: { refreshTokens: [hashedToken] },
         });
 
-        return { accessToken, refreshToken, user : {
-                name: dto.name,
-                email: dto.email,
-                id: user.id
+        return { accessToken, refreshToken, user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                username: user.username,
+                createdAt: user.createdAt,
             }};
     }
 
@@ -233,6 +237,7 @@ export class AuthService {
             where: { id: payload.sub },
             select: { id: true, name: true,
                 email: true,
+                username: true,
                 createdAt: true, refreshTokens: true },
         });
         if (!user) throw new UnauthorizedException('User not found');
@@ -292,6 +297,7 @@ export class AuthService {
                 id: user.id,
                 name: user.name,
                 email: user.email,
+                username: user.username,
                 createdAt: user.createdAt,
             }
         };
