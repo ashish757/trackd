@@ -7,7 +7,7 @@ import {UserController} from "./user.controller";
 
 @Module({
     imports: [PrismaModule],
-    controllers: [UserController],
+    controllers: [UserController, UsersController],
     providers: [UserService, JwtService],
 })
 
