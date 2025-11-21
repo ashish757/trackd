@@ -1,14 +1,21 @@
-import { User, Mail, Calendar } from 'lucide-react';
+import {User, Mail, Calendar, Pencil} from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../redux/store';
+import {useState} from "react";
+import ChangeUsernameModal from "../components/ChangeUsernameModel";
 interface UserType {
     name?: string;
     email?: string;
+    username?: string;
     createdAt?: string;
 }
 export default function ProfilePage() {
     const user = useSelector((state: RootState) => state.auth.user) as UserType;
+    const [showModal, setShowModal] = useState(false);
+
+
+
     return (
         <>
             <Navbar />
@@ -26,9 +33,15 @@ export default function ProfilePage() {
                                     <h2 className="text-2xl font-bold text-gray-900 mb-1">
                                         {user?.name || 'User'}
                                     </h2>
-                                    <p className="text-gray-600">{user?.email || 'user@example.com'}</p>
+                                    <div>
+                                        <p className="text-gray-600 inline">{user?.username || 'user@example.com'}</p>
+                                        <p onClick={() => setShowModal(true)} className="text-primary ml-3 cursor-pointer inline-flex items-center hover:underline"> <Pencil className="h-4 w-4 mr-0.5 text-primary"/> change</p>
+                                    </div>
                                 </div>
                             </div>
+
+
+
                             {/* Profile Information */}
                             <div className="space-y-6">
                                 <div className="flex items-center gap-4">
@@ -73,6 +86,15 @@ export default function ProfilePage() {
                     </div>
                 </div>
             </main>
+
+
+
+            {/*change username model*/}
+            {
+                showModal ? <ChangeUsernameModal isOpen={showModal} onClose={() => setShowModal(false)} />: null
+
+            }
+
         </>
     );
 }
