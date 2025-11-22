@@ -1,4 +1,4 @@
-import {Req, Body, Controller, Post, UseGuards, InternalServerErrorException, HttpStatus} from "@nestjs/common";
+import {Req, Body, Controller, Post, UseGuards, InternalServerErrorException, HttpStatus, Get} from "@nestjs/common";
 import {ChangeUsernameDTO} from "./user.dto";
 import {AuthGuard} from "../../comman/guards/auth.guard";
 import {UserService} from "./user.service";
@@ -7,6 +7,18 @@ import {UserService} from "./user.service";
 @UseGuards(AuthGuard)
 export class UserController {
     constructor(private  readonly userService: UserService) {
+    }
+
+    @Get()
+    async getUser(@Req() req: Request & { user?: { sub: string } }) {
+        const res = await this.userService.getUser(req.user.sub);
+
+        return {
+            status: "success",
+            statusCode: HttpStatus.OK,
+            data: res
+        }
+
     }
 
     @Post('change-username')
@@ -35,6 +47,8 @@ export class UserController {
             ...res
         };
     }
+
+
 
 
 

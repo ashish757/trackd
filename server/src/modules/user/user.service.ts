@@ -8,6 +8,14 @@ export class UserService {
     constructor(private readonly prisma: PrismaService ) {
     }
 
+    async getUser(id: string){
+        const res = this.prisma.user.findUnique({where: {id}});
+
+        if(!res) throw new UnauthorizedException("CRITICAL: User not found");
+
+        return res;
+    }
+
     async checkUsername(username: string ) {
         const find = this.prisma.user.findUnique({ where: { username } });
 
