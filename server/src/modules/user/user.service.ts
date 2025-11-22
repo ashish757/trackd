@@ -38,14 +38,14 @@ export class UserService {
             where: {username: dto.username}
         })
 
-        if(exists) throw new UnauthorizedException("A user with same username already exists");
+        if(exists) throw new ConflictException("Username already exists");
 
         const res = await this.prisma.user.update({
             where: {id: userId},
             data: {username: dto.username},
         })
 
-        if(!res) throw new UnauthorizedException('Could not update username');
+        if(!res) throw new InternalServerErrorException('Could not update username');
 
         return {
             message: 'Username updated',
