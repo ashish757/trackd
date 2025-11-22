@@ -18,7 +18,6 @@ export const fetchFromTmdb = async (endpoint: string) => {
 
         const res = await fetch(url, options)
         const data = await res.json();
-        console.log("DATA FROM TMDB ", data);
         return {error: false, data};
     }
     catch(err) {
