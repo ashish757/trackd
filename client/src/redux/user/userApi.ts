@@ -13,8 +13,11 @@ interface SearchRes {
     data: Array<User>,
 }
 
-export const userApi = apiSlice.injectEndpoints({
+interface getUserRes {
+    data: User
+}
 
+export const userApi = apiSlice.injectEndpoints({
 
     endpoints: (builder) => ({
         searchUsers: builder.query<Array<User>, string>({
@@ -29,6 +32,21 @@ export const userApi = apiSlice.injectEndpoints({
             },
         }),
 
+        getUser: builder.query<User, void>({
+            query: () => ({
+                url: 'user',
+                method: 'GET',
+            }),
+
+
+
+            transformResponse: (response: getUserRes): User => {
+                console.log("FETCHED USER")
+                return response.data;
+            },
+
+        }),
+
         changeUsername: builder.mutation({
             query: (username) => ({
                     url: API_CONFIG.ENDPOINTS.USER.CHANGE_USERNAME,
@@ -41,4 +59,4 @@ export const userApi = apiSlice.injectEndpoints({
 });
 
 
-export const { useChangeUsernameMutation, useLazySearchUsersQuery } = userApi;
+export const { useChangeUsernameMutation, useLazySearchUsersQuery, useGetUserQuery } = userApi;

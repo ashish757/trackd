@@ -1,18 +1,16 @@
 import {User, Mail, Calendar, Pencil} from 'lucide-react';
 import Navbar from '../components/Navbar';
-import { useSelector } from 'react-redux';
-import type { RootState } from '../redux/store';
 import {useState} from "react";
 import ChangeUsernameModal from "../components/ChangeUsernameModel";
-interface UserType {
-    name?: string;
-    email?: string;
-    username?: string;
-    createdAt?: string;
-}
+import {useGetUserQuery} from "../redux/user/userApi.ts";
+
 export default function ProfilePage() {
-    const user = useSelector((state: RootState) => state.auth.user) as UserType;
+    const {data: user, isLoading, isError} = useGetUserQuery();
+
     const [showModal, setShowModal] = useState(false);
+
+
+    if(isError) return ("Error occurred");
 
 
 
@@ -24,7 +22,13 @@ export default function ProfilePage() {
                     <div className="max-w-4xl mx-auto">
                         <h1 className="text-4xl font-bold text-gray-900 mb-8">Profile</h1>
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-                            {/* Profile Header */}
+
+                            {isLoading ? (
+                                    'loading...'
+                                ) :
+                                    (
+                                        <>
+                                        {/*// Profile Header */}
                             <div className="flex items-center gap-6 mb-8 pb-8 border-b border-gray-200">
                                 <div className="w-24 h-24 rounded-full bg-blue-600 flex items-center justify-center text-white text-3xl font-bold">
                                     {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
@@ -42,7 +46,7 @@ export default function ProfilePage() {
 
 
 
-                            {/* Profile Information */}
+                             {/*// Profile Information */}
                             <div className="space-y-6">
                                 <div className="flex items-center gap-4">
                                     <User className="h-5 w-5 text-gray-400" />
@@ -81,9 +85,14 @@ export default function ProfilePage() {
                                     Edit Profile
                                 </button>
                             </div>
+                                        </>
+                            )}
                         </div>
 
+
+
                     </div>
+
                 </div>
             </main>
 
