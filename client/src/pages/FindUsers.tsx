@@ -1,0 +1,93 @@
+import Navbar from "../components/Navbar.tsx";
+import {Search} from "lucide-react";
+import {useEffect, useState} from "react";
+import {useLazySearchUsersQuery} from "../redux/user/userApi.ts";
+
+const FindUsers = () => {
+    const [searchQuery, setSearchQuery] = useState("");
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+    const [triggerSearch, {isLoading, isFetching, data}] = useLazySearchUsersQuery();
+    // isLoading -> fetched the data for the first time
+    // isFetching -> data already exists in cache , rtk is updating it
+
+
+    // Trigger API search when debounced query changes
+    useEffect(() => {
+            triggerSearch(debouncedSearchQuery).unwrap();
+    }, [debouncedSearchQuery, triggerSearch]);
+
+    // Debounce search query with 300ms delay
+    useEffect(() => {
+            const timer = setTimeout(() => {
+                setDebouncedSearchQuery(searchQuery);
+            }, 300); // 300ms debounce delay
+
+            return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    const users = data || [];
+    const isSearching = isLoading || isFetching;
+    return (
+        <>
+            <Navbar />
+            <main className="min-h-screen bg-gray-50">
+                <div className="container mx-auto px-4 py-8">
+
+                    {/* Hero Section with Search */}
+                    <div className="max-w-4xl mx-auto mb-12">
+                        <div className="text-center mb-8">
+                            <h1 className="text-4xl font-bold text-gray-900 mb-3">
+                                Discover People
+                            </h1>
+                            <p className="text-gray-600 text-lg">
+                                Or find people you already know
+                            </p>
+                        </div>
+
+                        {/* Search Bar */}
+                        <div className="relative">
+                                <div className="relative">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full pl-12 pr-12 py-4 text-lg border-1 border-gray-300 rounded-md focus:border-blue-500 focus:outline-none transition-colors shadow-xm"
+                                        autoComplete="off"
+                                    />
+
+                                </div>
+                        </div>
+
+
+                        {/*search results*/}
+                        <div className="flex flex-wrap gap-8 mt-10">
+                            {isSearching ? (
+                                <p className="text-sm text-gray-900">Loading</p>
+                            )
+                                :  users.length > 0 ? users.map(user => (
+                                <div className="flex gap-3 border-1 border-gray-300 p-4 rounded-sm hover:shadow-sm">
+                                    <div>
+                                        <span className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold">{user.name[0].toUpperCase()}</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-700 text-md">{user.username}</p>
+                                        <p className="text-gray-500 text-sm leading-3">{user.name}</p>
+                                    </div>
+                                </div>
+                            )) : searchQuery.length > 0 &&  (
+                                <p className="text-sm text-gray-900">No users found.</p>
+                                )
+                            }
+                        </div>
+
+                    </div>
+                </div>
+
+            </main>
+
+        </>
+    );
+};
+
+export default FindUsers;

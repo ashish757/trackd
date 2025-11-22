@@ -88,6 +88,16 @@ const Navbar = () => {
                             >
                                 My List
                             </Link>
+                            <Link
+                                to="/find"
+                                className={`text-sm font-medium transition-colors ${
+                                    isActive('/find')
+                                        ? 'text-blue-600'
+                                        : 'text-gray-700 hover:text-gray-900'
+                                }`}
+                            >
+                                Find
+                            </Link>
                         </div>
                     </div>
 

@@ -5,12 +5,13 @@ import SignupPage from "./pages/SignupPage.tsx";
 import {Routes, Route} from "react-router-dom";
 import Home from "./pages/Home.tsx";
 import DiscoverPage from "./pages/DiscoverPage.tsx";
-import MyListPage from "./pages/MyListPage/MyListPage.tsx";
+import MyListPage from "./pages/MyListPage.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
 import SettingsPage from "./pages/SettingsPage.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import LoadingSpinner from "./components/LoadingSpinner.tsx";
 import { useTokenRefreshOnLoad } from "./hooks/useTokenRefreshOnLoad.ts";
+import FindUsers from "./pages/FindUsers.tsx";
 
 function App() {
   // Automatically refresh access token on page load/reload
@@ -34,6 +35,7 @@ function App() {
                   <Route path="/my-list" element={<ProtectedRoute authorized={<MyListPage />} />} />
                   <Route path="/profile" element={<ProtectedRoute authorized={<ProfilePage />} />} />
                   <Route path="/settings" element={<ProtectedRoute authorized={<SettingsPage />} />} />
+                  <Route path="/find" element={<FindUsers />} />
                   <Route path="/signin" element={<SigninPage />} />
                   <Route path="/signup" element={<SignupPage />} />
               </Routes>

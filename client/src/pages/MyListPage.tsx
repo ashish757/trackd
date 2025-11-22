@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Film, Check, Clock } from 'lucide-react';
-import Navbar from '../../components/Navbar.tsx';
-import MovieCardWithDetails from '../../components/MovieCardWithDetails.tsx';
-import { useGetUserStatsQuery, useGetUserMoviesByStatusQuery, MovieStatus } from '../../redux/userMovie/userMovieApi';
+import Navbar from '../components/Navbar.tsx';
+import MovieCardWithDetails from '../components/MovieCardWithDetails.tsx';
+import { useGetUserStatsQuery, useGetUserMoviesByStatusQuery, MovieStatus } from '../redux/userMovie/userMovieApi.ts';
 
 export default function MyListPage() {
     const [activeTab, setActiveTab] = useState<'all' | 'watched' | 'planned'>('all');
