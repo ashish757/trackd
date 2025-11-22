@@ -1,4 +1,4 @@
-import {Injectable, UnauthorizedException} from "@nestjs/common";
+import {ConflictException, Injectable, InternalServerErrorException, UnauthorizedException} from "@nestjs/common";
 import {PrismaService} from "../prisma/prisma.service";
 import {ChangeUsernameDTO} from "./user.dto";
 
@@ -53,17 +53,29 @@ export class UserService {
     }
 
     async searchUsersByQuery(q: string) {
-        return  this.prisma.user.findMany({
-            where: {username: q},
-        })
+        const search = q.trim();
+
+
+        try {
+            const users = await this.prisma.$queryRaw`
+                SELECT * FROM users
+                WHERE username ILIKE ${'%' + search + '%'} 
+                OR name ILIKE ${'%' + search + '%'} 
+                ORDER BY 
+                    (username ILIKE ${'%' + search + '%'}) DESC,
+                    (name ILIKE ${'%' + search + '%'}) DESC; ;
+          `;
+
+            return users;
+        } catch (err) {
+            console.error("Raw SQL error:", err);
+            throw err; // or throw new InternalServerErrorException('DB error')
+        }
+
+
+        // return users;
 
 
     }
-
-
-
-
-
-
 
 }
