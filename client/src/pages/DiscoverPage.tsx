@@ -12,7 +12,6 @@ export default function DiscoverPage() {
     const [debouncedQuery, setDebouncedQuery] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
-    const abortControllerRef = useRef<AbortController | null>(null);
     const [showMovieInfo, setShowMovieInfo] = useState(false);
     const [infoMovie, setInfoMovie] = useState<Movie | null>(null);
 
@@ -41,13 +40,6 @@ export default function DiscoverPage() {
     useEffect(() => {
         if (debouncedQuery.length >= 2) {
             console.log('Triggering search for:', debouncedQuery);
-
-            // Cancel previous request if exists
-            if (abortControllerRef.current) {
-                abortControllerRef.current.abort();
-            }
-
-            abortControllerRef.current = new AbortController();
 
             triggerSearch(debouncedQuery);
             setShowSuggestions(true);
