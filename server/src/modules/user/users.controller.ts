@@ -1,4 +1,4 @@
-import {Controller, Get, HttpStatus, InternalServerErrorException, Query} from "@nestjs/common";
+import {Controller, Get, HttpStatus, Query} from "@nestjs/common";
 import {UserService} from "./user.service";
 
 @Controller('users')

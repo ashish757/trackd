@@ -57,7 +57,7 @@ export class UserService {
 
 
         try {
-            const users = await this.prisma.$queryRaw`
+            return await this.prisma.$queryRaw`
                 SELECT * FROM users
                 WHERE username ILIKE ${'%' + search + '%'} 
                 OR name ILIKE ${'%' + search + '%'} 
@@ -66,7 +66,6 @@ export class UserService {
                     (name ILIKE ${'%' + search + '%'}) DESC; ;
           `;
 
-            return users;
         } catch (err) {
             console.error("Raw SQL error:", err);
             throw err; // or throw new InternalServerErrorException('DB error')
