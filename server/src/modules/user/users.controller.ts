@@ -6,10 +6,16 @@ export class UsersController {
     constructor(private readonly userService: UserService) {}
 
     @Get("/search")
-    async searchUserByQuery(@Query('q') q: string) {
+    async searchUserByQuery(@Query('query') q: string) {
+        if(q.length == 0) return {
+            status: "success",
+            statusCode: HttpStatus.OK,
+            data: []
+
+        }
+
         const res =  await this.userService.searchUsersByQuery(q);
 
-        if(!res) throw new InternalServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
 
         return {
             status: "success",
