@@ -16,6 +16,26 @@ export class UserService {
         return res;
     }
 
+    async getUserByUsername(username: string){
+
+        const res = await this.prisma.user.findUnique(
+            {
+                where: {username: username},
+                select: {
+                    id: true,
+                    name: true,
+                    username: true,
+                    createdAt: true,
+                }
+
+            }
+        );
+
+        if(!res) throw new UnauthorizedException("invalid username");
+
+        return res;
+    }
+
     async checkUsername(username: string ) {
         const find = this.prisma.user.findUnique({ where: { username } });
 
