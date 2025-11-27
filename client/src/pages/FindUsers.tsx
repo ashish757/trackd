@@ -2,6 +2,7 @@ import Navbar from "../components/Navbar.tsx";
 import {Search} from "lucide-react";
 import {useEffect, useState} from "react";
 import {useLazySearchUsersQuery} from "../redux/user/userApi.ts";
+import {Link} from "react-router-dom";
 
 const FindUsers = () => {
     const [searchQuery, setSearchQuery] = useState("");
@@ -66,15 +67,18 @@ const FindUsers = () => {
                                 <p className="text-sm text-gray-900">Loading</p>
                             )
                                 :  users.length > 0 ? users.map(user => (
-                                <div className="flex gap-3 border-1 border-gray-300 p-4 rounded-sm hover:shadow-sm">
-                                    <div>
-                                        <span className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold">{user.name[0].toUpperCase()}</span>
-                                    </div>
-                                    <div>
-                                        <p className="text-gray-700 text-md">{user.username}</p>
-                                        <p className="text-gray-500 text-sm leading-3">{user.name}</p>
-                                    </div>
-                                </div>
+                                    <Link to={"/users/" + user.username} key={user.id}>
+                                        <div className="flex gap-3 border-1 border-gray-300 p-4 rounded-sm hover:shadow-sm">
+                                            <div>
+                                                <span className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold">{user.name[0].toUpperCase()}</span>
+                                            </div>
+                                            <div>
+                                                <p className="text-gray-700 text-md">{user.username}</p>
+                                                <p className="text-gray-500 text-sm leading-3">{user.name}</p>
+                                            </div>
+                                        </div>
+                                    </Link>
+
                             )) : searchQuery.length > 0 &&  (
                                 <p className="text-sm text-gray-900">No users found.</p>
                                 )

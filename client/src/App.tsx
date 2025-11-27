@@ -12,6 +12,7 @@ import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import LoadingSpinner from "./components/LoadingSpinner.tsx";
 import { useTokenRefreshOnLoad } from "./hooks/useTokenRefreshOnLoad.ts";
 import FindUsers from "./pages/FindUsers.tsx";
+import UserPage from "./pages/userPage.tsx";
 import NotFoundPage from "./pages/NotFoundPage.tsx";
 
 function App() {
@@ -36,7 +37,10 @@ function App() {
                   <Route path="/my-list" element={<ProtectedRoute authorized={<MyListPage />} />} />
                   <Route path="/profile" element={<ProtectedRoute authorized={<ProfilePage />} />} />
                   <Route path="/settings" element={<ProtectedRoute authorized={<SettingsPage />} />} />
+
                   <Route path="/find" element={<FindUsers />} />
+                  <Route path="/users/:username" element={<UserPage />} />
+
                   <Route path="/signin" element={<SigninPage />} />
                   <Route path="/signup" element={<SignupPage />} />
 
