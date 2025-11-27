@@ -12,6 +12,7 @@ import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import LoadingSpinner from "./components/LoadingSpinner.tsx";
 import { useTokenRefreshOnLoad } from "./hooks/useTokenRefreshOnLoad.ts";
 import FindUsers from "./pages/FindUsers.tsx";
+import NotFoundPage from "./pages/NotFoundPage.tsx";
 
 function App() {
   // Automatically refresh access token on page load/reload
@@ -38,6 +39,8 @@ function App() {
                   <Route path="/find" element={<FindUsers />} />
                   <Route path="/signin" element={<SigninPage />} />
                   <Route path="/signup" element={<SignupPage />} />
+
+                  <Route path="*" element={<NotFoundPage />} />
               </Routes>
           </main>
       </>
