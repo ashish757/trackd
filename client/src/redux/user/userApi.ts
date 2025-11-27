@@ -32,13 +32,23 @@ export const userApi = apiSlice.injectEndpoints({
             },
         }),
 
+        getUserById: builder.query<User, string>({
+            query: (username) => ({
+                url: `users/${username}`,
+                method: 'GET',
+            }),
+
+            transformResponse: (response: getUserRes): User => {
+                return response.data;
+            },
+
+        }),
+
         getUser: builder.query<User, void>({
             query: () => ({
                 url: 'user',
                 method: 'GET',
             }),
-
-
 
             transformResponse: (response: getUserRes): User => {
                 console.log("FETCHED USER")
@@ -59,4 +69,4 @@ export const userApi = apiSlice.injectEndpoints({
 });
 
 
-export const { useChangeUsernameMutation, useLazySearchUsersQuery, useGetUserQuery } = userApi;
+export const { useChangeUsernameMutation, useLazySearchUsersQuery, useGetUserQuery, useGetUserByIdQuery } = userApi;
