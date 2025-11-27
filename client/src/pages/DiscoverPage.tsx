@@ -1,4 +1,3 @@
-// filepath: /Users/ashish/Developer/Trackd/client/src/pages/DiscoverPage.tsx
 import { useState, useEffect, useRef } from 'react';
 import { Search, Film, X } from 'lucide-react';
 import Navbar from '../components/Navbar';
@@ -29,7 +28,7 @@ export default function DiscoverPage() {
         }
 
         const timer = setTimeout(() => {
-            console.log('⏰ Debounce complete, setting debounced query:', searchQuery);
+            console.log('Debounce complete, setting debounced query:', searchQuery);
             setDebouncedQuery(searchQuery);
         }, 300); // 300ms debounce delay
 
@@ -69,15 +68,6 @@ export default function DiscoverPage() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleSearchSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (searchQuery.trim()) {
-            console.log('Searching for:', searchQuery);
-            // TODO: Implement full search functionality
-            setShowSuggestions(false);
-        }
-    };
-
     const handleSuggestionClick = (movie: Movie) => {
         console.log('Selected movie:', movie);
         setSearchQuery(movie.title);
@@ -116,7 +106,6 @@ export default function DiscoverPage() {
 
                         {/* Search Bar */}
                         <div className="relative" ref={searchRef}>
-                            <form onSubmit={handleSearchSubmit}>
                                 <div className="relative">
                                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                                     <input
@@ -138,7 +127,6 @@ export default function DiscoverPage() {
                                         </button>
                                     )}
                                 </div>
-                            </form>
 
                             {/* Search Suggestions Dropdown */}
                             {showSuggestions && (
