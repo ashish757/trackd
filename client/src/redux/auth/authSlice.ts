@@ -1,9 +1,22 @@
 import { createSlice } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
 import { authApi } from "./authApi.ts";
 import { tokenManager } from "../../utils/tokenManager.ts";
 
-const initialState = {
-    user: {},
+interface User {
+    id: string;
+    name: string;
+    email?: string;
+    username: string;
+}
+
+interface AuthState {
+    user: User | null;
+    isAuthenticated: boolean;
+}
+
+const initialState: AuthState = {
+    user: null,
     isAuthenticated: tokenManager.isAuthenticated(),
 };
 
@@ -12,13 +25,13 @@ const authSlice = createSlice({
     initialState,
     reducers: {
         // Optional: for updating user details once logged in
-        setUser: (state, action) => {
+        setUser: (state, action: PayloadAction<User>) => {
             state.user = action.payload;
             state.isAuthenticated = true;
         },
         // Manual logout action
         logout: (state) => {
-            state.user = {};
+            state.user = null;
             state.isAuthenticated = false;
             tokenManager.clearAccessToken();
         }
@@ -32,7 +45,7 @@ const authSlice = createSlice({
             authApi.endpoints.login.matchFulfilled,
             (state, { payload }) => {
                 console.log(payload)
-                state.user = payload.data.user || {};
+                state.user = payload.data.user || null;
                 state.isAuthenticated = true;
 
                 // Store access token in memory (not localStorage!)
@@ -47,7 +60,7 @@ const authSlice = createSlice({
         builder.addMatcher(
             authApi.endpoints.register.matchFulfilled,
             (state, { payload }) => {
-                state.user = payload.data.user || {};
+                state.user = payload.data.user || null;
                 state.isAuthenticated = true;
 
                 // Store access token in memory
@@ -61,7 +74,7 @@ const authSlice = createSlice({
         builder.addMatcher(
             authApi.endpoints.logout.matchFulfilled,
             (state) => {
-                state.user = {};
+                state.user = null;
                 state.isAuthenticated = false;
 
                 // Clear access token from memory
