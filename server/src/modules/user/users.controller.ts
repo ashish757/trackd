@@ -1,5 +1,7 @@
-import {Controller, Get, HttpStatus, Param, Query} from "@nestjs/common";
+import {Controller, Get, Req, HttpStatus, Param, Query, UseGuards} from "@nestjs/common";
 import {UserService} from "./user.service";
+import {Request} from "express";
+import {OptionalAuthGuard} from "../../common/guards/optionalAuth.guard";
 
 @Controller('users')
 export class UsersController {
@@ -27,11 +29,11 @@ export class UsersController {
 
     }
 
-
+    @UseGuards(OptionalAuthGuard)
     @Get("/:username")
-    async getUserById(@Param('username') username: string) {
-        console.log("username", username);
-        const res = await this.userService.getUserByUsername(username);
+    async getUserById(@Param('username') username: string, @Req() req: Request & { user?: { sub: string } }) {
+        const currentUserId = req.user?.sub || null;
+        const res = await this.userService.getUserByUsername(username, currentUserId);
 
         return {
             status: "success",

@@ -16,24 +16,76 @@ export class UserService {
         return res;
     }
 
-    async getUserByUsername(username: string){
-
-        const res = await this.prisma.user.findUnique(
-            {
-                where: {username: username},
-                select: {
-                    id: true,
-                    name: true,
-                    username: true,
-                    createdAt: true,
-                }
-
+    async getUserByUsername(username: string, currentUserId?: string) {
+        const user = await this.prisma.user.findUnique({
+            where: { username: username },
+            select: {
+                id: true,
+                name: true,
+                username: true,
+                createdAt: true,
             }
-        );
+        });
 
-        if(!res) throw new UnauthorizedException("invalid username");
+        if (!user) throw new UnauthorizedException("invalid username");
 
-        return res;
+        // If authenticated, check relationship status
+        let relationshipStatus = null;
+        if (currentUserId && currentUserId !== user.id) {
+            relationshipStatus = await this.getRelationshipStatus(currentUserId, user.id);
+        }
+
+
+        return {
+            ...user,
+            relationshipStatus
+        };
+    }
+
+    async getRelationshipStatus(currentUserId: string, targetUserId: string) {
+        // Check if they are friends
+        const friendship = await this.prisma.friendship.findFirst({
+            where: {
+                OR: [
+                    { friend_a_id: currentUserId, friend_b_id: targetUserId },
+                    { friend_a_id: targetUserId, friend_b_id: currentUserId }
+                ]
+            }
+        });
+
+        if (friendship) {
+            return 'FOLLOWING';
+        }
+
+        // Check if current user sent a request to target user
+        const sentRequest = await this.prisma.friendRequest.findUnique({
+            where: {
+                senderId_receiverId: {
+                    senderId: currentUserId,
+                    receiverId: targetUserId
+                }
+            }
+        });
+
+        if (sentRequest) {
+            return 'REQUEST_SENT';
+        }
+
+        // Check if target user sent a request to current user
+        const receivedRequest = await this.prisma.friendRequest.findUnique({
+            where: {
+                senderId_receiverId: {
+                    senderId: targetUserId,
+                    receiverId: currentUserId
+                }
+            }
+        });
+
+        if (receivedRequest) {
+            return 'REQUEST_RECEIVED';
+        }
+
+        return 'NONE';
     }
 
     async checkUsername(username: string ) {
