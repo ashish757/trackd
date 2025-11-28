@@ -1,4 +1,5 @@
 import { useGetFriendRequestsQuery} from '../redux/friend/friendApi';
+import { Link } from 'react-router-dom';
 
 const Notifications = () => {
 
@@ -44,28 +45,20 @@ const Notifications = () => {
 
                             {/* Content */}
                             <div className="flex-1">
-                                <p className="text-sm font-medium text-gray-900">
-                                    {req.sender.name}
+                                <p className="text-sm text-gray-600">
+                                    Friend request from <strong className={"text-gray-900"}>{req.sender.name}</strong>
                                 </p>
 
                                 <p className="text-xs text-gray-500 mb-2">
                                     {timeAgo(req.createdAt)}
                                 </p>
 
-                                {/* Accept / Reject Buttons */}
                                 <div className="flex gap-2">
-                                    <button
-                                        // onClick={() => onAccept(req.id)}
+                                    <Link to={`/users/${req.sender.username}`}
                                         className="px-3 py-1 text-xs bg-green-500 text-white rounded-md hover:bg-green-600 transition"
                                     >
-                                        Accept
-                                    </button>
-                                    <button
-                                        // onClick={() => onReject(req.id)}
-                                        className="px-3 py-1 text-xs bg-red-500 text-white rounded-md hover:bg-red-600 transition"
-                                    >
-                                        Reject
-                                    </button>
+                                        View
+                                    </Link>
                                 </div>
 
                             </div>
