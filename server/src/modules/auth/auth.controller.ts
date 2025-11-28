@@ -12,7 +12,7 @@ import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { SendOtpDto, RegisterDto } from './DTO/register.dto';
 import { LoginDto } from './DTO/login.dto';
-import { AuthGuard } from '../../comman/guards/auth.guard';
+import { AuthGuard } from '../../common/guards/auth.guard';
 
 @Controller('auth')
 export class AuthController {

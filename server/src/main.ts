@@ -3,7 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 dotenv.config();
 import cookieParser from 'cookie-parser';
-import { AllExceptionsFilter } from './comman/filters/AllExceptionsFilter';
+import { AllExceptionsFilter } from './common/filters/AllExceptionsFilter';
 import { AppModule } from './app.module';
 
 async function bootstrap() {

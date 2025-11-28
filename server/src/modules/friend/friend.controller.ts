@@ -1,7 +1,7 @@
 import {Body, Get, Controller, HttpStatus, InternalServerErrorException, Post, Req, UseGuards} from "@nestjs/common";
 import {FriendRequestDto} from "./DTO/friend.dto";
 import FriendService from "./friend.service";
-import {AuthGuard} from "../../comman/guards/auth.guard";
+import {AuthGuard} from "../../common/guards/auth.guard";
 import {Request} from "express";
 
 @Controller('friend')

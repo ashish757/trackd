@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { UserMovieService } from './user-movie.service';
-import { AuthGuard } from '../../comman/guards/auth.guard';
+import { AuthGuard } from '../../common/guards/auth.guard';
 import { MarkMovieDto, RemoveMovieDto, MovieStatus } from './DTO/user-movie.dto';
 
 @Controller('user-movies')

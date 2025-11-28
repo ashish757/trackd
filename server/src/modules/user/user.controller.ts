@@ -1,6 +1,7 @@
 import {Req, Body, Controller, Post, UseGuards, InternalServerErrorException, HttpStatus, Get} from "@nestjs/common";
 import {ChangeUsernameDTO} from "./user.dto";
 import {AuthGuard} from "../../comman/guards/auth.guard";
+import {AuthGuard} from "../../common/guards/auth.guard";
 import {UserService} from "./user.service";
 
 @Controller('user')
