@@ -20,13 +20,14 @@ export default class FriendService {
 
     async getFriendRequests(id: string) {
 
-        const res = await this.prisma.friendRequest.findMany({
+        return this.prisma.friendRequest.findMany({
             where: { receiverId: id },
             include: {
                 sender: {
                     select: {
                         id: true,
-                        name: true
+                        name: true,
+                        username: true,
                     }
 
                 },
@@ -34,6 +35,5 @@ export default class FriendService {
             }
         })
 
-        return res;
     }
 }
