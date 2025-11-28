@@ -1,12 +1,198 @@
-import {ConflictException, Injectable, InternalServerErrorException, UnauthorizedException} from "@nestjs/common";
+import {ConflictException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException} from "@nestjs/common";
 import {PrismaService} from "../prisma/prisma.service";
-import {ChangeUsernameDTO} from "./user.dto";
+import {AcceptFollowRequestDTO, CancelFollowRequestDTO, ChangeUsernameDTO, FollowUserDTO, RejectFollowRequestDTO, UnfollowUserDTO} from "./user.dto";
 
 @Injectable()
 export class UserService {
 
     constructor(private readonly prisma: PrismaService ) {
     }
+
+    async followUser(followDto: FollowUserDTO, id: string) {
+        // check if a request already exists
+        const existingRequest = await this.prisma.friendRequest.findUnique({
+            where: {
+                senderId_receiverId: {
+                    senderId: id,
+                    receiverId: followDto.id,
+                }
+            }
+        });
+
+        if (existingRequest) {
+            // Request already exists, just return success
+            return { message: 'Friend request already sent' };
+        }
+
+        // Check if they are already friends
+        const existingFriendship = await this.prisma.friendship.findFirst({
+            where: {
+                OR: [
+                    { friend_a_id: id, friend_b_id: followDto.id },
+                    { friend_a_id: followDto.id, friend_b_id: id }
+                ]
+            }
+        });
+
+        if (existingFriendship) {
+            // Already friends
+            return { message: 'Already friends' };
+        }
+
+        // create a request
+        await this.prisma.friendRequest.create({
+            data: {
+                senderId: id,
+                receiverId: followDto.id,
+            }
+        });
+
+        return { message: 'Friend request sent successfully' };
+    }
+
+    async acceptFollowRequest(dto: AcceptFollowRequestDTO, currentUserId: string) {
+        // Find the friend request
+        const friendRequest = await this.prisma.friendRequest.findUnique({
+            where: {
+                senderId_receiverId: {
+                    senderId: dto.requesterId,
+                    receiverId: currentUserId,
+                }
+            }
+        });
+
+        if (!friendRequest) {
+            throw new NotFoundException('Friend request not found');
+        }
+
+        // Use a transaction to delete request and create friendship
+        await this.prisma.$transaction(async (tx) => {
+            // Delete the friend request
+            await tx.friendRequest.delete({
+                where: {
+                    senderId_receiverId: {
+                        senderId: dto.requesterId,
+                        receiverId: currentUserId,
+                    }
+                }
+            });
+
+            // Create friendship (ensure friend_a_id < friend_b_id for consistency)
+            const [friendAId, friendBId] = [dto.requesterId, currentUserId].sort();
+
+            await tx.friendship.create({
+                data: {
+                    friend_a_id: friendAId,
+                    friend_b_id: friendBId,
+                }
+            });
+        });
+
+        return { message: 'Friend request accepted successfully' };
+    }
+
+    async rejectFollowRequest(dto: RejectFollowRequestDTO, currentUserId: string) {
+        // Find the friend request
+        const friendRequest = await this.prisma.friendRequest.findUnique({
+            where: {
+                senderId_receiverId: {
+                    senderId: dto.requesterId,
+                    receiverId: currentUserId,
+                }
+            }
+        });
+
+        if (!friendRequest) {
+            throw new NotFoundException('Friend request not found');
+        }
+
+        // Delete the friend request
+        await this.prisma.friendRequest.delete({
+            where: {
+                senderId_receiverId: {
+                    senderId: dto.requesterId,
+                    receiverId: currentUserId,
+                }
+            }
+        });
+
+        return { message: 'Friend request rejected successfully' };
+    }
+
+    async cancelFollowRequest(dto: CancelFollowRequestDTO, currentUserId: string) {
+        // Find the friend request sent by current user
+        const friendRequest = await this.prisma.friendRequest.findUnique({
+            where: {
+                senderId_receiverId: {
+                    senderId: currentUserId,
+                    receiverId: dto.receiverId,
+                }
+            }
+        });
+
+        if (!friendRequest) {
+            throw new NotFoundException('Friend request not found');
+        }
+
+        // Delete the friend request
+        await this.prisma.friendRequest.delete({
+            where: {
+                senderId_receiverId: {
+                    senderId: currentUserId,
+                    receiverId: dto.receiverId,
+                }
+            }
+        });
+
+        return { message: 'Friend request cancelled successfully' };
+    }
+
+    async unfollowUser(dto: UnfollowUserDTO, currentUserId: string) {
+        // Find the friendship (could be in either direction due to sorted storage)
+        const friendship = await this.prisma.friendship.findFirst({
+            where: {
+                OR: [
+                    { friend_a_id: currentUserId, friend_b_id: dto.userId },
+                    { friend_a_id: dto.userId, friend_b_id: currentUserId }
+                ]
+            }
+        });
+
+        if (!friendship) {
+            throw new NotFoundException('Friendship not found');
+        }
+
+        // Delete the friendship
+        await this.prisma.friendship.delete({
+            where: {
+                id: friendship.id
+            }
+        });
+
+        return { message: 'Unfollowed successfully' };
+    }
+
+    // async unFollowUser(followDto: UnFollowUserDTO, id: string) {
+        // check if a request alredy exists
+
+        // delete the rquest
+        // const res =  await this.prisma.friendRequest.delete({
+        //     where: {
+        //         senderId: id,
+        //         receiverId: followDto.id,
+        //     }
+        //
+        // });
+
+        // const res = await this.prisma.friendRequest.delete({
+        //     where: {
+        //         senderId: id
+        //     }
+        //
+        //
+        // })
+    // }
+
 
     async getUser(id: string){
         const res = this.prisma.user.findUnique({where: {id}});
