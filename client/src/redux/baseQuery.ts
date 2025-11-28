@@ -3,6 +3,7 @@ import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolk
 import { tokenManager } from '../utils/tokenManager';
 import { API_CONFIG } from '../config/api.config';
 import { logout, setUser } from './auth/authSlice';
+import type { User } from './user/userApi';
 
 /**
  * Response structure from the refresh token endpoint
@@ -13,7 +14,7 @@ interface RefreshResponse {
     message: string;
     data: {
         accessToken: string;
-        user: object;
+        user: User;
     };
 }
 
