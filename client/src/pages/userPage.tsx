@@ -178,18 +178,25 @@ const UserPage = () => {
                                 (
                                     <>
                                         {/*// Profile Header */}
-                                        <div className="flex items-center gap-6 mb-8 pb-8 border-b border-gray-200">
-                                            <div className="w-24 h-24 rounded-full bg-blue-600 flex items-center justify-center text-white text-3xl font-bold">
-                                                {user?.name?.[0]?.toUpperCase() || 'U'}
-                                            </div>
-                                            <div>
-                                                <h2 className="text-2xl font-bold text-gray-900 mb-1">
-                                                    {user?.name || 'User'}
-                                                </h2>
+                                        <div className="flex items-center justify-between mb-8 pr-10 pb-8 border-b border-gray-200">
+                                            <div className="flex items-center gap-6">
+                                                <div className="w-24 h-24 rounded-full bg-blue-600 flex items-center justify-center text-white text-3xl font-bold">
+                                                    {user?.name?.[0]?.toUpperCase() || 'U'}
+                                                </div>
                                                 <div>
-                                                    <p className="text-gray-600 inline">{user?.username || 'user@example.com'}</p>
+                                                    <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                                                        {user?.name || 'User'}
+                                                    </h2>
+                                                    <div>
+                                                        <p className="text-gray-600 inline">{user?.username || 'user@example.com'}</p>
+                                                    </div>
                                                 </div>
                                             </div>
+
+                                            <div className="flex items-center gap-6">
+                                                <h1 className="text-xl">Friends {user?.friendCount}</h1>
+                                            </div>
+
                                         </div>
 
 

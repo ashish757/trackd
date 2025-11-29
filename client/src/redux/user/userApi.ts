@@ -7,7 +7,8 @@ export type User = {
     email?: string,
     username: string,
     createdAt?: string,
-    relationshipStatus?: 'NONE' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'FOLLOWING' | null;
+    relationshipStatus?: 'NONE' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'FOLLOWING' | null,
+    friendCount?: number,
 }
 
 interface SearchRes {
