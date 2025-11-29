@@ -7,6 +7,7 @@ export type NotificationsT =  Array<{
     sender: {
         id: string;
         name: string;
+        username: string;
     };
 }>;
 
