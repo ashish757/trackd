@@ -1,13 +1,140 @@
-import {Calendar, User} from "lucide-react";
-import {useGetUserByIdQuery} from "../redux/user/userApi.ts";
+import {Calendar, User, UserCheck, UserPlus, UserMinus, X} from "lucide-react";
+import {
+    useFollowUserMutation,
+    useGetUserByIdQuery,
+    useUnfollowUserMutation,
+    useCancelFollowRequestMutation,
+    useAcceptFollowRequestMutation,
+    useRejectFollowRequestMutation
+} from "../redux/user/userApi.ts";
 import {useParams} from "react-router-dom";
 import Navbar from "../components/Navbar.tsx";
+import {useSelector} from "react-redux";
+import type {RootState} from "../redux/store.ts";
 
 const UserPage = () => {
     const { username } = useParams();
-
+    const currentUser = useSelector((state: RootState) => state.auth.user);
 
     const {data: user, isLoading, isError, error} = useGetUserByIdQuery(username as string, { skip: !username });
+    const [followUser, { isLoading: isFollowLoading }] = useFollowUserMutation();
+    const [unfollowUser, { isLoading: isUnfollowLoading }] = useUnfollowUserMutation();
+    const [cancelFollowRequest, { isLoading: isCancelLoading }] = useCancelFollowRequestMutation();
+    const [acceptFollowRequest, { isLoading: isAcceptLoading }] = useAcceptFollowRequestMutation();
+    const [rejectFollowRequest, { isLoading: isRejectLoading }] = useRejectFollowRequestMutation();
+
+    const isAnyActionLoading = isFollowLoading || isUnfollowLoading || isCancelLoading || isAcceptLoading || isRejectLoading;
+
+    const handleFollowUser = async (id: string | undefined) => {
+        if (!id) return;
+        try {
+            console.log('Following user with id:', id, 'username:', username);
+            await followUser({ id, username }).unwrap();
+            console.log('Follow successful, cache should invalidate');
+        } catch (error) {
+            console.log('Follow error:', error);
+        }
+    }
+
+    const handleUnfollowUser = async (userId: string | undefined) => {
+        if (!userId) return;
+        try {
+            await unfollowUser({ userId, username }).unwrap();
+        } catch (error) {
+            console.log('Unfollow error:', error);
+        }
+    }
+
+    const handleCancelRequest = async (receiverId: string | undefined) => {
+        if (!receiverId) return;
+        try {
+            await cancelFollowRequest({ receiverId, username }).unwrap();
+        } catch (error) {
+            console.log('Cancel request error:', error);
+        }
+    }
+
+    const handleAcceptRequest = async (requesterId: string | undefined) => {
+        if (!requesterId) return;
+        try {
+            await acceptFollowRequest({ requesterId, username }).unwrap();
+        } catch (error) {
+            console.log('Accept request error:', error);
+        }
+    }
+
+    const handleRejectRequest = async (requesterId: string | undefined) => {
+        if (!requesterId) return;
+        try {
+            await rejectFollowRequest({ requesterId, username }).unwrap();
+        } catch (error) {
+            console.log('Reject request error:', error);
+        }
+    }
+
+    const getFollowButtonContent = () => {
+        const status = user?.relationshipStatus;
+
+        if (isAnyActionLoading) {
+            return {
+                text: 'Loading...',
+                icon: null,
+                disabled: true,
+                className: 'px-6 py-2 bg-gray-400 text-white font-medium rounded-lg cursor-not-allowed',
+                action: () => {},
+                showSecondaryButton: false
+            };
+        }
+
+        switch (status) {
+            case 'FOLLOWING':
+                return {
+                    text: 'Unfollow',
+                    icon: <UserMinus className="h-4 w-4" />,
+                    disabled: false,
+                    className: 'px-6 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2',
+                    action: () => handleUnfollowUser(user?.id),
+                    showSecondaryButton: false
+                };
+            case 'REQUEST_SENT':
+                return {
+                    text: 'Cancel Request',
+                    icon: <X className="h-4 w-4" />,
+                    disabled: false,
+                    className: 'px-6 py-2 bg-yellow-600 text-white font-medium rounded-lg hover:bg-yellow-700 transition-colors flex items-center gap-2',
+                    action: () => handleCancelRequest(user?.id),
+                    showSecondaryButton: false
+                };
+            case 'REQUEST_RECEIVED':
+                return {
+                    text: 'Accept Request',
+                    icon: <UserCheck className="h-4 w-4" />,
+                    disabled: false,
+                    className: 'px-6 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2',
+                    action: () => handleAcceptRequest(user?.id),
+                    showSecondaryButton: true,
+                    secondaryButton: {
+                        text: 'Reject',
+                        icon: <X className="h-4 w-4" />,
+                        className: 'px-6 py-2 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2',
+                        action: () => handleRejectRequest(user?.id)
+                    }
+                };
+            case 'NONE':
+            default:
+                return {
+                    text: 'Follow',
+                    icon: <UserPlus className="h-4 w-4" />,
+                    disabled: false,
+                    className: 'px-6 py-2 bg-primary text-white font-medium rounded-lg hover:bg-violet-800 transition-colors flex items-center gap-2',
+                    action: () => handleFollowUser(user?.id),
+                    showSecondaryButton: false
+                };
+        }
+    };
+
+    const followButtonContent = getFollowButtonContent();
+    const isCurrentUser = currentUser?.id === user?.id;
 
 
     return (
@@ -86,16 +213,31 @@ const UserPage = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                        {/* Edit Button */}
-
-                                        <div className="flex gap-3 mt-8 pt-8 border-t border-gray-200">
-                                            <button className="px-6 py-2 bg-primary text-white font-medium rounded-lg hover:bg-violet-800 transition-colors">
-                                                Follow
-                                            </button>
-                                            <button className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
-                                                View Lists
-                                            </button>
-                                        </div>
+                                        {/* Action Buttons */}
+                                        {!isCurrentUser && (
+                                            <div className="flex gap-3 mt-8 pt-8 border-t border-gray-200">
+                                                <button
+                                                    onClick={followButtonContent.action}
+                                                    className={followButtonContent.className}
+                                                    disabled={followButtonContent.disabled}
+                                                >
+                                                    {followButtonContent.icon}
+                                                    {followButtonContent.text}
+                                                </button>
+                                                {followButtonContent.showSecondaryButton && followButtonContent.secondaryButton && (
+                                                    <button
+                                                        onClick={followButtonContent.secondaryButton.action}
+                                                        className={followButtonContent.secondaryButton.className}
+                                                    >
+                                                        {followButtonContent.secondaryButton.icon}
+                                                        {followButtonContent.secondaryButton.text}
+                                                    </button>
+                                                )}
+                                                <button className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                                    View Lists
+                                                </button>
+                                            </div>
+                                        )}
                                     </>
                                 )}
                         </div>
