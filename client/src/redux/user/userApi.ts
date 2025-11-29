@@ -33,6 +33,103 @@ export const userApi = apiSlice.injectEndpoints({
             },
         }),
 
+        followUser: builder.mutation<void, { id: string; username?: string }>({
+            query: ({ id }) => ({
+                url: 'user/follow',
+                method: "POST",
+                body: {
+                    id: id
+                }
+            }),
+            invalidatesTags: (_result, _error, { id, username }) => {
+                const tags: Array<{ type: 'User'; id: string }> = [
+                    { type: 'User' as const, id },
+                ];
+                if (username) {
+                    tags.push({ type: 'User' as const, id: username });
+                }
+                console.log('Invalidating tags:', tags);
+                return tags;
+            }
+        }),
+
+        unfollowUser: builder.mutation<void, { userId: string; username?: string }>({
+            query: ({ userId }) => ({
+                url: 'user/unfollow',
+                method: "POST",
+                body: {
+                    userId: userId
+                }
+            }),
+            invalidatesTags: (_result, _error, { userId, username }) => {
+                const tags: Array<{ type: 'User'; id: string }> = [
+                    { type: 'User' as const, id: userId },
+                ];
+                if (username) {
+                    tags.push({ type: 'User' as const, id: username });
+                }
+                return tags;
+            }
+        }),
+
+        cancelFollowRequest: builder.mutation<void, { receiverId: string; username?: string }>({
+            query: ({ receiverId }) => ({
+                url: 'user/follow/cancel',
+                method: "POST",
+                body: {
+                    receiverId: receiverId
+                }
+            }),
+            invalidatesTags: (_result, _error, { receiverId, username }) => {
+                const tags: Array<{ type: 'User'; id: string }> = [
+                    { type: 'User' as const, id: receiverId },
+                ];
+                if (username) {
+                    tags.push({ type: 'User' as const, id: username });
+                }
+                return tags;
+            }
+        }),
+
+        acceptFollowRequest: builder.mutation<void, { requesterId: string; username?: string }>({
+            query: ({ requesterId }) => ({
+                url: 'user/follow/accept',
+                method: "POST",
+                body: {
+                    requesterId: requesterId
+                }
+            }),
+            invalidatesTags: (_result, _error, { requesterId, username }) => {
+                const tags: Array<{ type: 'User'; id: string }> = [
+                    { type: 'User' as const, id: requesterId },
+                ];
+                if (username) {
+                    tags.push({ type: 'User' as const, id: username });
+                }
+                return tags;
+            }
+        }),
+
+        rejectFollowRequest: builder.mutation<void, { requesterId: string; username?: string }>({
+            query: ({ requesterId }) => ({
+                url: 'user/follow/reject',
+                method: "POST",
+                body: {
+                    requesterId: requesterId
+                }
+            }),
+            invalidatesTags: (_result, _error, { requesterId, username }) => {
+                const tags: Array<{ type: 'User'; id: string }> = [
+                    { type: 'User' as const, id: requesterId },
+                ];
+                if (username) {
+                    tags.push({ type: 'User' as const, id: username });
+                }
+                return tags;
+            }
+        }),
+
+
         getUserById: builder.query<User, string>({
             query: (username) => {
                 return {
@@ -79,4 +176,14 @@ export const userApi = apiSlice.injectEndpoints({
 });
 
 
-export const { useChangeUsernameMutation, useLazySearchUsersQuery, useGetUserQuery, useGetUserByIdQuery } = userApi;
+export const {
+    useChangeUsernameMutation,
+    useLazySearchUsersQuery,
+    useGetUserQuery,
+    useGetUserByIdQuery,
+    useFollowUserMutation,
+    useUnfollowUserMutation,
+    useCancelFollowRequestMutation,
+    useAcceptFollowRequestMutation,
+    useRejectFollowRequestMutation
+} = userApi;
