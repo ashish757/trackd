@@ -86,6 +86,10 @@ export class UserService {
                     friend_b_id: friendBId,
                 }
             });
+
+                await tx.user.update({ where: { id: friendAId }, data: { friendCount: { increment: 1 } } });
+                await tx.user.update({ where: { id: friendBId }, data: { friendCount: { increment: 1 } } });
+
         });
 
         return { message: 'Friend request accepted successfully' };
@@ -162,12 +166,18 @@ export class UserService {
             throw new NotFoundException('Friendship not found');
         }
 
-        // Delete the friendship
-        await this.prisma.friendship.delete({
-            where: {
-                id: friendship.id
-            }
-        });
+        await this.prisma.$transaction(async (tx) => {
+            await tx.friendship.delete({
+                where: {
+                    id: friendship.id
+                }
+            });
+
+             await tx.user.update({ where: { id: currentUserId }, data: { friendCount: { decrement: 1 } } });
+             await tx.user.update({ where: { id: dto.userId }, data: { friendCount: { decrement: 1 } } });
+
+        })
+
 
         return { message: 'Unfollowed successfully' };
     }
@@ -210,6 +220,7 @@ export class UserService {
                 name: true,
                 username: true,
                 createdAt: true,
+                friendCount: true,
             }
         });
 
