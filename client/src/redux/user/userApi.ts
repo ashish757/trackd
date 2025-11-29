@@ -7,6 +7,7 @@ export type User = {
     email?: string,
     username: string,
     createdAt?: string,
+    relationshipStatus?: 'NONE' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'FOLLOWING' | null;
 }
 
 interface SearchRes {
@@ -33,15 +34,24 @@ export const userApi = apiSlice.injectEndpoints({
         }),
 
         getUserById: builder.query<User, string>({
-            query: (username) => ({
-                url: `users/${username}`,
-                method: 'GET',
-            }),
+            query: (username) => {
+                return {
+                    url: `users/${username}`,
+                    method: 'GET',
+                };
+            },
 
             transformResponse: (response: getUserRes): User => {
                 return response.data;
             },
 
+            providesTags: (result, _, username) => {
+                const tags = result ? [
+                    { type: 'User' as const, id: result.id },
+                    { type: 'User' as const, id: username }
+                ] : [];
+                return tags;
+            }
         }),
 
         getUser: builder.query<User, void>({
