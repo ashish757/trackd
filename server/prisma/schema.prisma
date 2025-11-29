@@ -19,6 +19,7 @@ model User {
   name          String?
   createdAt     DateTime @default(now())
   refreshTokens String[] @default([])
+  friendCount   Int      @default(0)
 
   UserMovieData  UserMovieData[]
   UserMovieEntry UserMovieEntry[]
