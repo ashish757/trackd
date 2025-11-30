@@ -205,7 +205,19 @@ export class UserService {
 
 
     async getUser(id: string){
-        const res = this.prisma.user.findUnique({where: {id}});
+        const res = this.prisma.user.findUnique({
+            where: {id},
+            select: {
+                id: true,
+                name: true,
+                username: true,
+                email: true,
+                createdAt: true,
+                friendCount: true,
+                passwordChangedAt: true,
+            }
+
+            });
 
         if(!res) throw new UnauthorizedException("CRITICAL: User not found");
 
