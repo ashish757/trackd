@@ -10,6 +10,7 @@ import { JwtService } from './jwt.service';
 import * as bcrypt from 'bcrypt';
 import {generateOTP} from "../../utils/otp";
 import {sendEmail} from "../../utils/email";
+import {PASSWORD_SALT_ROUNDS} from "../../utils/constants";
 const htmlTemplate = (name, otp) => `
   <div style="
     font-family: Arial, sans-serif;
@@ -86,7 +87,7 @@ export class AuthService {
             refreshToken: this.jwtService.sign(payload, 'refresh', { expiresIn: '7d' }),
         }
 
-        const hashed = await this.getHash(data.refreshToken);
+        const hashed = await bcrypt.hash(data.refreshToken, PASSWORD_SALT_ROUNDS);
 
         // Limit refresh tokens to max 5 (cleanup old tokens)
         let updatedTokens = [...user.refreshTokens];
@@ -110,10 +111,6 @@ export class AuthService {
             }};
     }
 
-    async getHash(password: string): Promise<string> {
-        const saltRounds = 12; // higher = more secure but slower
-        return await bcrypt.hash(password, saltRounds);
-    }
 
     async sendOtp(otpDto: SendOtpDto) {
         // Generate random 6-digit OTP
@@ -131,7 +128,7 @@ export class AuthService {
 
         const payload = {
             email: otpDto.email,
-            otp: await this.getHash(otp),
+            otp: await bcrypt.hash(otp, PASSWORD_SALT_ROUNDS),
         };
         return { otpToken: this.jwtService.sign(payload, 'otp') };
     }
@@ -145,7 +142,7 @@ export class AuthService {
 
         if (existing) throw new ConflictException('Email already in use');
 
-        const hashed = await this.getHash(dto.password);
+        const hashed = await bcrypt.hash(dto.password, PASSWORD_SALT_ROUNDS);
 
         // Create user first to get the ID
         const user = await this.prisma.user.create({
@@ -165,7 +162,7 @@ export class AuthService {
             { expiresIn: '7d' },
         );
 
-        const hashedToken = await this.getHash(refreshToken);
+        const hashedToken = await bcrypt.hash(refreshToken, PASSWORD_SALT_ROUNDS);
 
         // Update user with refresh token
         await this.prisma.user.update({
@@ -272,7 +269,7 @@ export class AuthService {
         );
 
         // Update refresh tokens in DB (token rotation)
-        const hashedNewToken = await this.getHash(newRefreshToken);
+        const hashedNewToken = await bcrypt.hash(newRefreshToken, PASSWORD_SALT_ROUNDS);
 
         // Remove old refresh token and add new one
         const updatedTokens: string[] = [];
