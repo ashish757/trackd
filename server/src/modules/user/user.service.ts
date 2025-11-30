@@ -1,11 +1,20 @@
-import {ConflictException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException} from "@nestjs/common";
+import {
+    BadRequestException,
+    ConflictException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException
+} from "@nestjs/common";
 import {PrismaService} from "../prisma/prisma.service";
-import {AcceptFollowRequestDTO, CancelFollowRequestDTO, ChangeUsernameDTO, FollowUserDTO, RejectFollowRequestDTO, UnfollowUserDTO} from "./user.dto";
+import {
+    AcceptFollowRequestDTO, CancelFollowRequestDTO,
+    ChangePasswordDTO, ChangeUsernameDTO, FollowUserDTO, RejectFollowRequestDTO, UnfollowUserDTO
+} from "./user.dto";
+import * as bcrypt from 'bcrypt';
+import {JwtService} from "../auth/jwt.service";
+import {PASSWORD_SALT_ROUNDS} from "../../utils/constants";
 
 @Injectable()
 export class UserService {
 
-    constructor(private readonly prisma: PrismaService ) {
+    constructor(private readonly prisma: PrismaService, private readonly jwtService: JwtService) {
     }
 
     async followUser(followDto: FollowUserDTO, id: string) {
@@ -336,7 +345,6 @@ export class UserService {
     async searchUsersByQuery(q: string) {
         const search = q.trim();
 
-
         try {
             return await this.prisma.$queryRaw`
                 SELECT * FROM users
@@ -351,11 +359,56 @@ export class UserService {
             console.error("Raw SQL error:", err);
             throw err; // or throw new InternalServerErrorException('DB error')
         }
+    }
 
 
-        // return users;
+    async changePassword(dto: ChangePasswordDTO, userId: string) {
+        if (dto.currentPassword === dto.newPassword) {
+            throw new BadRequestException('New password cannot be the same as the current password');
+        }
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+
+        if (!user) throw new NotFoundException('User not found');
+
+        // compare old password
+        const verify = await bcrypt.compare(dto.currentPassword, user.password);
+        if (!verify) {
+            throw new BadRequestException('Current password is incorrect');
+        }
+
+        const newPasswordHash = await bcrypt.hash(dto.newPassword, 10);
+
+        // issue a new access token and invalidate all refresh tokens
+        // Generate new tokens
+        const accessToken = this.jwtService.sign(
+            { sub: user.id, email: user.email }, 'access',
+            { expiresIn: '15min' },
+        );
+        const newRefreshToken = this.jwtService.sign(
+            { sub: user.id, email: user.email }, 'refresh',
+            { expiresIn: '7d' },
+        );
+
+        const hashedNewToken = await bcrypt.hash(newRefreshToken, PASSWORD_SALT_ROUNDS);
+
+        const updatedUser = await this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                password: newPasswordHash,
+                refreshTokens: [hashedNewToken],
+                passwordChangedAt: new Date(),
+            }
+        });
+
+        if (!updatedUser) throw new InternalServerErrorException('Could not update password');
 
 
+        // send a mail to user notifying password change
+
+        return {
+            accessToken,
+            refreshToken: newRefreshToken,
+        };
     }
 
 }

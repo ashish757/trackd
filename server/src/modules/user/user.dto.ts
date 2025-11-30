@@ -28,3 +28,8 @@ export class UnfollowUserDTO {
     @IsString() @IsNotEmpty() userId: string;
 }
 
+export class ChangePasswordDTO {
+    @IsString() @IsNotEmpty() currentPassword: string;
+    @IsString() @IsNotEmpty() newPassword: string;
+}
+
