@@ -20,6 +20,7 @@ model User {
   createdAt     DateTime @default(now())
   refreshTokens String[] @default([])
   friendCount   Int      @default(0)
+  passwordChangedAt DateTime?
 
   UserMovieData  UserMovieData[]
   UserMovieEntry UserMovieEntry[]
