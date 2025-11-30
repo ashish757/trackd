@@ -9,6 +9,7 @@ export type User = {
     createdAt?: string,
     relationshipStatus?: 'NONE' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'FOLLOWING' | null,
     friendCount?: number,
+    passwordChangedAt: string
 }
 
 interface SearchRes {
@@ -163,6 +164,19 @@ export const userApi = apiSlice.injectEndpoints({
                 return response.data;
             },
 
+            providesTags: (result) => {
+                const tags: Array<{ type: 'User'; id: string }> = [
+                    { type: 'User' as const, id: 'CURRENT_USER' }
+                ];
+                if (result) {
+                    tags.push(
+                        { type: 'User' as const, id: result.id },
+                        { type: 'User' as const, id: result.username }
+                    );
+                }
+                return tags;
+            }
+
         }),
 
         changeUsername: builder.mutation({
@@ -170,8 +184,25 @@ export const userApi = apiSlice.injectEndpoints({
                     url: API_CONFIG.ENDPOINTS.USER.CHANGE_USERNAME,
                     method: 'POST',
                     body: {username},
-            })
+            }),
+
+            invalidatesTags: () => {
+                // Invalidate the current user query to refetch with new username
+                return [
+                    { type: 'User' as const, id: 'CURRENT_USER' }
+                ];
+            }
+
         }),
+
+        changePassword: builder.mutation<{ data: {accessToken: string} }, { currentPassword: string; newPassword: string }>({
+            query: ({currentPassword, newPassword}) => ({
+                url: API_CONFIG.ENDPOINTS.USER.CHANGE_PASSWORD,
+                method: 'POST',
+                body: {currentPassword, newPassword},
+            }),
+        })
+
     }),
 
 });
@@ -179,6 +210,7 @@ export const userApi = apiSlice.injectEndpoints({
 
 export const {
     useChangeUsernameMutation,
+    useChangePasswordMutation,
     useLazySearchUsersQuery,
     useGetUserQuery,
     useGetUserByIdQuery,

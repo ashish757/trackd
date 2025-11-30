@@ -1,7 +1,13 @@
 import { Lock, Eye, Globe } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import { useState } from 'react';
+import ChangePassword from "../components/ChangePassword.tsx";
+import {useGetUserQuery} from "../redux/user/userApi.ts";
 
 export default function SettingsPage() {
+    const [showChangePassword, setShowChangePassword] = useState(false);
+    const {data: user} = useGetUserQuery();
+
     return (
         <>
             <Navbar />
@@ -35,10 +41,19 @@ export default function SettingsPage() {
                                 <div className="flex items-center gap-3 mb-4">
                                     <Lock className="h-6 w-6 text-gray-700" />
                                     <h2 className="text-xl font-semibold text-gray-900">Security</h2>
+                                    {
+                                        // user?.passwordChangedAt &&
+                                        <h3 className="text-sm text-gray-500"> Password was last changed on {user?.passwordChangedAt}</h3>
+                                    }
                                 </div>
-                                <button className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
-                                    Change Password
-                                </button>
+                                {
+                                    showChangePassword ?  <ChangePassword /> : (
+                                        <button onClick={() => setShowChangePassword(true)} className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                            Change Password
+                                        </button>
+                                    )
+                                }
+
                             </div>
 
                             {/* Preferences */}

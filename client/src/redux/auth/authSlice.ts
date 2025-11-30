@@ -2,13 +2,8 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { authApi } from "./authApi.ts";
 import { tokenManager } from "../../utils/tokenManager.ts";
+import type { User } from "../user/userApi.ts";
 
-interface User {
-    id: string;
-    name: string;
-    email?: string;
-    username: string;
-}
 
 interface AuthState {
     user: User | null;

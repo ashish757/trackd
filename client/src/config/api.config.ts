@@ -26,6 +26,7 @@ export const API_CONFIG = {
         },
         USER: {
             CHANGE_USERNAME: 'user/change-username',
+            CHANGE_PASSWORD: 'user/change-password',
         },
         MOVIE: {
             SEARCH: '/movies/search',
