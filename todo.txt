@@ -1,8 +1,6 @@
-CLIENT
-TODO: personal movie section
-
-
-
-SERVER
-TODO: Implement SMTP server for OTP
+TODO: forget password feature
+TODO: update user information
+TODO: social media login
+TODO: profile picture upload
+TODO: lazy username check
 TODO: Rate Limiting

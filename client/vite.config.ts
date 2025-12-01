@@ -9,4 +9,14 @@ export default defineConfig({
       react(),
       tailwindcss()
   ],
+  server: {
+    host: '0.0.0.0', // Required for Docker
+    port: 5173,
+    watch: {
+      usePolling: true, // Required for Docker on some systems
+    },
+    hmr: {
+      clientPort: 5173, // Hot Module Replacement
+    }
+  }
 })
