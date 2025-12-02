@@ -30,8 +30,10 @@ model User {
   receivedFriendRequests FriendRequest[] @relation("ReceivedRequests")
   friendshipsA           Friendship[]    @relation("FriendA")
   friendshipsB           Friendship[]    @relation("FriendB")
+  PasswordResetToken PasswordResetToken? @relation("UserPasswordResetTokens")
 
   @@map("users")
+
 }
 
 //
@@ -118,4 +120,16 @@ model Friendship {
   @@unique([friend_a_id, friend_b_id])
   @@index([friend_a_id])
   @@index([friend_b_id])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String  @unique()
+  token     String   @unique()
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  user User @relation("UserPasswordResetTokens", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_tokens")
 }
