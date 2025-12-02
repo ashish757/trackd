@@ -52,9 +52,26 @@ export const authApi = apiSlice.injectEndpoints({
             }),
         }),
 
+        forgetPassword: builder.mutation({
+            query: (forgetPasswordData) => ({
+                url: API_CONFIG.ENDPOINTS.AUTH.FORGET_PASSWORD,
+                method: 'POST',
+                body: forgetPasswordData,
+            }),
+        }),
+
+        resetPassword: builder.mutation({
+            query: (resetPasswordData) => ({
+                url: API_CONFIG.ENDPOINTS.AUTH.RESET_PASSWORD,
+                method: 'POST',
+                body: resetPasswordData,
+            }),
+
+        }),
+
 
     }),
 });
 
 // Auto-generated hooks for your components
-export const { useLoginMutation, useRequestOtpMutation, useRegisterMutation , useVerifyOtpMutation, useLogoutMutation} = authApi;
+export const { useLoginMutation, useRequestOtpMutation, useRegisterMutation , useVerifyOtpMutation, useLogoutMutation, useForgetPasswordMutation, useResetPasswordMutation} = authApi;

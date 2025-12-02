@@ -23,6 +23,8 @@ export const API_CONFIG = {
             SEND_OTP: '/auth/send-otp',
             VERIFY_OTP: '/auth/verify-otp',
             REFRESH_TOKEN: '/auth/refresh-token',
+            FORGET_PASSWORD: '/auth/forget-password',
+            RESET_PASSWORD: '/auth/reset-password',
         },
         USER: {
             CHANGE_USERNAME: 'user/change-username',
