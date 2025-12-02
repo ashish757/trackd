@@ -1,9 +1,9 @@
 import {
     Injectable,
     UnauthorizedException,
-    ConflictException,
+    ConflictException, InternalServerErrorException, BadRequestException,
 } from '@nestjs/common';
-import { VerifyOtpDto, SendOtpDto, UserDto } from './DTO/register.dto';
+import {VerifyOtpDto, SendOtpDto, UserDto, ForgetPasswordDto, ResetPasswordDto} from './DTO/register.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './DTO/login.dto';
 import { JwtService } from './jwt.service';
@@ -11,6 +11,8 @@ import * as bcrypt from 'bcrypt';
 import {generateOTP} from "../../utils/otp";
 import {sendEmail} from "../../utils/email";
 import {PASSWORD_SALT_ROUNDS} from "../../utils/constants";
+import {randomBytes} from "node:crypto";
+
 const htmlTemplate = (name, otp) => `
   <div style="
     font-family: Arial, sans-serif;
@@ -52,6 +54,47 @@ const htmlTemplate = (name, otp) => `
   </div>
 `;
 
+const passwordResetTemplate = (name, resetLink) => `
+  <div style="
+    font-family: Arial, sans-serif;
+    background-color: #f6f9fc;
+    padding: 20px;
+    border-radius: 10px;
+    color: #333;
+  ">
+    <div style="
+      max-width: 500px;
+      margin: auto;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 25px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    ">
+      <h2 style="text-align:center; color:#2563eb;">Trackd - Password Reset</h2>
+      <p>Hello <strong>${name}</strong>,</p>
+      <p>We received a request to reset your password. Click the link below to set a new password:</p>
+      
+      <div style="text-align:center; margin: 20px 0;">
+        <a href="${resetLink}" style="
+          background-color: #2563eb;
+          color: #ffffff;
+          padding: 12px 20px;
+          text-decoration: none;
+          border-radius: 5px;
+          font-weight: bold;
+        ">Reset Password</a>
+      </div>
+      
+      <p>This link is valid for <strong>15 minutes</strong>.</p>
+      <p>If you didn’t request a password reset, please ignore this email.</p>
+      
+      <hr style="margin-top:25px; border:none; border-top:1px solid #eee;">
+      <p style="text-align:center; font-size:12px; color:#777;">
+        © ${new Date().getFullYear()} Trackd. All rights reserved.
+      </p>
+    </div>
+  </div>
+`;
 
 @Injectable()
 export class AuthService {
@@ -59,6 +102,68 @@ export class AuthService {
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
     ) {}
+
+    async forgetPassword(dto: ForgetPasswordDto) {
+        const user = await this.prisma.user.findUnique({
+            where: { email: dto.email },
+            select: { id: true, name: true, email: true, username: true },
+        });
+
+        if(user) {
+            const token = randomBytes(32).toString('hex'); // 64 characters
+
+            const hashedToken = await bcrypt.hash(token, PASSWORD_SALT_ROUNDS);
+
+            const resetLink = `http://localhost:5173/forget-password?token=${token}`;
+
+            // await sendEmail(user.email, 'Trackd - Password Reset', `Hello <strong> ${user.name} </strong>, <br/> <br/> Click <a href="${resetLink}">here</a> to reset your password. This link is valid for 15 minutes.`);
+            await sendEmail("ashishrajsingh75@gmail.com", "Password Reset - Trackd", passwordResetTemplate(user.name, resetLink));
+
+
+           const res=  await this.prisma.passwordResetToken.create({
+                data: {
+                    user: {
+                        connect: { id: user.id },
+                    },
+                    token: hashedToken,
+                    expiresAt: new Date(Date.now() + 1000 * 60 * 15), // 15 mins
+                },
+            });
+
+
+            if(!res) throw new InternalServerErrorException("Failed to create password reset token");
+
+        }
+
+        return { message: 'Password reset link sent' };
+    }
+
+    async resetPassword(dto: ResetPasswordDto) {
+        const hash = await bcrypt.hash(dto.token, PASSWORD_SALT_ROUNDS);
+
+        const token = await this.prisma.passwordResetToken.findUnique({
+            where: { token: hash },
+            include: { user: true },
+        });
+
+        if (!token || token.expiresAt < new Date()) {
+            throw new BadRequestException('Invalid or expired password reset token');
+        }
+
+        const newHashedPassword = await bcrypt.hash(dto.newPassword, PASSWORD_SALT_ROUNDS);
+
+        await this.prisma.user.update({
+            where: { id: token.user.id },
+            data: { password: newHashedPassword, refreshTokens: [] },
+        });
+
+        // Delete the used password reset token
+        await this.prisma.passwordResetToken.delete({
+            where: { id: token.id },
+        });
+
+        return { message: 'Password has been reset successfully' };
+    }
 
     async login(dto: LoginDto): Promise<{ accessToken: string; refreshToken: string, user: object }> {
         // verify user from DB

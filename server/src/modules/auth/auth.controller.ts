@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
-import { SendOtpDto, RegisterDto } from './DTO/register.dto';
+import {SendOtpDto, RegisterDto, ForgetPasswordDto, ResetPasswordDto} from './DTO/register.dto';
 import { LoginDto } from './DTO/login.dto';
 import { AuthGuard } from '../../common/guards/auth.guard';
 
@@ -40,6 +40,28 @@ export class AuthController {
                 accessToken: data.accessToken,
                user: data.user,
             },
+        };
+    }
+
+    @Post('/forget-password')
+    async forgetPassword(@Body() req: ForgetPasswordDto) {
+        const data = await this.authService.forgetPassword(req);
+
+        return {
+            status: 'success',
+            statusCode: HttpStatus.OK,
+            data: data,
+        };
+    }
+
+    @Post('/reset-password')
+    async resetPassword(@Body() req: ResetPasswordDto) {
+        const data = await this.authService.resetPassword(req);
+
+        return {
+            status: 'success',
+            statusCode: HttpStatus.OK,
+            data: data,
         };
     }
 
