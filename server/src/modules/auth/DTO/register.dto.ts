@@ -27,3 +27,11 @@ export class VerifyOtpDto {
 export class OtpTestDto {
     @IsEmail() email: string;
 }
+export class ForgetPasswordDto {
+    @IsEmail() email: string;
+}
+
+export class ResetPasswordDto {
+    @IsString() newPassword: string;
+    @IsString() token: string
+}
