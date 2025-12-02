@@ -14,6 +14,8 @@ import { useTokenRefreshOnLoad } from "./hooks/useTokenRefreshOnLoad.ts";
 import FindUsers from "./pages/FindUsers.tsx";
 import UserPage from "./pages/userPage.tsx";
 import NotFoundPage from "./pages/NotFoundPage.tsx";
+import ForgetPassword from "./pages/ForgetPassword.tsx";
+import ResetPassword from "./pages/ResetPassword.tsx";
 
 function App() {
   // Automatically refresh access token on page load/reload
@@ -37,6 +39,8 @@ function App() {
                   <Route path="/my-list" element={<ProtectedRoute authorized={<MyListPage />} />} />
                   <Route path="/profile" element={<ProtectedRoute authorized={<ProfilePage />} />} />
                   <Route path="/settings" element={<ProtectedRoute authorized={<SettingsPage />} />} />
+                  <Route path="/forget-password" element={<ForgetPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
 
                   <Route path="/find" element={<FindUsers />} />
                   <Route path="/users/:username" element={<UserPage />} />
