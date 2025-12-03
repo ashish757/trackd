@@ -17,6 +17,7 @@ model User {
   email         String   @unique()
   password      String
   name          String?
+  bio           String?
   createdAt     DateTime @default(now())
   refreshTokens String[] @default([])
   friendCount   Int      @default(0)
@@ -30,7 +31,7 @@ model User {
   receivedFriendRequests FriendRequest[] @relation("ReceivedRequests")
   friendshipsA           Friendship[]    @relation("FriendA")
   friendshipsB           Friendship[]    @relation("FriendB")
-  PasswordResetToken PasswordResetToken? @relation("UserPasswordResetTokens")
+  PasswordResetToken PasswordResetToken? @relation("UserPasswordResetToken")
 
   @@map("users")
 
@@ -129,7 +130,7 @@ model PasswordResetToken {
   createdAt DateTime @default(now())
   expiresAt DateTime
 
-  user User @relation("UserPasswordResetTokens", fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation("UserPasswordResetToken", fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("password_reset_tokens")
 }

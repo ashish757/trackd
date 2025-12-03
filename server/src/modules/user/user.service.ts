@@ -4,7 +4,7 @@ import {
 } from "@nestjs/common";
 import {PrismaService} from "../prisma/prisma.service";
 import {
-    AcceptFollowRequestDTO, CancelFollowRequestDTO,
+    AcceptFollowRequestDTO, CancelFollowRequestDTO, ChangeBioDTO, ChangeNameDTO,
     ChangePasswordDTO, ChangeUsernameDTO, FollowUserDTO, RejectFollowRequestDTO, UnfollowUserDTO
 } from "./user.dto";
 import * as bcrypt from 'bcrypt';
@@ -224,6 +224,7 @@ export class UserService {
                 createdAt: true,
                 friendCount: true,
                 passwordChangedAt: true,
+                bio: true
             }
 
             });
@@ -242,6 +243,7 @@ export class UserService {
                 username: true,
                 createdAt: true,
                 friendCount: true,
+                bio: true
             }
         });
 
@@ -408,6 +410,35 @@ export class UserService {
         return {
             accessToken,
             refreshToken: newRefreshToken,
+        };
+    }
+
+
+    async changeName(dto: ChangeNameDTO, userId: string) {
+        const res = await this.prisma.user.update({
+            where: {id: userId},
+            data: {name: dto.name},
+        })
+
+        if(!res) throw new NotFoundException('User not found');
+
+        return {
+            message: 'Name updated successfully',
+            name: res.name,
+        };
+    }
+
+    async changeBio(dto: ChangeBioDTO, userId: string) {
+        const res = await this.prisma.user.update({
+            where: {id: userId},
+            data: {bio: dto.bio},
+        })
+
+        if(!res) throw new NotFoundException('User not found');
+
+        return {
+            message: 'Name updated successfully',
+            name: res.name,
         };
     }
 

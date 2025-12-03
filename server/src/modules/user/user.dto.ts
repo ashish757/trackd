@@ -1,14 +1,6 @@
 import {IsNotEmpty, IsString} from "class-validator";
 
-export class ChangeUsernameDTO {
-    @IsString() @IsNotEmpty() username: string;
-}
-
 export class FollowUserDTO {
-    @IsString() @IsNotEmpty() id: string;
-}
-
-export class UnFollowUserDTO {
     @IsString() @IsNotEmpty() id: string;
 }
 
@@ -33,3 +25,15 @@ export class ChangePasswordDTO {
     @IsString() @IsNotEmpty() newPassword: string;
 }
 
+
+export class ChangeUsernameDTO {
+    @IsString() @IsNotEmpty() username: string;
+}
+
+export class ChangeNameDTO {
+    @IsString() @IsNotEmpty() name: string;
+}
+
+export class ChangeBioDTO {
+    @IsString() @IsNotEmpty() bio: string;
+}

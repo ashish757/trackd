@@ -5,6 +5,7 @@ export type User = {
     id: string;
     name: string,
     email?: string,
+    bio?: string,
     username: string,
     createdAt?: string,
     relationshipStatus?: 'NONE' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'FOLLOWING' | null,
@@ -145,11 +146,10 @@ export const userApi = apiSlice.injectEndpoints({
             },
 
             providesTags: (result, _, username) => {
-                const tags = result ? [
+                return  result ? [
                     { type: 'User' as const, id: result.id },
                     { type: 'User' as const, id: username }
                 ] : [];
-                return tags;
             }
         }),
 
@@ -195,6 +195,38 @@ export const userApi = apiSlice.injectEndpoints({
 
         }),
 
+        changeName: builder.mutation({
+           query: (name)=> ({
+               url: API_CONFIG.ENDPOINTS.USER.CHANGE_NAME,
+               method: 'POST',
+               body: {name},
+           }),
+
+            invalidatesTags: () => {
+                // Invalidate the current user query to refetch with new username
+                return [
+                    { type: 'User' as const, id: 'CURRENT_USER' }
+                ];
+            }
+
+        }),
+
+        changeBio: builder.mutation({
+            query: (bio)=> ({
+                url: API_CONFIG.ENDPOINTS.USER.CHANGE_BIO,
+                method: 'POST',
+                body: {bio},
+            }),
+
+            invalidatesTags: () => {
+                // Invalidate the current user query to refetch with new username
+                return [
+                    { type: 'User' as const, id: 'CURRENT_USER' }
+                ];
+            }
+
+        }),
+
         changePassword: builder.mutation<{ data: {accessToken: string} }, { currentPassword: string; newPassword: string }>({
             query: ({currentPassword, newPassword}) => ({
                 url: API_CONFIG.ENDPOINTS.USER.CHANGE_PASSWORD,
@@ -210,6 +242,8 @@ export const userApi = apiSlice.injectEndpoints({
 
 export const {
     useChangeUsernameMutation,
+    useChangeBioMutation,
+    useChangeNameMutation,
     useChangePasswordMutation,
     useLazySearchUsersQuery,
     useGetUserQuery,

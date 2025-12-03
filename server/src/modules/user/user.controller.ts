@@ -1,6 +1,6 @@
 import {Req, Res, Body, Controller, Post, UseGuards, InternalServerErrorException, HttpStatus, Get} from "@nestjs/common";
 import {
-    AcceptFollowRequestDTO, CancelFollowRequestDTO,
+    AcceptFollowRequestDTO, CancelFollowRequestDTO, ChangeBioDTO, ChangeNameDTO,
     ChangePasswordDTO, ChangeUsernameDTO, FollowUserDTO, RejectFollowRequestDTO, UnfollowUserDTO
 } from "./user.dto";
 import {AuthGuard} from "../../common/guards/auth.guard";
@@ -83,7 +83,7 @@ export class UserController {
         }
     }
 
-    @Post('/change-password')
+    @Post('/change/password')
     async changePassword(@Req() req: AuthenticatedRequest, @Body() changePasswordDto: ChangePasswordDTO, @Res({ passthrough: true }) res: Response ) {
         const userId = req.user.sub;
         const data = await this.userService.changePassword(changePasswordDto, userId);
@@ -108,23 +108,6 @@ export class UserController {
         }
     }
 
-
-
-
-    @Post('change-username')
-    async searchUserByQuery(@Req() req: Request & { body : ChangeUsernameDTO, user?: { sub: string; email: string }} ) {
-        const userId = req.user.sub;
-        const res = await this.userService.changeUsername(userId, req.body);
-
-        if(!res) throw new InternalServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
-
-        return {
-            status: 'success',
-            statusCode: HttpStatus.OK,
-            message: res.message,
-        }
-    }
-
     @Post("check-username")
     async checkUsername(@Body() body: {username: string}) {
         const res = this.userService.checkUsername(body.username);
@@ -136,6 +119,47 @@ export class UserController {
             statusCode: HttpStatus.OK,
             ...res
         };
+    }
+
+
+    @Post('change/username')
+    async searchUserByQuery(@Req() req: Request & { body : ChangeUsernameDTO, user?: { sub: string; email: string }} ) {
+        const userId = req.user.sub;
+        const res = await this.userService.changeUsername(userId, req.body);
+
+        if(!res) throw new InternalServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
+
+        return {
+            status: 'success',
+            statusCode: HttpStatus.OK,
+            data: res,
+        }
+    }
+
+    @Post('change/name')
+    async changeName(@Req() req: AuthenticatedRequest, @Body() dto: ChangeNameDTO ) {
+        const userId = req.user.sub;
+        const res = await this.userService.changeName(dto, userId);
+
+        return {
+            status: 'success',
+            statusCode: HttpStatus.OK,
+            data: res,
+        }
+
+    }
+
+
+    @Post('change/bio')
+    async changeBio(@Req() req: AuthenticatedRequest, @Body() dto: ChangeBioDTO ) {
+        const userId = req.user.sub;
+        const res = await this.userService.changeBio(dto, userId);
+
+        return {
+            status: 'success',
+            statusCode: HttpStatus.OK,
+            data: res,
+        }
     }
 
 
