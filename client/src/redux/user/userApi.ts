@@ -146,11 +146,10 @@ export const userApi = apiSlice.injectEndpoints({
             },
 
             providesTags: (result, _, username) => {
-                const tags = result ? [
+                return  result ? [
                     { type: 'User' as const, id: result.id },
                     { type: 'User' as const, id: username }
                 ] : [];
-                return tags;
             }
         }),
 
