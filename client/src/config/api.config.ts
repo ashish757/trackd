@@ -27,8 +27,12 @@ export const API_CONFIG = {
             RESET_PASSWORD: '/auth/reset-password',
         },
         USER: {
-            CHANGE_USERNAME: 'user/change-username',
-            CHANGE_PASSWORD: 'user/change-password',
+            CHANGE_NAME: '/user/change/name',
+            CHANGE_BIO: '/user/change/bio',
+            CHANGE_EMAIL: '/user/change/email',
+            CHANGE_USERNAME: '/user/change/username',
+            CHANGE_PASSWORD: 'user/change/password',
+
         },
         MOVIE: {
             SEARCH: '/movies/search',
