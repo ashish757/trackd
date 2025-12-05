@@ -69,9 +69,27 @@ export const authApi = apiSlice.injectEndpoints({
 
         }),
 
+        requestChangeEmail: builder.mutation({
+            query: (newEmail) => ({
+                url: API_CONFIG.ENDPOINTS.AUTH.REQUEST_CHANGE_EMAIL,
+                method: 'POST',
+                body: newEmail,
+            }),
+        }),
+
+
+        changeEmail: builder.mutation({
+            query: (token) => ({
+                url: API_CONFIG.ENDPOINTS.AUTH.CHANGE_EMAIL,
+                method: 'POST',
+                body: token,
+            }),
+        })
+
+
 
     }),
 });
 
 // Auto-generated hooks for your components
-export const { useLoginMutation, useRequestOtpMutation, useRegisterMutation , useVerifyOtpMutation, useLogoutMutation, useForgetPasswordMutation, useResetPasswordMutation} = authApi;
+export const { useLoginMutation, useRequestOtpMutation, useRegisterMutation , useVerifyOtpMutation, useLogoutMutation, useForgetPasswordMutation, useResetPasswordMutation, useChangeEmailMutation, useRequestChangeEmailMutation} = authApi;
