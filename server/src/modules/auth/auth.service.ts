@@ -3,7 +3,14 @@ import {
     UnauthorizedException,
     ConflictException, InternalServerErrorException, BadRequestException,
 } from '@nestjs/common';
-import {VerifyOtpDto, SendOtpDto, UserDto, ForgetPasswordDto, ResetPasswordDto} from './DTO/register.dto';
+import {
+    VerifyOtpDto,
+    SendOtpDto,
+    UserDto,
+    ForgetPasswordDto,
+    ResetPasswordDto,
+    ChangeEmailRequestDto, ChangeEmailDto
+} from './DTO/register.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './DTO/login.dto';
 import { JwtService } from './jwt.service';
@@ -12,107 +19,28 @@ import {generateOTP} from "../../utils/otp";
 import {sendEmail} from "../../utils/email";
 import {PASSWORD_SALT_ROUNDS} from "../../utils/constants";
 import {randomBytes} from "node:crypto";
-
-const htmlTemplate = (name, otp) => `
-  <div style="
-    font-family: Arial, sans-serif;
-    background-color: #f6f9fc;
-    padding: 20px;
-    border-radius: 10px;
-    color: #333;
-  ">
-    <div style="
-      max-width: 500px;
-      margin: auto;
-      background: #ffffff;
-      border-radius: 8px;
-      padding: 25px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    ">
-      <h2 style="text-align:center; color:#2563eb;">Trackd - Email Verification</h2>
-      <p>Hello <strong>${name}</strong>,</p>
-      <p>Here’s your one-time verification code:</p>
-      
-      <div style="
-        text-align:center;
-        font-size: 28px;
-        font-weight: bold;
-        color: #2563eb;
-        margin: 15px 0;
-      ">
-        ${otp}
-      </div>
-      
-      <p>This code is valid for <strong>3 minutes</strong>.</p>
-      <p>If you didn’t request this, please ignore this email.</p>
-      
-      <hr style="margin-top:25px; border:none; border-top:1px solid #eee;">
-      <p style="text-align:center; font-size:12px; color:#777;">
-        © ${new Date().getFullYear()} Trackd. All rights reserved.
-      </p>
-    </div>
-  </div>
-`;
-
-const passwordResetTemplate = (name, resetLink) => `
-  <div style="
-    font-family: Arial, sans-serif;
-    background-color: #f6f9fc;
-    padding: 20px;
-    border-radius: 10px;
-    color: #333;
-  ">
-    <div style="
-      max-width: 500px;
-      margin: auto;
-      background: #ffffff;
-      border-radius: 8px;
-      padding: 25px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    ">
-      <h2 style="text-align:center; color:#2563eb;">Trackd - Password Reset</h2>
-      <p>Hello <strong>${name}</strong>,</p>
-      <p>We received a request to reset your password. Click the link below to set a new password:</p>
-      
-      <div style="text-align:center; margin: 20px 0;">
-        <a href="${resetLink}" style="
-          background-color: #2563eb;
-          color: #ffffff;
-          padding: 12px 20px;
-          text-decoration: none;
-          border-radius: 5px;
-          font-weight: bold;
-        ">Reset Password</a>
-      </div>
-      
-      <p>This link is valid for <strong>15 minutes</strong>.</p>
-      <p>If you didn’t request a password reset, please ignore this email.</p>
-      
-      <hr style="margin-top:25px; border:none; border-top:1px solid #eee;">
-      <p style="text-align:center; font-size:12px; color:#777;">
-        © ${new Date().getFullYear()} Trackd. All rights reserved.
-      </p>
-    </div>
-  </div>
-`;
+import crypto from 'crypto';
+import {changeEmailRequestTemplate, otpTemplate, passwordResetTemplate} from "../../utils/emailTemplates";
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
-    ) {}
+    ) { }
 
     async forgetPassword(dto: ForgetPasswordDto) {
         const user = await this.prisma.user.findUnique({
-            where: { email: dto.email },
-            select: { id: true, name: true, email: true, username: true },
+            where: {email: dto.email},
+            select: {id: true, name: true, email: true, username: true},
         });
 
-        if(user) {
+        if (user) {
             const token = randomBytes(32).toString('hex'); // 64 characters
 
-            const hashedToken = await bcrypt.hash(token, PASSWORD_SALT_ROUNDS);
+            // const hashedToken = await bcrypt.hash(token, PASSWORD_SALT_ROUNDS);
+            // Create Hash to store in DB
+            const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
             const resetLink = `http://localhost:5173/forget-password?token=${token}`;
 
@@ -120,10 +48,10 @@ export class AuthService {
             await sendEmail("ashishrajsingh75@gmail.com", "Password Reset - Trackd", passwordResetTemplate(user.name, resetLink));
 
 
-           const res=  await this.prisma.passwordResetToken.create({
+            const res = await this.prisma.passwordResetToken.create({
                 data: {
                     user: {
-                        connect: { id: user.id },
+                        connect: {id: user.id},
                     },
                     token: hashedToken,
                     expiresAt: new Date(Date.now() + 1000 * 60 * 15), // 15 mins
@@ -131,19 +59,23 @@ export class AuthService {
             });
 
 
-            if(!res) throw new InternalServerErrorException("Failed to create password reset token");
+            if (!res) throw new InternalServerErrorException("Failed to create password reset token");
 
         }
 
-        return { message: 'Password reset link sent' };
+        return {message: 'Password reset link sent'};
     }
 
     async resetPassword(dto: ResetPasswordDto) {
-        const hash = await bcrypt.hash(dto.token, PASSWORD_SALT_ROUNDS);
+
+        const hash = crypto
+            .createHash('sha256')
+            .update(dto.token)
+            .digest('hex');
 
         const token = await this.prisma.passwordResetToken.findUnique({
-            where: { token: hash },
-            include: { user: true },
+            where: {token: hash},
+            include: {user: true},
         });
 
         if (!token || token.expiresAt < new Date()) {
@@ -153,22 +85,22 @@ export class AuthService {
         const newHashedPassword = await bcrypt.hash(dto.newPassword, PASSWORD_SALT_ROUNDS);
 
         await this.prisma.user.update({
-            where: { id: token.user.id },
-            data: { password: newHashedPassword, refreshTokens: [] },
+            where: {id: token.user.id},
+            data: {password: newHashedPassword, refreshTokens: []},
         });
 
         // Delete the used password reset token
         await this.prisma.passwordResetToken.delete({
-            where: { id: token.id },
+            where: {id: token.id},
         });
 
-        return { message: 'Password has been reset successfully' };
+        return {message: 'Password has been reset successfully'};
     }
 
     async login(dto: LoginDto): Promise<{ accessToken: string; refreshToken: string, user: object }> {
         // verify user from DB
         const user = await this.prisma.user.findUnique({
-            where: { email: dto.email },
+            where: {email: dto.email},
             select: {
                 id: true,
                 name: true,
@@ -184,12 +116,12 @@ export class AuthService {
 
         const valid = await bcrypt.compare(dto.password, user.password);
         if (!valid) throw new UnauthorizedException('Invalid password');
-        const payload = { sub: user.id, email: user.email };
+        const payload = {sub: user.id, email: user.email};
 
 
         const data = {
-            accessToken: this.jwtService.sign(payload, 'access', { expiresIn: '15min' }),
-            refreshToken: this.jwtService.sign(payload, 'refresh', { expiresIn: '7d' }),
+            accessToken: this.jwtService.sign(payload, 'access', {expiresIn: '15min'}),
+            refreshToken: this.jwtService.sign(payload, 'refresh', {expiresIn: '7d'}),
         }
 
         const hashed = await bcrypt.hash(data.refreshToken, PASSWORD_SALT_ROUNDS);
@@ -203,19 +135,20 @@ export class AuthService {
         updatedTokens.push(hashed);
 
         await this.prisma.user.update({
-            where: { id: user.id },
-            data: { refreshTokens: updatedTokens },
+            where: {id: user.id},
+            data: {refreshTokens: updatedTokens},
         });
 
-        return {...data, user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
+        return {
+            ...data, user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
                 username: user.username,
-            createdAt: user.createdAt,
-            }};
+                createdAt: user.createdAt,
+            }
+        };
     }
-
 
     async sendOtp(otpDto: SendOtpDto) {
         // Generate random 6-digit OTP
@@ -226,7 +159,7 @@ export class AuthService {
         await sendEmail(
             "ashishrajsingh75@gmail.com",
             'Trackd - Email Verification Code',
-            htmlTemplate(otpDto.name, otp)
+            otpTemplate(otpDto.name, otp)
         );
 
         console.log('OTP:', otp);
@@ -235,14 +168,14 @@ export class AuthService {
             email: otpDto.email,
             otp: await bcrypt.hash(otp, PASSWORD_SALT_ROUNDS),
         };
-        return { otpToken: this.jwtService.sign(payload, 'otp') };
+        return {otpToken: this.jwtService.sign(payload, 'otp')};
     }
 
     async register(dto: UserDto) {
         // save user to DB
         const existing = await this.prisma.user.findUnique({
-            where: { email:  dto.email },
-            select: { id: true, },
+            where: {email: dto.email},
+            select: {id: true,},
         });
 
         if (existing) throw new ConflictException('Email already in use');
@@ -259,35 +192,37 @@ export class AuthService {
         });
 
         const accessToken = this.jwtService.sign(
-            { sub: user.id, email: user.email }, 'access',
-            { expiresIn: '15min' },
+            {sub: user.id, email: user.email}, 'access',
+            {expiresIn: '15min'},
         );
         const refreshToken = this.jwtService.sign(
-            { sub: user.id, email: user.email }, 'refresh',
-            { expiresIn: '7d' },
+            {sub: user.id, email: user.email}, 'refresh',
+            {expiresIn: '7d'},
         );
 
         const hashedToken = await bcrypt.hash(refreshToken, PASSWORD_SALT_ROUNDS);
 
         // Update user with refresh token
         await this.prisma.user.update({
-            where: { id: user.id },
-            data: { refreshTokens: [hashedToken] },
+            where: {id: user.id},
+            data: {refreshTokens: [hashedToken]},
         });
 
-        return { accessToken, refreshToken, user: {
+        return {
+            accessToken, refreshToken, user: {
                 id: user.id,
                 name: user.name,
                 email: user.email,
                 username: user.username,
                 createdAt: user.createdAt,
-            }};
+            }
+        };
     }
 
     async logout(userId: string, refreshToken: string): Promise<void> {
         const user = await this.prisma.user.findUnique({
-            where: { id: userId },
-            select: { refreshTokens: true },
+            where: {id: userId},
+            select: {refreshTokens: true},
         });
 
         if (!user) return;
@@ -302,22 +237,14 @@ export class AuthService {
         }
 
         await this.prisma.user.update({
-            where: { id: userId },
-            data: { refreshTokens: updatedTokens },
-        });
-    }
-
-    async logoutAll(userId: string): Promise<void> {
-        // Invalidate all refresh tokens for a user
-        await this.prisma.user.update({
-            where: { id: userId },
-            data: { refreshTokens: [] },
+            where: {id: userId},
+            data: {refreshTokens: updatedTokens},
         });
     }
 
     async verifyOtp(verifyOtpDto: VerifyOtpDto) {
         // verify OTP code (this is just a placeholder)
-        const { payload, error } = this.jwtService.verify(
+        const {payload, error} = this.jwtService.verify(
             verifyOtpDto.token, 'otp'
         ) as { error: boolean | object; payload: VerifyOtpDto };
         if (error) return false;
@@ -328,7 +255,7 @@ export class AuthService {
     }
 
     async refreshToken(refreshToken: string) {
-        const { payload, error } = this.jwtService.verify(
+        const {payload, error} = this.jwtService.verify(
             refreshToken, 'refresh',
         ) as { error: boolean | object; payload: any };
 
@@ -336,11 +263,13 @@ export class AuthService {
 
         // check if refresh token is in DB
         const user = await this.prisma.user.findUnique({
-            where: { id: payload.sub },
-            select: { id: true, name: true,
+            where: {id: payload.sub},
+            select: {
+                id: true, name: true,
                 email: true,
                 username: true,
-                createdAt: true, refreshTokens: true },
+                createdAt: true, refreshTokens: true
+            },
         });
         if (!user) throw new UnauthorizedException('User not found');
 
@@ -357,20 +286,20 @@ export class AuthService {
             // SECURITY: Possible token reuse attack - invalidate all tokens
             console.warn(`Token reuse detected for user ${user.id}. Invalidating all tokens.`);
             await this.prisma.user.update({
-                where: { id: user.id },
-                data: { refreshTokens: [] },
+                where: {id: user.id},
+                data: {refreshTokens: []},
             });
             throw new UnauthorizedException('Refresh token not found or has been revoked. All sessions invalidated.');
         }
 
         // Generate new tokens
         const accessToken = this.jwtService.sign(
-            { sub: user.id, email: user.email }, 'access',
-            { expiresIn: '15min' },
+            {sub: user.id, email: user.email}, 'access',
+            {expiresIn: '15min'},
         );
         const newRefreshToken = this.jwtService.sign(
-            { sub: user.id, email: user.email }, 'refresh',
-            { expiresIn: '7d' },
+            {sub: user.id, email: user.email}, 'refresh',
+            {expiresIn: '7d'},
         );
 
         // Update refresh tokens in DB (token rotation)
@@ -387,8 +316,8 @@ export class AuthService {
         updatedTokens.push(hashedNewToken);
 
         await this.prisma.user.update({
-            where: { id: user.id },
-            data: { refreshTokens: updatedTokens },
+            where: {id: user.id},
+            data: {refreshTokens: updatedTokens},
         });
 
 
@@ -404,4 +333,135 @@ export class AuthService {
             }
         };
     }
+
+    async changeEmailRequest(dto: ChangeEmailRequestDto, userId: string, email: string) {
+        if (dto.newEmail == email) {
+            return {
+                message: 'Email already taken',
+            };
+        }
+
+        const userExists = await this.prisma.user.findUnique({
+            where: {email: dto.newEmail},
+            select: {id: true, name: true},
+        });
+
+        if (userExists) throw new ConflictException('Email already in use');
+
+        // send mail to older email
+        sendEmail('ashishrajsingh75@gmail.com', 'Trackd - Email Change Request', changeEmailRequestTemplate(userExists.name, dto.newEmail));
+
+        const token = randomBytes(32).toString('hex'); // 64 characters
+
+        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+
+        const changeLink = `http://localhost:5173/change/email?token=${token}`;
+
+        // send link to new email
+        await sendEmail("ashishrajsingh75@gmail.com", "Email Change - Trackd", changeLink);
+
+        // create or update email change request per user
+        const res = await this.prisma.emailChangeTable.upsert({
+            where: {
+                userId: userId,
+            },
+            update: {
+                newEmail: dto.newEmail,
+                token: hashedToken,
+                createdAt: new Date(),
+                expiresAt: new Date(Date.now() + 1000 * 60 * 15), // 15 mins
+            },
+            create: {
+                userId: userId,
+                newEmail: dto.newEmail,
+                token: hashedToken,
+                expiresAt: new Date(Date.now() + 1000 * 60 * 15),
+            },
+        });
+
+
+        if (!res) throw new InternalServerErrorException("Failed to create password reset token");
+
+    }
+
+    async changeEmail(dto: ChangeEmailDto, isAuthenticated: boolean, userId: string) {
+        const hashedToken = crypto
+            .createHash('sha256')
+            .update(dto.token)
+            .digest('hex');
+
+        // 1. Initial Check
+        const token = await this.prisma.emailChangeTable.findUnique({
+            where: {token: hashedToken}
+        });
+
+        if (!token) throw new BadRequestException('Invalid token');
+        if (token.expiresAt < new Date(Date.now())) throw new BadRequestException("Token expired");
+
+        let accessToken = null;
+        let newRefreshToken = null;
+        let usr = {};
+
+        if (isAuthenticated) {
+            accessToken = this.jwtService.sign(
+                {sub: userId, email: token.newEmail}, 'access',
+                {expiresIn: '15min'},
+            );
+            newRefreshToken = this.jwtService.sign(
+                {sub: userId, email: token.newEmail}, 'refresh',
+                {expiresIn: '7d'},
+            );
+        }
+
+        const hash = await bcrypt.hash(newRefreshToken, PASSWORD_SALT_ROUNDS);
+
+        try {
+            // 2. Wrap the Transaction in Try/Catch
+            const res = await this.prisma.$transaction(async (tx) => {
+                // It is safer to re-check existence or update strictly inside transaction,
+                // but catching the delete error is the most direct fix for your issue.
+
+                const user = await tx.user.update({
+                    where: {id: token.userId},
+                    data: {
+                        email: token.newEmail,
+                        refreshTokens: isAuthenticated ? [hash] : [],
+                    }
+                });
+
+                const del = await tx.emailChangeTable.delete({
+                    where: {token: hashedToken}
+                });
+
+                return {user, del};
+            });
+
+            if (isAuthenticated) {
+                usr = {
+                    id: userId,
+                    name: res.user.name,
+                    email: res.user.email,
+                    createdAt: res.user.createdAt,
+                    username: res.user.username
+                };
+            }
+
+            return {
+                accessToken: accessToken,
+                refreshToken: newRefreshToken,
+                user: usr,
+                message: "Email changed successfully",
+            };
+
+        } catch (error) {
+            // 3. Catch the specific Prisma error for "Record not found" during delete
+            if (error.code === 'P2025') {
+                throw new BadRequestException('Invalid token');
+            }
+            // Re-throw any other actual errors (like DB connection issues, etc.)
+            throw error;
+        }
+    }
+
 }
