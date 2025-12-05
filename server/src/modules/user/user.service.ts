@@ -191,28 +191,6 @@ export class UserService {
         return { message: 'Unfollowed successfully' };
     }
 
-    // async unFollowUser(followDto: UnFollowUserDTO, id: string) {
-        // check if a request alredy exists
-
-        // delete the rquest
-        // const res =  await this.prisma.friendRequest.delete({
-        //     where: {
-        //         senderId: id,
-        //         receiverId: followDto.id,
-        //     }
-        //
-        // });
-
-        // const res = await this.prisma.friendRequest.delete({
-        //     where: {
-        //         senderId: id
-        //     }
-        //
-        //
-        // })
-    // }
-
-
     async getUser(id: string){
         const res = this.prisma.user.findUnique({
             where: {id},
