@@ -53,6 +53,9 @@ export default function SettingsPage() {
                                         </button>
                                     )
                                 }
+                                <h2 className="text-2xl my-6 ">Change Password</h2>
+                                {user?.passwordChangedAt &&  <h3 className="text-sm text-gray-500"> Password was last changed on {user?.passwordChangedAt}</h3>}
+                                <ChangePassword />
 
                             </div>
 
