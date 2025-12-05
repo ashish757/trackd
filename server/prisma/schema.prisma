@@ -134,3 +134,14 @@ model PasswordResetToken {
 
   @@map("password_reset_tokens")
 }
+
+model EmailChangeTable {
+  id          String   @id @default(cuid())
+  userId      String   @unique()
+  newEmail    String
+  token       String    @unique()
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+
+  @@map("email_change_table")
+}

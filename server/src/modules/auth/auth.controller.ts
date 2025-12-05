@@ -10,9 +10,25 @@ import {
 } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
-import {SendOtpDto, RegisterDto, ForgetPasswordDto, ResetPasswordDto} from './DTO/register.dto';
+import {
+    SendOtpDto,
+    RegisterDto,
+    ForgetPasswordDto,
+    ResetPasswordDto,
+    ChangeEmailRequestDto,
+    ChangeEmailDto
+} from './DTO/register.dto';
 import { LoginDto } from './DTO/login.dto';
 import { AuthGuard } from '../../common/guards/auth.guard';
+import {OptionalAuthGuard} from "../../common/guards/optionalAuth.guard";
+
+interface AuthorizedRequest extends Request {
+    user?: {
+        sub: string;
+        email: string;
+    },
+    isAuthenticated: boolean;
+}
 
 @Controller('auth')
 export class AuthController {
@@ -153,6 +169,45 @@ export class AuthController {
                 user: data.user,
             },
         };
+    }
+
+    @Post('/change/email/request')
+    @UseGuards(AuthGuard)
+    async changeEmailRequest(@Body() dto: ChangeEmailRequestDto, @Req() req: AuthorizedRequest) {
+        const userId = req.user.sub;
+        const data = await this.authService.changeEmailRequest(dto, userId, req.user.email);
+
+        return {
+            status: 'success',
+            statusCode: HttpStatus.OK,
+            data: data,
+        };
+    }
+
+    @Post('/change/email')
+    @UseGuards(OptionalAuthGuard)
+    async changeEmail(@Body() dto: ChangeEmailDto, @Req() req: AuthorizedRequest, @Res({ passthrough: true }) res: Response) {
+
+        const data = await this.authService.changeEmail(dto, req.isAuthenticated, req?.user.sub);
+
+        // Set new refresh token in HttpOnly cookie
+        res.cookie('refreshToken', data.refreshToken, {
+            httpOnly: true,
+            secure: process.env.ENV === 'production',
+            sameSite: process.env.ENV == "production" ? "none" : "lax" ,
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            path: '/',
+        });
+
+        return {
+            status: 'success',
+            statusCode: HttpStatus.OK,
+            data: {
+                accessToken: data.accessToken,
+                user: data.user,
+                message: data.message,
+            },
+        }
     }
 
     @Post('/logout')

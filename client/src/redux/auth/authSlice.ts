@@ -51,6 +51,24 @@ const authSlice = createSlice({
             }
         );
 
+        // Handle successful Email Change
+        builder.addMatcher(
+            authApi.endpoints.changeEmail.matchFulfilled,
+            (state, { payload }) => {
+                console.log(payload)
+                state.user = payload.data.user || null;
+
+                if(payload.data.accessToken !== null) {
+                    tokenManager.setAccessToken(payload.data.accessToken);
+                    state.isAuthenticated = true;
+
+                }
+
+                // Refresh token is in HttpOnly cookie - no need to store in JS
+                console.log('Email changed successfully');
+            }
+        );
+
         // Handle successful registration
         builder.addMatcher(
             authApi.endpoints.register.matchFulfilled,

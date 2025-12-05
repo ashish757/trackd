@@ -25,11 +25,13 @@ export const API_CONFIG = {
             REFRESH_TOKEN: '/auth/refresh-token',
             FORGET_PASSWORD: '/auth/forget-password',
             RESET_PASSWORD: '/auth/reset-password',
+            REQUEST_CHANGE_EMAIL: '/auth/change/email/request',
+            CHANGE_EMAIL: '/auth/change/email',
+
         },
         USER: {
             CHANGE_NAME: '/user/change/name',
             CHANGE_BIO: '/user/change/bio',
-            CHANGE_EMAIL: '/user/change/email',
             CHANGE_USERNAME: '/user/change/username',
             CHANGE_PASSWORD: 'user/change/password',
 

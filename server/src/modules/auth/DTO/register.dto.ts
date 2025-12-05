@@ -35,3 +35,12 @@ export class ResetPasswordDto {
     @IsString() newPassword: string;
     @IsString() token: string
 }
+
+export class ChangeEmailRequestDto {
+    @IsEmail() newEmail: string;
+}
+
+export class ChangeEmailDto {
+    @IsString() token: string;
+
+}

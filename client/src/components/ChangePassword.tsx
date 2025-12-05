@@ -76,8 +76,6 @@ const ChangePassword = () => {
 
     return (
         <div>
-            <h2 className="text-2xl font-bold mb-6">Change Password</h2>
-
             <form className="space-y-4 max-w-md" onSubmit={handleSubmit}>
                 {/* Error Alert */}
                 {error && (
