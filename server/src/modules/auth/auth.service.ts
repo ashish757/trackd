@@ -109,6 +109,7 @@ export class AuthService {
                 username: true,
                 createdAt: true,
                 refreshTokens: true,
+                avatar: true,
             }
 
         });
@@ -146,6 +147,7 @@ export class AuthService {
                 email: user.email,
                 username: user.username,
                 createdAt: user.createdAt,
+                avatar: user.avatar,
             }
         };
     }
@@ -214,6 +216,7 @@ export class AuthService {
                 name: user.name,
                 email: user.email,
                 username: user.username,
+                avatar: user.avatar,
                 createdAt: user.createdAt,
             }
         };
@@ -267,8 +270,11 @@ export class AuthService {
             select: {
                 id: true, name: true,
                 email: true,
+                avatar: true,
                 username: true,
-                createdAt: true, refreshTokens: true
+                createdAt: true,
+                refreshTokens: true
+
             },
         });
         if (!user) throw new UnauthorizedException('User not found');
@@ -330,6 +336,7 @@ export class AuthService {
                 email: user.email,
                 username: user.username,
                 createdAt: user.createdAt,
+                avatar: user.avatar,
             }
         };
     }

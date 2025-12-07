@@ -202,7 +202,8 @@ export class UserService {
                 createdAt: true,
                 friendCount: true,
                 passwordChangedAt: true,
-                bio: true
+                bio: true,
+                avatar: true,
             }
 
             });
@@ -221,7 +222,8 @@ export class UserService {
                 username: true,
                 createdAt: true,
                 friendCount: true,
-                bio: true
+                bio: true,
+                avatar: true,
             }
         });
 
