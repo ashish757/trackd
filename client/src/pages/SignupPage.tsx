@@ -4,6 +4,7 @@ import { Mail, Lock, User, X, Loader, Eye, EyeOff, Clock } from 'lucide-react';
 import { useRequestOtpMutation, useVerifyOtpMutation, useRegisterMutation } from "../redux/auth/authApi.ts";
 import { validateEmail, validatePassword, validateName } from "../utils/validation.ts";
 import { storage } from "../utils/config.ts";
+import GoogleLoginButton from "../components/GoogleLoginButton.tsx";
 
 function SignupPage() {
 
@@ -485,6 +486,25 @@ function SignupPage() {
                             </>
                         )}
                     </form>
+
+                    {/* Divider */}
+                    {!otpSent && (
+                        <div className="mt-6">
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center">
+                                    <div className="w-full border-t border-gray-300"></div>
+                                </div>
+                                <div className="relative flex justify-center text-sm">
+                                    <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                                </div>
+                            </div>
+
+                            {/* Google Login Button */}
+                            <div className="mt-6">
+                                <GoogleLoginButton />
+                            </div>
+                        </div>
+                    )}
 
                     {/* Sign In Link */}
                     <div className="mt-6 text-center">

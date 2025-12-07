@@ -3,6 +3,7 @@ import {Link, useNavigate} from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, X } from 'lucide-react';
 import {useLoginMutation} from "../redux/auth/authApi.ts";
 import { validateEmail } from "../utils/validation.ts";
+import GoogleLoginButton from "../components/GoogleLoginButton.tsx";
 
 function SigninPage() {
     const [formData, setFormData] = useState({
@@ -213,6 +214,11 @@ function SigninPage() {
                 {/*    subject to the{' '}*/}
                 {/*    <a href="#" className="underline hover:text-gray-700">Privacy Policy</a>*/}
                 {/*</p>*/}
+                <span className="block text-center text-md text-gray-500 mt-8">OR</span>
+
+                <span className="flex justify-center  text-md text-gray-500 mt-4 mb-4">
+                    <GoogleLoginButton />
+                </span>
 
             </div>
         </div>
