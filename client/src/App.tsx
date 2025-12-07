@@ -17,6 +17,7 @@ import NotFoundPage from "./pages/NotFoundPage.tsx";
 import ForgetPassword from "./pages/ForgetPassword.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import ChangeEmail from "./components/ChangeEmail.tsx";
+import OauthSuccessPage from "./pages/OauthSuccessPage.tsx";
 
 function App() {
   // Automatically refresh access token on page load/reload
@@ -44,6 +45,8 @@ function App() {
                   <Route path="/reset-password" element={<ResetPassword />} />
 
                   <Route path="/change/email" element={<ChangeEmail/>} />
+
+                  <Route path="/oauth/success" element={<OauthSuccessPage />} />
 
                   <Route path="/find" element={<FindUsers />} />
                   <Route path="/users/:username" element={<UserPage />} />
