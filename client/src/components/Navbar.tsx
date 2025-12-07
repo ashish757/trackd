@@ -2,15 +2,11 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useLogoutMutation } from '../redux/auth/authApi';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout as logoutAction } from '../redux/auth/authSlice';
-import { LogOut, User, Settings, ChevronDown } from 'lucide-react';
+import { LogOut, User as UserIcon, Settings, ChevronDown } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import type { RootState } from '../redux/store';
+import type { User } from '../redux/user/userApi';
 import Notifications from "./Notifications.tsx";
-
-interface UserType {
-    name?: string;
-    email?: string;
-}
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -21,7 +17,7 @@ const Navbar = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    const user = useSelector((state: RootState) => state.auth.user) as UserType;
+    const user = useSelector((state: RootState) => state.auth.user) as User | null;
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -134,9 +130,20 @@ const Navbar = () => {
                             onClick={() => setDropdownOpen(!dropdownOpen)}
                             className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                         >
-                            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
-                                {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
-                            </div>
+                            {
+                                user?.avatar ? (
+                                    <img
+                                        src={user.avatar}
+                                        alt="User Avatar"
+                                        className="w-8 h-8 rounded-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
+                                        {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
+                                    </div>
+                                )
+                            }
+
                             <span className="hidden md:inline">{user?.name || user?.email || 'User'}</span>
                             <ChevronDown className={`h-4 w-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
                         </button>
@@ -151,7 +158,7 @@ const Navbar = () => {
                                     }}
                                     className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                                 >
-                                    <User className="h-4 w-4" />
+                                    <UserIcon className="h-4 w-4" />
                                     Profile
                                 </button>
                                 <button
