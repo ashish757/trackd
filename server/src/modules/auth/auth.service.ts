@@ -548,149 +548,93 @@ export class AuthService {
     async googleLogin(code: string) {
         if (!code) throw new BadRequestException('No authorization code provided');
 
+        // STEP A: Exchange 'code' for 'access_token' using FETCH
+        const tokenParams = new URLSearchParams({
+            client_id: process.env.GOOGLE_CLIENT_ID,
+            client_secret: process.env.GOOGLE_CLIENT_SECRET,
+            code,
+            grant_type: 'authorization_code',
+            redirect_uri: process.env.GOOGLE_CALLBACK_URL,
+        });
+
+        const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: tokenParams.toString(),
+        });
+
+        if (!tokenResponse.ok) {
+            const errorData = await tokenResponse.text();
+            console.error('Google Token Error:', errorData);
+            throw new BadRequestException('Failed to exchange authorization code');
+        }
+
+
+        const tokenData = await tokenResponse.json(); // Contains access_token
+
+        // STEP B: Get User Profile using FETCH
+        const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+            headers: { Authorization: `Bearer ${tokenData.access_token}` },
+        });
+
+        if (!userResponse.ok) {
+            const errorData = await userResponse.text();
+            console.error('Google Profile Error:', errorData);
+            throw new BadRequestException('Failed to fetch user profile from Google');
+        }
+        const googleUser = await userResponse.json();
+        // googleUser = { id: '...', email: '...', verified_email: true, name: '...', picture: '...' }
+
+        // Validate that email is verified
+        if (!googleUser.email || !googleUser.verified_email) {
+            throw new BadRequestException('Email not verified by Google');
+        }
+
+
         try {
-            // STEP A: Exchange 'code' for 'access_token' using FETCH
-            const tokenParams = new URLSearchParams({
-                client_id: process.env.GOOGLE_CLIENT_ID,
-                client_secret: process.env.GOOGLE_CLIENT_SECRET,
-                code,
-                grant_type: 'authorization_code',
-                redirect_uri: process.env.GOOGLE_CALLBACK_URL,
+            // 1. FIRST: check if a user with this GOOGLE account already exists
+            let googleUserData = await this.prisma.user.findUnique({
+                where: { googleId: googleUser.id },
             });
-
-            const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: tokenParams.toString(),
-            });
-
-            if (!tokenResponse.ok) {
-                const errorData = await tokenResponse.text();
-                console.error('Google Token Error:', errorData);
-                throw new BadRequestException('Failed to exchange authorization code');
+            if (googleUserData){
+                // google user exists simply log him in
+                return this.authenticateUser(googleUserData);
             }
 
-            const tokenData = await tokenResponse.json(); // Contains access_token
-
-            // STEP B: Get User Profile using FETCH
-            const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-                headers: { Authorization: `Bearer ${tokenData.access_token}` },
-            });
-
-            if (!userResponse.ok) {
-                const errorData = await userResponse.text();
-                console.error('Google Profile Error:', errorData);
-                throw new BadRequestException('Failed to fetch user profile from Google');
-            }
-
-            const googleUser = await userResponse.json();
-            // googleUser = { id: '...', email: '...', verified_email: true, name: '...', picture: '...' }
-
-            // Validate that email is verified
-            if (!googleUser.email || !googleUser.verified_email) {
-                throw new BadRequestException('Email not verified by Google');
-            }
-
-            // STEP C: Database Logic (Find or Create)
-            let user = await this.prisma.user.findUnique({
+            // 2. SECOND: google user doesn't exist but check if SAME EMAIL user exists
+            const existingUserByEmail = await this.prisma.user.findUnique({
                 where: { email: googleUser.email },
-                select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                    username: true,
-                    createdAt: true,
-                    googleId: true,
-                    avatar: true,
-                    refreshTokens: true,
+            });
+            if(existingUserByEmail) {
+                // Emails Match
+                // We trust this is the same person. Link the accounts.
+                const updatedUser = await this.prisma.user.update({
+                    where: { id: existingUserByEmail.id },
+                    data: {
+                        googleId: googleUser.id,
+                        avatar: googleUser.avatar // sync avatar
+                    }
+                });
+
+                // accounts linked
+                // now rest of auth process
+                return this.authenticateUser(updatedUser);
+            }
+
+            // 3. THIRD: No Google ID found, No Email match (Case 2)
+            // Create a completely new account.
+            const newUser = await this.prisma.user.create({
+                data: {
+                    email: googleUser.email,
+                    googleId: googleUser.id,
+                    name: googleUser.name,
+                    avatar: googleUser.picture,
+                    password: null
                 }
             });
 
-            if (!user) {
-                // Create new user with Google OAuth
-                user = await this.prisma.user.create({
-                    data: {
-                        email: googleUser.email,
-                        name: googleUser.name || 'User',
-                        googleId: googleUser.id,
-                        avatar: googleUser.picture,
-                        password: null, // No password for OAuth users
-                        // username will be auto-generated (cuid)
-                    },
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        username: true,
-                        createdAt: true,
-                        googleId: true,
-                        avatar: true,
-                        refreshTokens: true,
-                    }
-                });
-            } else if (!user.googleId) {
-                // Link existing email account with Google
-                user = await this.prisma.user.update({
-                    where: { id: user.id },
-                    data: {
-                        googleId: googleUser.id,
-                        avatar: googleUser.picture || user.avatar
-                    },
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        username: true,
-                        createdAt: true,
-                        googleId: true,
-                        avatar: true,
-                        refreshTokens: true,
-                    }
-                });
-            }
-
-            // STEP D: Generate YOUR JWTs
-            const payload = { sub: user.id, email: user.email };
-
-            const accessToken = this.jwtService.sign(
-                payload,
-                'access',
-                { expiresIn: '15min' }
-            );
-
-            const refreshToken = this.jwtService.sign(
-                payload,
-                'refresh',
-                { expiresIn: '7d' }
-            );
-
-            // STEP E: Save refresh token hash to database
-            const hashedRefreshToken = await bcrypt.hash(refreshToken, PASSWORD_SALT_ROUNDS);
-
-            // Limit refresh tokens to max 5 (cleanup old tokens)
-            let updatedTokens = [...user.refreshTokens];
-            if (updatedTokens.length >= 5) {
-                updatedTokens = updatedTokens.slice(-4); // Keep last 4
-            }
-            updatedTokens.push(hashedRefreshToken);
-
-            await this.prisma.user.update({
-                where: { id: user.id },
-                data: { refreshTokens: updatedTokens },
-            });
-
-            return {
-                accessToken,
-                refreshToken,
-                user: {
-                    id: user.id,
-                    name: user.name,
-                    email: user.email,
-                    username: user.username,
-                    createdAt: user.createdAt,
-                    avatar: user.avatar,
-                }
-            };
+            // rest of auth flow
+            return this.authenticateUser(newUser);
 
         } catch (error) {
             console.error('Google OAuth Error:', error);
