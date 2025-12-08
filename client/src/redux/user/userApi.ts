@@ -10,11 +10,20 @@ export type User = {
     createdAt?: string,
     relationshipStatus?: 'NONE' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'FOLLOWING' | null,
     friendCount?: number,
-    passwordChangedAt: string
+    passwordChangedAt: string,
+    avatar: string | null,
+
+}
+
+interface UserSearchItem {
+    id: string;
+    name: string;
+    username: string;
+    avatar: string | null;
 }
 
 interface SearchRes {
-    data: Array<User>,
+    data: Array<UserSearchItem>,
 }
 
 interface getUserRes {
@@ -24,14 +33,14 @@ interface getUserRes {
 export const userApi = apiSlice.injectEndpoints({
 
     endpoints: (builder) => ({
-        searchUsers: builder.query<Array<User>, string>({
+        searchUsers: builder.query<Array<UserSearchItem>, string>({
             query: (query) => ({
                 url: 'users/search?query=' + query,
                 method: 'GET',
             }),
 
             // Transform the response to match our interface
-            transformResponse: (response: SearchRes): Array<User> => {
+            transformResponse: (response: SearchRes): Array<UserSearchItem> => {
                 return response.data ?? [];
             },
         }),

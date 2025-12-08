@@ -4,9 +4,12 @@ import {
     Body,
     HttpStatus,
     UnauthorizedException,
+    ForbiddenException,
     Res,
+    Get,
     Req,
     UseGuards,
+    Query
 } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
@@ -234,4 +237,71 @@ export class AuthController {
             message: 'Logged out successfully',
         };
     }
+
+    // Route 1: Trigger (Frontend links here)
+    @Get('google')
+    async googleAuth(@Res() res: Response) {
+        const {url, state} = this.authService.getGoogleAuthURL();
+
+        res.cookie('oauth_state', state, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 15 * 60 * 1000,
+        });
+
+        return res.redirect(url);
+    }
+
+    // Route 2: Callback (Google sends code here)
+    @Get('google/callback')
+    async googleAuthCallback(@Query('state') state: string, @Query('code') code: string, @Res() res: Response, @Req() req: Request) {
+        try {
+            // SECURITY CHECK: Validate State
+            const savedState = req.cookies['oauth_state'];
+
+            if (!savedState || savedState !== state) {
+                throw new ForbiddenException('Invalid State: Login request did not originate from this browser.');
+            }
+
+            // Cleanup: Clear the state cookie (it's one-time use)
+            res.clearCookie('oauth_state');
+
+            if (!code) {
+                if (process.env.ENV === 'production') return res.redirect(`${process.env.FRONTEND_URL}/signin?error=missing_code`);
+                else return res.redirect(`${process.env.FRONTEND_URL_DEV}/signin?error=missing_code`);
+            }
+
+            const { accessToken, refreshToken } = await this.authService.googleLogin(code);
+
+            // Set refresh token in HttpOnly cookie (SECURE!)
+            res.cookie('refreshToken', refreshToken, {
+                httpOnly: true,
+                secure: process.env.ENV === 'production',
+                sameSite: process.env.ENV === 'production' ? 'none' : 'lax',
+                maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+                path: '/',
+            });
+
+            // Redirect to frontend OAuth success page with only accessToken in URL
+            // The frontend will then store it in memory and fetch user data
+            let redirectUrl: string;
+            if(process.env.ENV === 'production') redirectUrl = `${process.env.FRONTEND_URL}/oauth/success?accessToken=${encodeURIComponent(accessToken)}`;
+            else redirectUrl = `${process.env.FRONTEND_URL_DEV}/oauth/success?accessToken=${encodeURIComponent(accessToken)}`;
+            return res.redirect(redirectUrl);
+
+        } catch (error) {
+            console.error('OAuth Callback Error:', error);
+            // Provide more specific error messages
+            const errorMessage = error?.message || 'oauth_failed';
+
+            let redirectUrl: string;
+            if(process.env.ENV === 'production') redirectUrl = `${process.env.FRONTEND_URL}/signin?error=${encodeURIComponent(errorMessage)}`;
+            else redirectUrl = `${process.env.FRONTEND_URL_DEV}/signin?error=${encodeURIComponent(errorMessage)}`;
+            return res.redirect(redirectUrl);
+        }
+    }
+
+
+
 }

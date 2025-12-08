@@ -70,7 +70,14 @@ const FindUsers = () => {
                                     <Link to={"/users/" + user.username} key={user.id}>
                                         <div className="flex gap-3 border-1 border-gray-300 p-4 rounded-sm hover:shadow-sm">
                                             <div>
-                                                <span className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold">{user.name[0].toUpperCase()}</span>
+                                                {
+                                                    user.avatar ? (
+                                                        <img src={user.avatar} alt={user.username} className="w-10 h-10 rounded-full object-cover" />
+                                                    ) : (
+                                                        <span className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold">{user.name[0].toUpperCase()}</span>
+                                                    )
+                                                }
+
                                             </div>
                                             <div>
                                                 <p className="text-gray-700 text-md">{user.username}</p>

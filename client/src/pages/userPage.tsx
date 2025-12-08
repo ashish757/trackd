@@ -174,9 +174,15 @@ const UserPage = () => {
                                 <div className="flex items-start gap-8 mb-6">
                                     {/* Profile Picture */}
                                     <div className="flex-shrink-0">
-                                        <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg">
-                                            {user?.name?.[0]?.toUpperCase() || 'U'}
-                                        </div>
+                                        {
+                                            user?.avatar ? (
+                                                <img src={user?.avatar} alt="Profile" className="rounded-full " />
+                                            ) : (
+                                                <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg">
+                                                    {user?.name?.[0]?.toUpperCase() || 'U'}
+                                                </div>
+                                            )
+                                        }
                                     </div>
 
                                     {/* Profile Info */}

@@ -202,7 +202,8 @@ export class UserService {
                 createdAt: true,
                 friendCount: true,
                 passwordChangedAt: true,
-                bio: true
+                bio: true,
+                avatar: true,
             }
 
             });
@@ -221,7 +222,8 @@ export class UserService {
                 username: true,
                 createdAt: true,
                 friendCount: true,
-                bio: true
+                bio: true,
+                avatar: true,
             }
         });
 
@@ -326,14 +328,21 @@ export class UserService {
         const search = q.trim();
 
         try {
-            return await this.prisma.$queryRaw`
-                SELECT * FROM users
+            const user: Array<{
+                id: string;
+                name: string;
+                username: string;
+                avatar: string | null;
+            }> =  await this.prisma.$queryRaw`
+                SELECT id, name, username, avatar FROM users
                 WHERE username ILIKE ${'%' + search + '%'} 
                 OR name ILIKE ${'%' + search + '%'} 
                 ORDER BY 
                     (username ILIKE ${'%' + search + '%'}) DESC,
                     (name ILIKE ${'%' + search + '%'}) DESC; ;
           `;
+
+            return user
 
         } catch (err) {
             console.error("Raw SQL error:", err);

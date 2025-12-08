@@ -15,13 +15,17 @@ model User {
   id            String   @id @default(cuid())
   username      String   @unique() @default(cuid())
   email         String   @unique()
-  password      String
+  password      String?  // optional for OAuth users
   name          String?
   bio           String?
   createdAt     DateTime @default(now())
   refreshTokens String[] @default([])
   friendCount   Int      @default(0)
   passwordChangedAt DateTime?
+
+  // Google Specific Fields
+  googleId      String?   @unique
+  avatar        String?
 
   UserMovieData  UserMovieData[]
   UserMovieEntry UserMovieEntry[]
