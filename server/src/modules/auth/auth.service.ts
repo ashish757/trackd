@@ -21,6 +21,7 @@ import {PASSWORD_SALT_ROUNDS} from "../../utils/constants";
 import {randomBytes} from "node:crypto";
 import crypto from 'crypto';
 import {changeEmailRequestTemplate, otpTemplate, passwordResetTemplate} from "../../utils/emailTemplates";
+import type {User} from '@prisma/client'
 
 @Injectable()
 export class AuthService {
@@ -496,6 +497,51 @@ export class AuthService {
             url: `${rootUrl}?${qs.toString()}`,
             state,
         }
+    }
+
+    async authenticateUser(usr: User) {
+        // Generate JWTs
+        const payload = { sub: usr.id, email: usr.email };
+
+        const accessToken = this.jwtService.sign(
+            payload,
+            'access',
+            { expiresIn: '15min' }
+        );
+
+        const refreshToken = this.jwtService.sign(
+            payload,
+            'refresh',
+            { expiresIn: '7d' }
+        );
+
+        // Save refresh token hash to database
+        const hashedRefreshToken = await bcrypt.hash(refreshToken, PASSWORD_SALT_ROUNDS);
+
+        // Limit refresh tokens to max 5 (cleanup old tokens)
+        let updatedTokens = [...usr.refreshTokens];
+        if (updatedTokens.length >= 5) {
+            updatedTokens = updatedTokens.slice(-4); // Keep last 4
+        }
+        updatedTokens.push(hashedRefreshToken);
+
+        await this.prisma.user.update({
+            where: { id: usr.id },
+            data: { refreshTokens: updatedTokens },
+        });
+
+        return {
+            accessToken,
+            refreshToken,
+            user: {
+                id: usr.id,
+                name: usr.name,
+                email: usr.email,
+                username: usr.username,
+                createdAt: usr.createdAt,
+                avatar: usr.avatar,
+            }
+        };
     }
 
     // 2. The Core Logic: Code -> Token -> User -> JWT
