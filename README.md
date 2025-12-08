@@ -4,25 +4,25 @@ A full-stack movie tracking application built with React, NestJS, and PostgreSQL
 
 ## Features
 
-- 🔐 **Secure Authentication**
+-  **Secure Authentication**
   - Email/Password authentication with OTP verification
   - Google OAuth 2.0 integration
   - JWT-based access tokens (in-memory)
   - HttpOnly cookies for refresh tokens
   - Password reset functionality
   
-- 🎬 **Movie Management**
+-  **Movie Management**
   - Search movies (powered by TMDB API)
   - Mark movies as watched or planned to watch
   - Rate and review movies
   - Personal movie lists
 
-- 👥 **Social Features**
+-  **Social Features**
   - Friend system (follow/unfollow)
   - Friend requests (accept/reject)
   - View friends' movie lists
 
-- 👤 **User Profile**
+-  **User Profile**
   - Customizable username, name, and bio
   - Email change with verification
   - Password change
@@ -58,7 +58,7 @@ A full-stack movie tracking application built with React, NestJS, and PostgreSQL
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/trackd.git
+   git clone https://github.com/ashish757/trackd.git
    cd trackd
    ```
 
@@ -69,13 +69,14 @@ A full-stack movie tracking application built with React, NestJS, and PostgreSQL
    npm install
 
    # Install frontend dependencies
-   cd ../client
+   cd client
    npm install
    ```
 
 3. **Configure environment variables**
    
    Create `.env` files in both `server` and `client` directories:
+4. (an .env.example files are provided for reference)
    
    **server/.env:**
    ```env
@@ -123,7 +124,7 @@ A full-stack movie tracking application built with React, NestJS, and PostgreSQL
    **Terminal 1 - Backend:**
    ```bash
    cd server
-   npm run start:dev
+   npm run run dev
    ```
    
    **Terminal 2 - Frontend:**
@@ -238,18 +239,6 @@ Build and run with Docker Compose:
 ```bash
 docker-compose -f docker-compose.dev.yml up --build
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License.
 
 ## Contact
 
