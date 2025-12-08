@@ -348,20 +348,24 @@ export class AuthService {
 
     async changeEmailRequest(dto: ChangeEmailRequestDto, userId: string, email: string) {
         if (dto.newEmail == email) {
-            return {
-                message: 'Email already taken',
-            };
+            throw new BadRequestException('New email cannot be the same as current email');
         }
 
-        const userExists = await this.prisma.user.findUnique({
+        // Check if the new email is already in use by another user
+        const emailInUse = await this.prisma.user.findUnique({
             where: {email: dto.newEmail},
-            select: {id: true, name: true},
+            select: {id: true},
         });
 
-        if (userExists) throw new ConflictException('Email already in use');
+        if (emailInUse) throw new ConflictException('Email already in use');
 
-        // send mail to older email
-        sendEmail('ashishrajsingh75@gmail.com', 'Trackd - Email Change Request', changeEmailRequestTemplate(userExists.name, dto.newEmail));
+        // Get current user info to send notification to old email
+        const currentUser = await this.prisma.user.findUnique({
+            where: {id: userId},
+            select: {name: true, email: true},
+        });
+
+        if (!currentUser) throw new BadRequestException('User not found');
 
         const token = randomBytes(32).toString('hex'); // 64 characters
 
@@ -399,8 +403,9 @@ export class AuthService {
         });
 
 
-        if (!res) throw new InternalServerErrorException("Failed to create password reset token");
+        if (!res) throw new InternalServerErrorException("Failed to create email change request");
 
+        return { message: 'Email change request sent successfully' };
     }
 
     async changeEmail(dto: ChangeEmailDto, isAuthenticated: boolean, userId: string) {
@@ -622,7 +627,7 @@ export class AuthService {
                     where: { id: existingUserByEmail.id },
                     data: {
                         googleId: googleUser.id,
-                        avatar: googleUser.avatar // sync avatar
+                        avatar: googleUser.picture // Google returns 'picture', not 'avatar'
                     }
                 });
 
