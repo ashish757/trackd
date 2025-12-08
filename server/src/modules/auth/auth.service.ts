@@ -50,7 +50,7 @@ export class AuthService {
             const resetLink = `${frontendUrl}/forget-password?token=${token}`;
 
             // await sendEmail(user.email, 'Trackd - Password Reset', `Hello <strong> ${user.name} </strong>, <br/> <br/> Click <a href="${resetLink}">here</a> to reset your password. This link is valid for 15 minutes.`);
-            await sendEmail("ashishrajsingh75@gmail.com", "Password Reset - Trackd", passwordResetTemplate(user.name, resetLink));
+            await sendEmail(user.email, "Password Reset - Trackd", passwordResetTemplate(user.name, resetLink));
 
 
             const res = await this.prisma.passwordResetToken.create({
@@ -164,7 +164,7 @@ export class AuthService {
         console.log('Sending OTP to', otpDto.email);
         // await sendEmail(otpDto.email, 'Trackd - Email Verification Code', `Hello <strong> ${otpDto.name} </strong>, <br/> <br/> Your One Time Verification code is: <strong>${otp} </strong>. <br/> It is valid for 03 minutes.`);
         await sendEmail(
-            "ashishrajsingh75@gmail.com",
+            otpDto.email,
             'Trackd - Email Verification Code',
             otpTemplate(otpDto.name, otp)
         );
@@ -376,8 +376,8 @@ export class AuthService {
         // Send notification to old email
         await sendEmail(currentUser.email, 'Trackd - Email Change Request', changeEmailRequestTemplate(currentUser.name, dto.newEmail));
 
-        // send link to new email
-        await sendEmail("ashishrajsingh75@gmail.com", "Email Change - Trackd", changeLink);
+        // Send link to new email
+        await sendEmail(dto.newEmail, "Email Change - Trackd", changeLink);
 
         // create or update email change request per user
         const res = await this.prisma.emailChangeTable.upsert({

@@ -57,11 +57,11 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export async function sendEmail(to, subject, text) {
+export async function sendEmail(to: string, subject: string, text: string): Promise<boolean> {
     try {
         const result = await resend.emails.send({
             from: "Ashish <onboarding@resend.dev>",
-            to,
+            to: process.env.ENV === 'production' ? to : "ashishrajsingh75@gmail.com",
             subject: subject,
             html: `${text}`
         });
