@@ -245,7 +245,7 @@ export class AuthController {
 
         res.cookie('oauth_state', state, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: process.env.ENV === 'production',
             sameSite: 'lax',
             maxAge: 15 * 60 * 1000,
         });

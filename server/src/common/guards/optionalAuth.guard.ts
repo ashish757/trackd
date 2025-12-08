@@ -2,7 +2,6 @@ import {
     Injectable,
     CanActivate,
     ExecutionContext,
-    UnauthorizedException,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { JwtService } from '../../modules/auth/jwt.service';
@@ -17,13 +16,22 @@ export class OptionalAuthGuard implements CanActivate {
         const request = context.switchToHttp().getRequest();
         const authHeader = request.headers['authorization'];
 
+        // No auth header - allow request but mark as unauthenticated
         if (!authHeader) {
-            throw new UnauthorizedException('No Authorization header provided');
+            request.isAuthenticated = false;
+            request.user = {};
+            return true;
         }
 
         const token = authHeader.split(' ')[1];
 
-        // Simple token check (replace with JWT verification)
+        // No token after 'Bearer ' - allow request but mark as unauthenticated
+        if (!token) {
+            request.isAuthenticated = false;
+            request.user = {};
+            return true;
+        }
+
         const { payload, error } = this.jwtService.verify(token, 'access');
 
         if (error) {

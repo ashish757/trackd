@@ -43,10 +43,14 @@ export class AuthService {
             // Create Hash to store in DB
             const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
-            const resetLink = `http://localhost:5173/forget-password?token=${token}`;
+            // Use environment variable for frontend URL
+            const frontendUrl = process.env.ENV === 'production'
+                ? process.env.FRONTEND_URL
+                : process.env.FRONTEND_URL_DEV || 'http://localhost:5173';
+            const resetLink = `${frontendUrl}/forget-password?token=${token}`;
 
             // await sendEmail(user.email, 'Trackd - Password Reset', `Hello <strong> ${user.name} </strong>, <br/> <br/> Click <a href="${resetLink}">here</a> to reset your password. This link is valid for 15 minutes.`);
-            await sendEmail("ashishrajsingh75@gmail.com", "Password Reset - Trackd", passwordResetTemplate(user.name, resetLink));
+            await sendEmail(user.email, "Password Reset - Trackd", passwordResetTemplate(user.name, resetLink));
 
 
             const res = await this.prisma.passwordResetToken.create({
@@ -160,7 +164,7 @@ export class AuthService {
         console.log('Sending OTP to', otpDto.email);
         // await sendEmail(otpDto.email, 'Trackd - Email Verification Code', `Hello <strong> ${otpDto.name} </strong>, <br/> <br/> Your One Time Verification code is: <strong>${otp} </strong>. <br/> It is valid for 03 minutes.`);
         await sendEmail(
-            "ashishrajsingh75@gmail.com",
+            otpDto.email,
             'Trackd - Email Verification Code',
             otpTemplate(otpDto.name, otp)
         );
@@ -344,30 +348,40 @@ export class AuthService {
 
     async changeEmailRequest(dto: ChangeEmailRequestDto, userId: string, email: string) {
         if (dto.newEmail == email) {
-            return {
-                message: 'Email already taken',
-            };
+            throw new BadRequestException('New email cannot be the same as current email');
         }
 
-        const userExists = await this.prisma.user.findUnique({
+        // Check if the new email is already in use by another user
+        const emailInUse = await this.prisma.user.findUnique({
             where: {email: dto.newEmail},
-            select: {id: true, name: true},
+            select: {id: true},
         });
 
-        if (userExists) throw new ConflictException('Email already in use');
+        if (emailInUse) throw new ConflictException('Email already in use');
 
-        // send mail to older email
-        sendEmail('ashishrajsingh75@gmail.com', 'Trackd - Email Change Request', changeEmailRequestTemplate(userExists.name, dto.newEmail));
+        // Get current user info to send notification to old email
+        const currentUser = await this.prisma.user.findUnique({
+            where: {id: userId},
+            select: {name: true, email: true},
+        });
+
+        if (!currentUser) throw new BadRequestException('User not found');
 
         const token = randomBytes(32).toString('hex'); // 64 characters
 
         const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
+        // Use environment variable for frontend URL
+        const frontendUrl = process.env.ENV === 'production'
+            ? process.env.FRONTEND_URL
+            : process.env.FRONTEND_URL_DEV || 'http://localhost:5173';
+        const changeLink = `${frontendUrl}/change/email?token=${token}`;
 
-        const changeLink = `http://localhost:5173/change/email?token=${token}`;
+        // Send notification to old email
+        await sendEmail(currentUser.email, 'Trackd - Email Change Request', changeEmailRequestTemplate(currentUser.name, dto.newEmail));
 
-        // send link to new email
-        await sendEmail("ashishrajsingh75@gmail.com", "Email Change - Trackd", changeLink);
+        // Send link to new email
+        await sendEmail(dto.newEmail, "Email Change - Trackd", changeLink);
 
         // create or update email change request per user
         const res = await this.prisma.emailChangeTable.upsert({
@@ -389,8 +403,9 @@ export class AuthService {
         });
 
 
-        if (!res) throw new InternalServerErrorException("Failed to create password reset token");
+        if (!res) throw new InternalServerErrorException("Failed to create email change request");
 
+        return { message: 'Email change request sent successfully' };
     }
 
     async changeEmail(dto: ChangeEmailDto, isAuthenticated: boolean, userId: string) {
@@ -612,7 +627,7 @@ export class AuthService {
                     where: { id: existingUserByEmail.id },
                     data: {
                         googleId: googleUser.id,
-                        avatar: googleUser.avatar // sync avatar
+                        avatar: googleUser.picture // Google returns 'picture', not 'avatar'
                     }
                 });
 
