@@ -43,7 +43,11 @@ export class AuthService {
             // Create Hash to store in DB
             const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
-            const resetLink = `http://localhost:5173/forget-password?token=${token}`;
+            // Use environment variable for frontend URL
+            const frontendUrl = process.env.ENV === 'production'
+                ? process.env.FRONTEND_URL
+                : process.env.FRONTEND_URL_DEV || 'http://localhost:5173';
+            const resetLink = `${frontendUrl}/forget-password?token=${token}`;
 
             // await sendEmail(user.email, 'Trackd - Password Reset', `Hello <strong> ${user.name} </strong>, <br/> <br/> Click <a href="${resetLink}">here</a> to reset your password. This link is valid for 15 minutes.`);
             await sendEmail("ashishrajsingh75@gmail.com", "Password Reset - Trackd", passwordResetTemplate(user.name, resetLink));
@@ -363,8 +367,14 @@ export class AuthService {
 
         const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
+        // Use environment variable for frontend URL
+        const frontendUrl = process.env.ENV === 'production'
+            ? process.env.FRONTEND_URL
+            : process.env.FRONTEND_URL_DEV || 'http://localhost:5173';
+        const changeLink = `${frontendUrl}/change/email?token=${token}`;
 
-        const changeLink = `http://localhost:5173/change/email?token=${token}`;
+        // Send notification to old email
+        await sendEmail(currentUser.email, 'Trackd - Email Change Request', changeEmailRequestTemplate(currentUser.name, dto.newEmail));
 
         // send link to new email
         await sendEmail("ashishrajsingh75@gmail.com", "Email Change - Trackd", changeLink);
