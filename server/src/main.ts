@@ -35,7 +35,12 @@ async function bootstrap() {
     app.useGlobalFilters(new AllExceptionsFilter());
 
     // Validate required environment variables
-    const requiredEnvVars = ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET', 'JWT_OTP_SECRET', 'DATABASE_URL'];
+    const requiredEnvVars = [
+        'JWT_ACCESS_SECRET',
+        'JWT_REFRESH_SECRET',
+        'JWT_OTP_SECRET',
+        'DATABASE_URL',
+    ];
     for (const envVar of requiredEnvVars) {
         if (!process.env[envVar]) {
             throw new Error(`Missing required environment variable: ${envVar}`);
