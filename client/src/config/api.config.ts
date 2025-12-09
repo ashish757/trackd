@@ -16,6 +16,7 @@ export const API_CONFIG = {
 
     // API endpoints
     ENDPOINTS: {
+        DETECT_COUNTRY: '/geo/detect',
         AUTH: {
             LOGIN: '/auth/login',
             REGISTER: '/auth/register',

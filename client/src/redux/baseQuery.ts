@@ -41,6 +41,10 @@ const baseQuery = fetchBaseQuery({
         if (token) {
             headers.set('authorization', `Bearer ${token}`);
         }
+        const country = localStorage.getItem('country');
+        if (country) {
+            headers.set('x-user-location', country);
+        }
         return headers;
     },
 });
