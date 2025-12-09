@@ -120,6 +120,9 @@ export class AuthService {
         });
         if (!user) throw new UnauthorizedException('Invalid email');
 
+
+        if (user.password == null) throw new BadRequestException('Please Login with Google');
+
         const valid = await bcrypt.compare(dto.password, user.password);
         if (!valid) throw new UnauthorizedException('Invalid password');
         const payload = {sub: user.id, email: user.email};
