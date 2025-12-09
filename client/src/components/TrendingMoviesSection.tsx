@@ -31,7 +31,7 @@ const TrendingMoviesSection = ({ isTrendingLoading, trendingData, isTrendingErro
                 </div>
             ) : trendingData?.results && trendingData.results.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                    {trendingData.results.slice(0, 10).map((movie) => (
+                    {trendingData.results.map((movie) => (
                         <MovieCard
                             key={movie.id}
                             movie={movie}
