@@ -20,6 +20,7 @@ const UserPage = () => {
     const { username } = useParams();
     const currentUser = useSelector((state: RootState) => state.auth.user);
     const [selectedTab, setSelectedTab] = useState<'watched' | 'planned'>('watched');
+    const [showFriendsModal, setShowFriendsModal] = useState(false);
 
     const {data: user, isLoading, isError, error} = useGetUserByIdQuery(username as string, { skip: !username });
     const [followUser, { isLoading: isFollowLoading }] = useFollowUserMutation();
@@ -31,7 +32,7 @@ const UserPage = () => {
     // Only fetch friend list and movie stats if the user is a friend
     const isFriend = user?.relationshipStatus === 'FOLLOWING';
     const { data: friendList, isLoading: isFriendListLoading } = useGetUserFriendListQuery(user?.id || '', {
-        skip: !user?.id || !isFriend
+        skip: !user?.id || !isFriend || !showFriendsModal
     });
     const { data: movieStats, isLoading: isMovieStatsLoading } = useGetUserMovieStatsQuery(user?.id || '', {
         skip: !user?.id || !isFriend
@@ -230,10 +231,21 @@ const UserPage = () => {
 
                                         {/* Stats */}
                                         <div className="flex gap-10 mb-4">
-                                            <div className="text-center sm:text-left">
-                                                <span className="font-semibold text-gray-900">{user?.friendCount || 0}</span>
-                                                <span className="text-gray-600 ml-1">friends</span>
-                                            </div>
+                                            {isFriend && (
+                                                <button
+                                                    onClick={() => setShowFriendsModal(true)}
+                                                    className="text-center sm:text-left hover:opacity-80 transition-opacity"
+                                                >
+                                                    <span className="font-semibold text-gray-900">{user?.friendCount || 0}</span>
+                                                    <span className="text-gray-600 ml-1 cursor-pointer">friends</span>
+                                                </button>
+                                            )}
+                                            {!isFriend && (
+                                                <div className="text-center sm:text-left">
+                                                    <span className="font-semibold text-gray-900">{user?.friendCount || 0}</span>
+                                                    <span className="text-gray-600 ml-1">friends</span>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Name and Bio */}
@@ -276,50 +288,70 @@ const UserPage = () => {
                                 </div>
                             </div>
 
-                            {/* Friend List - Only visible if user is a friend */}
-                            {isFriend && (
-                                <div className="bg-white rounded-lg border border-gray-200 p-6">
-                                    <div className="flex items-center gap-2 mb-4">
-                                        <Users className="h-5 w-5 text-gray-900" />
-                                        <h2 className="text-lg font-semibold text-gray-900">Friends</h2>
-                                        <span className="text-sm text-gray-500">({friendList?.length || 0})</span>
-                                    </div>
+                            {/* Friends Modal */}
+                            {showFriendsModal && isFriend && (
+                                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowFriendsModal(false)}>
+                                    <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                                        {/* Modal Header */}
+                                        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                                            <div className="flex items-center gap-2">
+                                                <Users className="h-5 w-5 text-gray-900" />
+                                                <h2 className="text-xl font-semibold text-gray-900">Friends</h2>
+                                                <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                                                    {friendList?.length || 0}
+                                                </span>
+                                            </div>
+                                            <button
+                                                onClick={() => setShowFriendsModal(false)}
+                                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                                            >
+                                                <X className="h-6 w-6" />
+                                            </button>
+                                        </div>
 
-                                    {isFriendListLoading ? (
-                                        <div className="flex justify-center py-8">
-                                            <div className="inline-block h-6 w-6 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+                                        {/* Modal Content */}
+                                        <div className="p-6 overflow-y-auto max-h-[calc(80vh-88px)]">
+                                            {isFriendListLoading ? (
+                                                <div className="flex justify-center py-12">
+                                                    <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+                                                </div>
+                                            ) : friendList && friendList.length > 0 ? (
+                                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                                    {friendList.map((friend) => (
+                                                        <Link
+                                                            key={friend.id}
+                                                            to={`/users/${friend.username}`}
+                                                            onClick={() => setShowFriendsModal(false)}
+                                                            className="flex flex-col items-center p-4 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100"
+                                                        >
+                                                            {friend.avatar ? (
+                                                                <img
+                                                                    src={friend.avatar}
+                                                                    alt={friend.name}
+                                                                    className="w-20 h-20 rounded-full mb-3"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-20 h-20 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold mb-3">
+                                                                    {friend.name?.[0]?.toUpperCase() || 'U'}
+                                                                </div>
+                                                            )}
+                                                            <p className="text-sm font-medium text-gray-900 text-center truncate w-full">
+                                                                {friend.name}
+                                                            </p>
+                                                            <p className="text-xs text-gray-500 truncate w-full text-center">
+                                                                @{friend.username}
+                                                            </p>
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="text-center py-12">
+                                                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                                                    <p className="text-gray-500">No friends to show</p>
+                                                </div>
+                                            )}
                                         </div>
-                                    ) : friendList && friendList.length > 0 ? (
-                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                                            {friendList.map((friend) => (
-                                                <Link
-                                                    key={friend.id}
-                                                    to={`/user/${friend.username}`}
-                                                    className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                                                >
-                                                    {friend.avatar ? (
-                                                        <img
-                                                            src={friend.avatar}
-                                                            alt={friend.name}
-                                                            className="w-16 h-16 rounded-full mb-2"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-16 h-16 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold mb-2">
-                                                            {friend.name?.[0]?.toUpperCase() || 'U'}
-                                                        </div>
-                                                    )}
-                                                    <p className="text-sm font-medium text-gray-900 text-center truncate w-full">
-                                                        {friend.name}
-                                                    </p>
-                                                    <p className="text-xs text-gray-500 truncate w-full text-center">
-                                                        @{friend.username}
-                                                    </p>
-                                                </Link>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <p className="text-gray-500 text-center py-8">No friends to show</p>
-                                    )}
+                                    </div>
                                 </div>
                             )}
 
