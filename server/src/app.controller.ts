@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Body, HttpException, InternalServerErrorException} from '@nestjs/common';
+import {Controller, Get, Post, Body, Req, HttpException, InternalServerErrorException} from '@nestjs/common';
 import { AppService } from './app.service';
 import { sendEmail } from './utils/email';
 import {OtpTestDto} from "./modules/auth/DTO/register.dto";
@@ -25,5 +25,16 @@ export class AppController {
             throw new InternalServerErrorException('Failed to send test email');
         }
         return result;
+    }
+
+    @Get('/geo/detect')
+    async detectCountry(@Req() req: Request) {
+        const country = await this.appService.detectCountry(req);
+
+        return {
+            status: 200,
+            statusCode: 200,
+            country: country,
+        };
     }
 }

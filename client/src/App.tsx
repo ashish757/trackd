@@ -18,10 +18,12 @@ import ForgetPassword from "./pages/ForgetPassword.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import ChangeEmail from "./components/ChangeEmail.tsx";
 import OauthSuccessPage from "./pages/OauthSuccessPage.tsx";
+import {useDetectCountry} from "./hooks/useDetectCountry.tsx";
 
 function App() {
   // Automatically refresh access token on page load/reload
   const isRefreshingToken = useTokenRefreshOnLoad();
+  useDetectCountry();
 
   // Show loading state while attempting to refresh token on page load
   if (isRefreshingToken) {
