@@ -1,13 +1,20 @@
-import {User, Mail, Calendar, Settings} from 'lucide-react';
+import {User, Mail, Calendar, Settings, Users, X} from 'lucide-react';
 import Navbar from '../components/Navbar';
 import {useState} from "react";
 import EditUserProfileModel from "../components/EditUserProfileModel.tsx";
 import {useGetUserQuery} from "../redux/user/userApi.ts";
 import {Link} from "react-router-dom";
+import {useGetMyFriendsQuery} from "../redux/friend/friendApi.ts";
 
 export default function ProfilePage() {
     const {data: user, isLoading, isError} = useGetUserQuery();
     const [showModal, setShowModal] = useState(false);
+    const [showFriendsModal, setShowFriendsModal] = useState(false);
+
+    // Fetch friends list only when modal is open
+    const { data: friendList, isLoading: isFriendListLoading } = useGetMyFriendsQuery(undefined, {
+        skip: !showFriendsModal
+    });
 
     if(isError) return ("Error occurred");
 
@@ -59,10 +66,13 @@ export default function ProfilePage() {
 
                                         {/* Stats */}
                                         <div className="flex gap-10 mb-4">
-                                            <div className="text-center sm:text-left">
+                                            <button
+                                                onClick={() => setShowFriendsModal(true)}
+                                                className="text-center sm:text-left hover:opacity-80 transition-opacity"
+                                            >
                                                 <span className="font-semibold text-gray-900">{user?.friendCount || 0}</span>
-                                                <span className="text-gray-600 ml-1">friends</span>
-                                            </div>
+                                                <span className="text-gray-600 ml-1 cursor-pointer">friends</span>
+                                            </button>
                                         </div>
 
                                         {/* Name and Bio */}
@@ -132,6 +142,73 @@ export default function ProfilePage() {
                     )}
                 </div>
             </main>
+
+            {/* Friends Modal */}
+            {showFriendsModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowFriendsModal(false)}>
+                    <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                            <div className="flex items-center gap-2">
+                                <Users className="h-5 w-5 text-gray-900" />
+                                <h2 className="text-xl font-semibold text-gray-900">Friends</h2>
+                                <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                                    {friendList?.length || 0}
+                                </span>
+                            </div>
+                            <button
+                                onClick={() => setShowFriendsModal(false)}
+                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                <X className="h-6 w-6" />
+                            </button>
+                        </div>
+
+                        {/* Modal Content */}
+                        <div className="p-6 overflow-y-auto max-h-[calc(80vh-88px)]">
+                            {isFriendListLoading ? (
+                                <div className="flex justify-center py-12">
+                                    <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+                                </div>
+                            ) : friendList && friendList.length > 0 ? (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                    {friendList.map((friend) => (
+                                        <Link
+                                            key={friend.id}
+                                            to={`/users/${friend.username}`}
+                                            onClick={() => setShowFriendsModal(false)}
+                                            className="flex flex-col items-center p-4 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100"
+                                        >
+                                            {friend.avatar ? (
+                                                <img
+                                                    src={friend.avatar}
+                                                    alt={friend.name}
+                                                    className="w-20 h-20 rounded-full mb-3"
+                                                />
+                                            ) : (
+                                                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold mb-3">
+                                                    {friend.name?.[0]?.toUpperCase() || 'U'}
+                                                </div>
+                                            )}
+                                            <p className="text-sm font-medium text-gray-900 text-center truncate w-full">
+                                                {friend.name}
+                                            </p>
+                                            <p className="text-xs text-gray-500 truncate w-full text-center">
+                                                @{friend.username}
+                                            </p>
+                                        </Link>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-12">
+                                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                                    <p className="text-gray-500">No friends yet</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Edit Profile Modal */}
             {showModal && (
