@@ -1,20 +1,25 @@
-import {Calendar, UserCheck, UserPlus, UserMinus, X} from "lucide-react";
+import {Calendar, UserCheck, UserPlus, UserMinus, X, Users, Film} from "lucide-react";
 import {
     useFollowUserMutation,
     useGetUserByIdQuery,
     useUnfollowUserMutation,
     useCancelFollowRequestMutation,
     useAcceptFollowRequestMutation,
-    useRejectFollowRequestMutation
+    useRejectFollowRequestMutation,
+    useGetUserFriendListQuery,
+    useGetUserMovieStatsQuery
 } from "../redux/user/userApi.ts";
-import {useParams} from "react-router-dom";
+import {useParams, Link} from "react-router-dom";
 import Navbar from "../components/Navbar.tsx";
 import {useSelector} from "react-redux";
 import type {RootState} from "../redux/store.ts";
+import {useGetMovieByIdQuery} from "../redux/movie/movieApi.ts";
+import {useState} from "react";
 
 const UserPage = () => {
     const { username } = useParams();
     const currentUser = useSelector((state: RootState) => state.auth.user);
+    const [selectedTab, setSelectedTab] = useState<'watched' | 'planned'>('watched');
 
     const {data: user, isLoading, isError, error} = useGetUserByIdQuery(username as string, { skip: !username });
     const [followUser, { isLoading: isFollowLoading }] = useFollowUserMutation();
@@ -22,6 +27,15 @@ const UserPage = () => {
     const [cancelFollowRequest, { isLoading: isCancelLoading }] = useCancelFollowRequestMutation();
     const [acceptFollowRequest, { isLoading: isAcceptLoading }] = useAcceptFollowRequestMutation();
     const [rejectFollowRequest, { isLoading: isRejectLoading }] = useRejectFollowRequestMutation();
+
+    // Only fetch friend list and movie stats if the user is a friend
+    const isFriend = user?.relationshipStatus === 'FOLLOWING';
+    const { data: friendList, isLoading: isFriendListLoading } = useGetUserFriendListQuery(user?.id || '', {
+        skip: !user?.id || !isFriend
+    });
+    const { data: movieStats, isLoading: isMovieStatsLoading } = useGetUserMovieStatsQuery(user?.id || '', {
+        skip: !user?.id || !isFriend
+    });
 
     const isAnyActionLoading = isFollowLoading || isUnfollowLoading || isCancelLoading || isAcceptLoading || isRejectLoading;
 
@@ -173,12 +187,12 @@ const UserPage = () => {
                             <div className="bg-white rounded-lg border border-gray-200 p-8 mb-6">
                                 <div className="flex items-start gap-8 mb-6">
                                     {/* Profile Picture */}
-                                    <div className="flex-shrink-0">
+                                    <div className="shrink-0">
                                         {
                                             user?.avatar ? (
                                                 <img src={user?.avatar} alt="Profile" className="rounded-full " />
                                             ) : (
-                                                <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg">
+                                                <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg">
                                                     {user?.name?.[0]?.toUpperCase() || 'U'}
                                                 </div>
                                             )
@@ -242,7 +256,7 @@ const UserPage = () => {
                                 <h2 className="text-lg font-semibold text-gray-900 mb-4">About</h2>
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
                                             <Calendar className="h-5 w-5 text-gray-600" />
                                         </div>
                                         <div className="min-w-0 flex-1">
@@ -261,11 +275,183 @@ const UserPage = () => {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Friend List - Only visible if user is a friend */}
+                            {isFriend && (
+                                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <Users className="h-5 w-5 text-gray-900" />
+                                        <h2 className="text-lg font-semibold text-gray-900">Friends</h2>
+                                        <span className="text-sm text-gray-500">({friendList?.length || 0})</span>
+                                    </div>
+
+                                    {isFriendListLoading ? (
+                                        <div className="flex justify-center py-8">
+                                            <div className="inline-block h-6 w-6 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+                                        </div>
+                                    ) : friendList && friendList.length > 0 ? (
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                            {friendList.map((friend) => (
+                                                <Link
+                                                    key={friend.id}
+                                                    to={`/user/${friend.username}`}
+                                                    className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                                                >
+                                                    {friend.avatar ? (
+                                                        <img
+                                                            src={friend.avatar}
+                                                            alt={friend.name}
+                                                            className="w-16 h-16 rounded-full mb-2"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-16 h-16 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold mb-2">
+                                                            {friend.name?.[0]?.toUpperCase() || 'U'}
+                                                        </div>
+                                                    )}
+                                                    <p className="text-sm font-medium text-gray-900 text-center truncate w-full">
+                                                        {friend.name}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500 truncate w-full text-center">
+                                                        @{friend.username}
+                                                    </p>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-gray-500 text-center py-8">No friends to show</p>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Movie Stats - Only visible if user is a friend */}
+                            {isFriend && (
+                                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <Film className="h-5 w-5 text-gray-900" />
+                                        <h2 className="text-lg font-semibold text-gray-900">Movie List</h2>
+                                    </div>
+
+                                    {isMovieStatsLoading ? (
+                                        <div className="flex justify-center py-8">
+                                            <div className="inline-block h-6 w-6 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+                                        </div>
+                                    ) : movieStats ? (
+                                        <>
+                                            {/* Stats Summary */}
+                                            <div className="grid grid-cols-3 gap-4 mb-6">
+                                                <div className="bg-linear-to-br from-green-50 to-green-100 p-4 rounded-lg text-center">
+                                                    <p className="text-2xl font-bold text-green-700">{movieStats.stats.watched}</p>
+                                                    <p className="text-xs text-green-600 font-medium">Watched</p>
+                                                </div>
+                                                <div className="bg-linear-to-br from-blue-50 to-blue-100 p-4 rounded-lg text-center">
+                                                    <p className="text-2xl font-bold text-blue-700">{movieStats.stats.planned}</p>
+                                                    <p className="text-xs text-blue-600 font-medium">Planned</p>
+                                                </div>
+                                                <div className="bg-linear-to-br from-purple-50 to-purple-100 p-4 rounded-lg text-center">
+                                                    <p className="text-2xl font-bold text-purple-700">{movieStats.stats.total}</p>
+                                                    <p className="text-xs text-purple-600 font-medium">Total</p>
+                                                </div>
+                                            </div>
+
+                                            {/* Tab Navigation */}
+                                            <div className="flex border-b border-gray-200 mb-4">
+                                                <button
+                                                    onClick={() => setSelectedTab('watched')}
+                                                    className={`flex-1 py-3 text-sm font-medium transition-colors ${
+                                                        selectedTab === 'watched'
+                                                            ? 'text-blue-600 border-b-2 border-blue-600'
+                                                            : 'text-gray-500 hover:text-gray-700'
+                                                    }`}
+                                                >
+                                                    Watched ({movieStats.stats.watched})
+                                                </button>
+                                                <button
+                                                    onClick={() => setSelectedTab('planned')}
+                                                    className={`flex-1 py-3 text-sm font-medium transition-colors ${
+                                                        selectedTab === 'planned'
+                                                            ? 'text-blue-600 border-b-2 border-blue-600'
+                                                            : 'text-gray-500 hover:text-gray-700'
+                                                    }`}
+                                                >
+                                                    Plan to Watch ({movieStats.stats.planned})
+                                                </button>
+                                            </div>
+
+                                            {/* Movie Grid */}
+                                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                                {selectedTab === 'watched' ? (
+                                                    movieStats.watchedMovies.length > 0 ? (
+                                                        movieStats.watchedMovies.map((entry) => (
+                                                            <MoviePoster key={entry.id} movieId={entry.movie_id} />
+                                                        ))
+                                                    ) : (
+                                                        <div className="col-span-full text-center py-8 text-gray-500">
+                                                            No watched movies yet
+                                                        </div>
+                                                    )
+                                                ) : (
+                                                    movieStats.plannedMovies.length > 0 ? (
+                                                        movieStats.plannedMovies.map((entry) => (
+                                                            <MoviePoster key={entry.id} movieId={entry.movie_id} />
+                                                        ))
+                                                    ) : (
+                                                        <div className="col-span-full text-center py-8 text-gray-500">
+                                                            No planned movies yet
+                                                        </div>
+                                                    )
+                                                )}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <p className="text-gray-500 text-center py-8">No movie data available</p>
+                                    )}
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
             </main>
         </>
+    );
+};
+
+// Helper component to fetch and display movie poster
+const MoviePoster = ({ movieId }: { movieId: number }) => {
+    const { data: movie, isLoading } = useGetMovieByIdQuery(movieId);
+
+    if (isLoading) {
+        return (
+            <div className="aspect-2/3 bg-gray-200 rounded-lg animate-pulse"></div>
+        );
+    }
+
+    if (!movie) {
+        return (
+            <div className="aspect-2/3 bg-gray-300 rounded-lg flex items-center justify-center">
+                <Film className="h-8 w-8 text-gray-500" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="group cursor-pointer">
+            <div className="aspect-2/3 bg-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow">
+                {movie.poster_path ? (
+                    <img
+                        src={`https://image.tmdb.org/t/p/w342${movie.poster_path}`}
+                        alt={movie.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                ) : (
+                    <div className="w-full h-full bg-linear-to-br from-gray-300 to-gray-400 flex items-center justify-center">
+                        <Film className="h-12 w-12 text-gray-500" />
+                    </div>
+                )}
+            </div>
+            <p className="mt-2 text-xs text-gray-700 font-medium truncate" title={movie.title}>
+                {movie.title}
+            </p>
+        </div>
     );
 };
 
