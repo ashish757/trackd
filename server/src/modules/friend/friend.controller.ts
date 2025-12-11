@@ -77,4 +77,23 @@ export default class FriendController {
         };
     }
 
+    /**
+     * Get current user's own friend list
+     * GET /friend/my-friends
+     */
+    @Get("/my-friends")
+    async getMyFriendList(
+        @Req() req: Request & { user?: { sub: string; email: string }}
+    ) {
+        const userId = req.user.sub;
+        const data = await this.friendService.getMyFriendList(userId);
+
+        return {
+            status: 'success',
+            statusCode: HttpStatus.OK,
+            message: 'Friend list fetched successfully',
+            data: data
+        };
+    }
+
 }

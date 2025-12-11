@@ -171,4 +171,50 @@ export default class FriendService {
 
         return !!friendship;
     }
+
+    /**
+     * Get current user's own friend list (no friendship check needed)
+     */
+    async getMyFriendList(userId: string) {
+        // Get all friendships where current user is involved
+        const friendships = await this.prisma.friendship.findMany({
+            where: {
+                OR: [
+                    { friend_a_id: userId },
+                    { friend_b_id: userId }
+                ]
+            },
+            include: {
+                friendA: {
+                    select: {
+                        id: true,
+                        name: true,
+                        username: true,
+                        avatar: true,
+                        friendCount: true,
+                    }
+                },
+                friendB: {
+                    select: {
+                        id: true,
+                        name: true,
+                        username: true,
+                        avatar: true,
+                        friendCount: true,
+                    }
+                }
+            }
+        });
+
+        // Extract the friend (not the current user)
+        const friends = friendships.map(friendship => {
+            if (friendship.friend_a_id === userId) {
+                return friendship.friendB;
+            } else {
+                return friendship.friendA;
+            }
+        });
+
+        return friends;
+    }
 }
