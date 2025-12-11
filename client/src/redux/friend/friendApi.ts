@@ -18,6 +18,21 @@ interface GetFriendReq {
     data: NotificationsT;
 }
 
+export type FriendT = {
+    id: string;
+    name: string;
+    username: string;
+    avatar?: string;
+    friendCount: number;
+};
+
+interface GetMyFriendsResponse {
+    status: string;
+    statusCode: number;
+    message: string;
+    data: FriendT[];
+}
+
 export const friendApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
 
@@ -32,7 +47,19 @@ export const friendApi = apiSlice.injectEndpoints({
                 return response.data ?? [];
             },
         }),
+
+        getMyFriends: builder.query<FriendT[], void>({
+            query: () => ({
+                url: '/friend/my-friends',
+                method: 'GET',
+            }),
+
+            // Transform the response to match our interface
+            transformResponse: (response: GetMyFriendsResponse): FriendT[] => {
+                return response.data ?? [];
+            },
+        }),
     }),
 });
 
-export const { useGetFriendRequestsQuery } = friendApi;
+export const { useGetFriendRequestsQuery, useGetMyFriendsQuery } = friendApi;
