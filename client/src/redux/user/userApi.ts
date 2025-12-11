@@ -242,6 +242,46 @@ export const userApi = apiSlice.injectEndpoints({
                 method: 'POST',
                 body: {currentPassword, newPassword},
             }),
+        }),
+
+        getUserFriendList: builder.query<Array<User>, string>({
+            query: (userId) => ({
+                url: `friend/list/${userId}`,
+                method: 'GET',
+            }),
+            transformResponse: (response: { data: Array<User> }) => {
+                return response.data;
+            },
+            providesTags: (result, _error, userId) =>
+                result
+                    ? [
+                        { type: 'User' as const, id: `${userId}_FRIENDS` },
+                        ...result.map(friend => ({ type: 'User' as const, id: friend.id }))
+                    ]
+                    : [{ type: 'User' as const, id: `${userId}_FRIENDS` }],
+        }),
+
+        getUserMovieStats: builder.query<{
+            stats: { watched: number; planned: number; total: number };
+            watchedMovies: Array<{ id: string; movie_id: number; status: string; createdAt: string; movie: { id: number } }>;
+            plannedMovies: Array<{ id: string; movie_id: number; status: string; createdAt: string; movie: { id: number } }>;
+        }, string>({
+            query: (userId) => ({
+                url: `friend/movies/${userId}`,
+                method: 'GET',
+            }),
+            transformResponse: (response: {
+                data: {
+                    stats: { watched: number; planned: number; total: number };
+                    watchedMovies: Array<{ id: string; movie_id: number; status: string; createdAt: string; movie: { id: number } }>;
+                    plannedMovies: Array<{ id: string; movie_id: number; status: string; createdAt: string; movie: { id: number } }>;
+                }
+            }) => {
+                return response.data;
+            },
+            providesTags: (_result, _error, userId) => [
+                { type: 'User' as const, id: `${userId}_MOVIES` }
+            ],
         })
 
     }),
@@ -261,5 +301,7 @@ export const {
     useUnfollowUserMutation,
     useCancelFollowRequestMutation,
     useAcceptFollowRequestMutation,
-    useRejectFollowRequestMutation
+    useRejectFollowRequestMutation,
+    useGetUserFriendListQuery,
+    useGetUserMovieStatsQuery
 } = userApi;
