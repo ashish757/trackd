@@ -12,6 +12,7 @@ import {
     ParseIntPipe,
 } from '@nestjs/common';
 import { Request } from 'express';
+import { Throttle } from '@nestjs/throttler';
 import { UserMovieService } from './user-movie.service';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { MarkMovieDto, MovieStatus } from './DTO/user-movie.dto';
@@ -26,6 +27,7 @@ export class UserMovieController {
      * POST /user-movies/mark
      */
     @Post('mark')
+    @Throttle({ default: { limit: 30, ttl: 60000 } }) // 30 requests per minute
     async markMovie(
         @Body() dto: MarkMovieDto,
         @Req() req: Request & { user?: { sub: string; email: string } }
@@ -46,6 +48,7 @@ export class UserMovieController {
      * DELETE /user-movies/:movieId
      */
     @Delete(':movieId')
+    @Throttle({ default: { limit: 30, ttl: 60000 } }) // 30 requests per minute
     async removeMovie(
         @Param('movieId', ParseIntPipe) movieId: number,
         @Req() req: Request & { user?: { sub: string; email: string } }
