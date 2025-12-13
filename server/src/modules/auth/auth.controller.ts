@@ -12,6 +12,7 @@ import {
     Query
 } from '@nestjs/common';
 import type { Response, Request } from 'express';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import {
     SendOtpDto,
@@ -38,6 +39,7 @@ export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
     @Post('/login')
+    @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per minute
     async login(@Body() req: LoginDto, @Res({ passthrough: true }) res: Response) {
         const data = await this.authService.login(req);
 
@@ -63,6 +65,7 @@ export class AuthController {
     }
 
     @Post('/forget-password')
+    @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 requests per minute
     async forgetPassword(@Body() req: ForgetPasswordDto) {
         const data = await this.authService.forgetPassword(req);
 
@@ -74,6 +77,7 @@ export class AuthController {
     }
 
     @Post('/reset-password')
+    @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per minute
     async resetPassword(@Body() req: ResetPasswordDto) {
         const data = await this.authService.resetPassword(req);
 
@@ -85,6 +89,7 @@ export class AuthController {
     }
 
     @Post('/register')
+    @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per minute
     async register(@Body() req: RegisterDto, @Res({ passthrough: true }) res: Response) {
         const verify = await this.authService.verifyOtp({
             token: req.otpToken,
@@ -122,6 +127,7 @@ export class AuthController {
     }
 
     @Post('/send-otp')
+    @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 requests per minute (strict for OTP)
     async sendOtp(@Body() req: SendOtpDto) {
         const data = await this.authService.sendOtp(req);
         return {
@@ -133,6 +139,7 @@ export class AuthController {
     }
 
     @Post('/verify-otp')
+    @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per minute
     async verifyOtp(@Body() req: RegisterDto) {
         const data = await this.authService.verifyOtp({token: req.otpToken, email: req.user.email, otp: req.otp});
         return {

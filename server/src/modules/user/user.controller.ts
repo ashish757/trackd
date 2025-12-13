@@ -1,4 +1,5 @@
 import {Req, Res, Body, Controller, Post, UseGuards, InternalServerErrorException, HttpStatus, Get} from "@nestjs/common";
+import { Throttle } from '@nestjs/throttler';
 import {
     AcceptFollowRequestDTO, CancelFollowRequestDTO, ChangeBioDTO, ChangeNameDTO,
     ChangePasswordDTO, ChangeUsernameDTO, FollowUserDTO, RejectFollowRequestDTO, UnfollowUserDTO
@@ -33,6 +34,7 @@ export class UserController {
     }
 
     @Post('/follow')
+    @Throttle({ default: { limit: 15, ttl: 60000 } }) // 15 requests per minute
     async followUser(@Body() followDto: FollowUserDTO, @Req() req: AuthenticatedRequest) {
 
         const res = await this.userService.followUser(followDto, req.user.sub);
@@ -74,6 +76,7 @@ export class UserController {
     }
 
     @Post('/unfollow')
+    @Throttle({ default: { limit: 15, ttl: 60000 } }) // 15 requests per minute
     async unfollowUser(@Body() unfollowDto: UnfollowUserDTO, @Req() req:AuthenticatedRequest) {
         const res = await this.userService.unfollowUser(unfollowDto, req.user.sub);
         return {
