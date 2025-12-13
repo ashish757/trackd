@@ -5,8 +5,12 @@ dotenv.config();
 import cookieParser from 'cookie-parser';
 import { AllExceptionsFilter } from './common/filters/AllExceptionsFilter';
 import { AppModule } from './app.module';
+import { validateEnvironmentVariables } from './utils/env-validator';
 
 async function bootstrap() {
+    // Validate environment variables BEFORE creating the app
+    validateEnvironmentVariables(true); // Throws error if required vars are missing
+
     const app = await NestFactory.create(AppModule);
     const logger = new Logger('Bootstrap');
 
@@ -35,18 +39,6 @@ async function bootstrap() {
     // Global exception filter
     app.useGlobalFilters(new AllExceptionsFilter());
 
-    // Validate required environment variables
-    const requiredEnvVars = [
-        'JWT_ACCESS_SECRET',
-        'JWT_REFRESH_SECRET',
-        'JWT_OTP_SECRET',
-        'DATABASE_URL',
-    ];
-    for (const envVar of requiredEnvVars) {
-        if (!process.env[envVar]) {
-            throw new Error(`Missing required environment variable: ${envVar}`);
-        }
-    }
 
     const port = process.env.PORT || 3000;
     await app.listen(port);
