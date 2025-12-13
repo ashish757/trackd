@@ -54,8 +54,10 @@
 
 
 import { Resend } from "resend";
+import { Logger } from "@nestjs/common";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const logger = new Logger('EmailService');
 
 export async function sendEmail(to: string, subject: string, text: string): Promise<boolean> {
     try {
@@ -66,10 +68,11 @@ export async function sendEmail(to: string, subject: string, text: string): Prom
             html: `${text}`
         });
 
-        console.log(result);
+        logger.log(`Email sent successfully to ${to}`);
+        logger.debug(`Email result: ${JSON.stringify(result)}`);
         return true;
     } catch (error) {
-        console.error(error);
+        logger.error(`Failed to send email to ${to}:`, error);
         return false;
     }
 }

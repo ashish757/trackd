@@ -1,7 +1,8 @@
-import {HttpException, Injectable, InternalServerErrorException} from '@nestjs/common';
+import {HttpException, Injectable, InternalServerErrorException, Logger} from '@nestjs/common';
 
 @Injectable()
 export class TmdbService {
+    private readonly logger = new Logger(TmdbService.name);
     private readonly baseUrl = 'https://api.themoviedb.org/3';
     private readonly apiKey = process.env.TMDB_API_KEY;
 
@@ -17,7 +18,7 @@ export class TmdbService {
 
 
     async fetch(endpoint: string) {
-        console.log("fetching ", endpoint);
+        this.logger.debug(`Fetching from TMDB: ${endpoint}`);
 
         const url = this.baseUrl + endpoint;
         const options = this.options();
@@ -40,7 +41,7 @@ export class TmdbService {
             if (err instanceof HttpException) {
                 throw err;
             }
-            console.error('TMDB Network/Connection Error:', err);
+            this.logger.error('TMDB Network/Connection Error:', err);
             throw new InternalServerErrorException('Could not connect to external TMDB service.');
         }
     }

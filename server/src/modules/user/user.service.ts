@@ -1,6 +1,6 @@
 import {
     BadRequestException,
-    ConflictException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException
+    ConflictException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException, Logger
 } from "@nestjs/common";
 import {PrismaService} from "../prisma/prisma.service";
 import {
@@ -13,6 +13,7 @@ import {PASSWORD_SALT_ROUNDS} from "../../utils/constants";
 
 @Injectable()
 export class UserService {
+    private readonly logger = new Logger(UserService.name);
 
     constructor(private readonly prisma: PrismaService, private readonly jwtService: JwtService) {
     }
@@ -345,7 +346,7 @@ export class UserService {
             return user
 
         } catch (err) {
-            console.error("Raw SQL error:", err);
+            this.logger.error("Raw SQL error:", err);
             throw err; // or throw new InternalServerErrorException('DB error')
         }
     }
