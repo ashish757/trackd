@@ -1,3 +1,7 @@
+import { Logger } from "@nestjs/common";
+
+const logger = new Logger('TmdbConfig');
+
 export const baseUrl = 'https://api.themoviedb.org/3/';
 
 export const getOptions = () => {
@@ -21,7 +25,7 @@ export const fetchFromTmdb = async (endpoint: string) => {
         return {error: false, data};
     }
     catch(err) {
-        console.error('Error FROM TMBD:', err);
+        logger.error('Error from TMDB:', err);
         return {error: true};
     }
 }

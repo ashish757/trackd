@@ -1,7 +1,7 @@
 import {
     Injectable,
     UnauthorizedException,
-    ConflictException, InternalServerErrorException, BadRequestException,
+    ConflictException, InternalServerErrorException, BadRequestException, Logger,
 } from '@nestjs/common';
 import {
     VerifyOtpDto,
@@ -25,6 +25,8 @@ import type {User} from '@prisma/client'
 
 @Injectable()
 export class AuthService {
+    private readonly logger = new Logger(AuthService.name);
+
     constructor(
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
@@ -164,7 +166,7 @@ export class AuthService {
         // Generate random 6-digit OTP
         const otp = generateOTP();
 
-        console.log('Sending OTP to', otpDto.email);
+        this.logger.log(`Sending OTP to: ${otpDto.email}`);
         // await sendEmail(otpDto.email, 'Trackd - Email Verification Code', `Hello <strong> ${otpDto.name} </strong>, <br/> <br/> Your One Time Verification code is: <strong>${otp} </strong>. <br/> It is valid for 03 minutes.`);
         await sendEmail(
             otpDto.email,
@@ -172,7 +174,7 @@ export class AuthService {
             otpTemplate(otpDto.name, otp)
         );
 
-        console.log('OTP:', otp);
+        this.logger.debug(`OTP generated for ${otpDto.email}: ${otp}`);
 
         const payload = {
             email: otpDto.email,
@@ -298,7 +300,7 @@ export class AuthService {
 
         if (!tokenExists) {
             // SECURITY: Possible token reuse attack - invalidate all tokens
-            console.warn(`Token reuse detected for user ${user.id}. Invalidating all tokens.`);
+            this.logger.warn(`Token reuse detected for user ${user.id}. Invalidating all tokens.`);
             await this.prisma.user.update({
                 where: {id: user.id},
                 data: {refreshTokens: []},
@@ -583,7 +585,7 @@ export class AuthService {
 
         if (!tokenResponse.ok) {
             const errorData = await tokenResponse.text();
-            console.error('Google Token Error:', errorData);
+            this.logger.error(`Google Token Error: ${errorData}`);
             throw new BadRequestException('Failed to exchange authorization code');
         }
 
@@ -597,7 +599,7 @@ export class AuthService {
 
         if (!userResponse.ok) {
             const errorData = await userResponse.text();
-            console.error('Google Profile Error:', errorData);
+            this.logger.error(`Google Profile Error: ${errorData}`);
             throw new BadRequestException('Failed to fetch user profile from Google');
         }
         const googleUser = await userResponse.json();
@@ -655,7 +657,7 @@ export class AuthService {
             return this.authenticateUser(newUser);
 
         } catch (error) {
-            console.error('Google OAuth Error:', error);
+            this.logger.error('Google OAuth Error:', error);
             if (error instanceof BadRequestException || error instanceof ConflictException) {
                 throw error;
             }

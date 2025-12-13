@@ -1,10 +1,12 @@
-import {Controller, Get, Post, Body, Req, HttpException, InternalServerErrorException} from '@nestjs/common';
+import {Controller, Get, Post, Body, Req, HttpException, InternalServerErrorException, Logger} from '@nestjs/common';
 import { AppService } from './app.service';
 import { sendEmail } from './utils/email';
 import {OtpTestDto} from "./modules/auth/DTO/register.dto";
 
 @Controller()
 export class AppController {
+    private readonly logger = new Logger(AppController.name);
+
     constructor(private readonly appService: AppService) {}
 
 
@@ -19,7 +21,7 @@ export class AppController {
 
     @Post('/test-email-otp')
     async testEmail(@Body() body: OtpTestDto) {
-        console.log(body.email);
+        this.logger.log(`Testing email for: ${body.email}`);
         const result = await sendEmail(body.email, "Testing OTP", "OTP - 999999");
         if(!result) {
             throw new InternalServerErrorException('Failed to send test email');

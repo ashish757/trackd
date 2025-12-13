@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 dotenv.config();
 import cookieParser from 'cookie-parser';
@@ -8,6 +8,7 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
+    const logger = new Logger('Bootstrap');
 
     // Enable cookie parser for HttpOnly cookies
     app.use(cookieParser());
@@ -49,6 +50,6 @@ async function bootstrap() {
 
     const port = process.env.PORT || 3000;
     await app.listen(port);
-    console.log(`Application is up and  running`);
+    logger.log(`Application is up and running on port ${port}`);
 }
 bootstrap();

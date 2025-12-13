@@ -9,7 +9,8 @@ import {
     Get,
     Req,
     UseGuards,
-    Query
+    Query,
+    Logger
 } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { Throttle } from '@nestjs/throttler';
@@ -36,6 +37,8 @@ interface AuthorizedRequest extends Request {
 
 @Controller('auth')
 export class AuthController {
+    private readonly logger = new Logger(AuthController.name);
+
     constructor(private readonly authService: AuthService) {}
 
     @Post('/login')
@@ -298,7 +301,7 @@ export class AuthController {
             return res.redirect(redirectUrl);
 
         } catch (error) {
-            console.error('OAuth Callback Error:', error);
+            this.logger.error('OAuth Callback Error:', error);
             // Provide more specific error messages
             const errorMessage = error?.message || 'oauth_failed';
 
