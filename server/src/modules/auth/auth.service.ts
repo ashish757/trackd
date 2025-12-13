@@ -20,7 +20,7 @@ import {sendEmail} from "../../utils/email";
 import {PASSWORD_SALT_ROUNDS} from "../../utils/constants";
 import {randomBytes} from "node:crypto";
 import crypto from 'crypto';
-import {changeEmailRequestTemplate, otpTemplate, passwordResetTemplate} from "../../utils/emailTemplates";
+import {changeEmailRequestTemplate, emailChangedSuccessTemplate, otpTemplate, passwordResetTemplate, verifyChangeEmailTemplate} from "../../utils/emailTemplates";
 import type {User} from '@prisma/client'
 
 @Injectable()
@@ -385,8 +385,8 @@ export class AuthService {
         // Send notification to old email
         await sendEmail(currentUser.email, 'Trackd - Email Change Request', changeEmailRequestTemplate(currentUser.name, dto.newEmail));
 
-        // Send link to new email
-        await sendEmail(dto.newEmail, "Email Change - Trackd", changeLink);
+        // Send verification link to new email
+        await sendEmail(dto.newEmail, "Email Verification - Trackd", verifyChangeEmailTemplate(currentUser.name, changeLink));
 
         // create or update email change request per user
         const res = await this.prisma.emailChangeTable.upsert({
@@ -464,6 +464,13 @@ export class AuthService {
 
                 return {user, del};
             });
+
+            // Send success confirmation email to the new email address
+            await sendEmail(
+                res.user.email,
+                'Email Successfully Updated - Trackd',
+                emailChangedSuccessTemplate(res.user.name, res.user.email)
+            );
 
             if (isAuthenticated) {
                 usr = {
