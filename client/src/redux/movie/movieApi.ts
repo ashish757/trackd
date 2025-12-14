@@ -1,12 +1,50 @@
 import { apiSlice } from '../apiSlice';
 
+export interface Genre {
+    id: number;
+    name: string;
+}
+
+export interface CastMember {
+    id: number;
+    name: string;
+    character: string;
+    profile_path: string | null;
+    order: number;
+}
+
+export interface CrewMember {
+    id: number;
+    name: string;
+    job: string;
+    department: string;
+    profile_path: string | null;
+}
+
+export interface Credits {
+    cast: CastMember[];
+    crew: CrewMember[];
+}
+
 export interface Movie {
     id: number;
     title: string;
     release_date: string;
     poster_path: string | null;
+    backdrop_path?: string | null;
     overview: string;
     vote_average: number;
+    vote_count?: number;
+    runtime?: number;
+    genres?: Genre[];
+    tagline?: string;
+    budget?: number;
+    revenue?: number;
+    status?: string;
+    original_language?: string;
+    spoken_languages?: { iso_639_1: string; name: string; }[];
+    production_companies?: { id: number; name: string; logo_path: string | null; }[];
+    credits?: Credits;
     media_type?: string;
 }
 
