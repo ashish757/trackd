@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar';
 import { useLazySearchMoviesQuery, useGetTrendingMoviesQuery, type Movie } from '../redux/movie/movieApi';
 import MovieInfoModel from "../components/MovieInfoModel.tsx";
 import TrendingMoviesSection from "../components/TrendingMoviesSection.tsx";
-import MovieSearchItem from "../components/MovieSearchItem.tsx";
+import SearchDropdown from "../components/SearchDropdown.tsx";
 import { useDebounce } from '../hooks/useDebounce';
 import { useClickOutside } from '../hooks/useClickOutside';
 import { SEARCH_CONFIG } from '../constants/search';
@@ -120,35 +120,14 @@ export default function Home() {
                                 </div>
 
                             {/* Search Suggestions Dropdown */}
-                            {showSuggestions && (
-                                <div className="absolute w-full mt-2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50">
-                                    {isSearching ? (
-                                        <div className="px-4 py-8 text-center text-gray-500">
-                                            <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-blue-500 border-t-transparent"></div>
-                                            <p className="mt-2">Searching...</p>
-                                        </div>
-                                    ) : isError ? (
-                                        <div className="px-4 py-8 text-center text-red-500">
-                                            <p>Error loading results. Please try again.</p>
-                                        </div>
-                                    ) : suggestions.length > 0 ? (
-                                        <ul className="max-h-96 overflow-y-auto">
-                                            {suggestions.map((movie) => (
-                                                <MovieSearchItem
-                                                    key={movie.id}
-                                                    movie={movie}
-                                                    onClick={handleSuggestionClick}
-                                                />
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <div className="px-4 py-8 text-center text-gray-500">
-                                            <Film className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-                                            <p>No results found for "{searchQuery}"</p>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                            <SearchDropdown
+                                show={showSuggestions}
+                                isSearching={isSearching}
+                                isError={isError}
+                                suggestions={suggestions}
+                                searchQuery={searchQuery}
+                                onMovieClick={handleSuggestionClick}
+                            />
                         </div>
                     </div>
 
