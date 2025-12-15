@@ -1,6 +1,7 @@
 import { Film } from 'lucide-react';
 import type { Movie } from '../redux/movie/movieApi';
 import { getTMDBImageUrl } from '../constants/tmdb';
+import { memo } from 'react';
 
 interface MovieSearchItemProps {
     movie: Movie;
@@ -11,7 +12,7 @@ interface MovieSearchItemProps {
  * A list-style movie item component for search suggestions and dropdowns.
  * Displays a small poster thumbnail with movie title, year, and rating.
  */
-const MovieSearchItem = ({ movie, onClick }: MovieSearchItemProps) => {
+const MovieSearchItem = memo(({ movie, onClick }: MovieSearchItemProps) => {
     const posterUrl = getTMDBImageUrl(movie.poster_path, 'POSTER_SMALL');
 
     return (
@@ -41,7 +42,7 @@ const MovieSearchItem = ({ movie, onClick }: MovieSearchItemProps) => {
             </button>
         </li>
     );
-};
+});
 
 export default MovieSearchItem;
 
