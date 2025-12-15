@@ -1,5 +1,6 @@
 import { Film } from 'lucide-react';
 import type { Movie } from '../redux/movie/movieApi';
+import { memo } from 'react';
 
 interface MovieCardProps {
     movie: Movie;
@@ -17,7 +18,7 @@ const badgeColors = {
     yellow: 'bg-yellow-500',
 };
 
-const MovieCard = ({ movie, onClick, badge }: MovieCardProps) => {
+const MovieCard = memo(({ movie, onClick, badge }: MovieCardProps) => {
     return (
         <div
             className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer group"
@@ -31,11 +32,11 @@ const MovieCard = ({ movie, onClick, badge }: MovieCardProps) => {
                             alt={movie.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
-                        {movie.vote_average && movie.vote_average > 0 && (
+                        {movie.vote_average && movie.vote_average > 0 ? (
                             <div className="absolute top-2 right-2 bg-black/80 text-white px-2 py-1 rounded-md text-sm font-semibold flex items-center gap-1">
                                 ⭐ {movie.vote_average.toFixed(1)}
                             </div>
-                        )}
+                        ): null}
                         {badge && (
                             <div className={`absolute top-2 left-2 ${badgeColors[badge.color]} text-white px-2 py-1 rounded-full text-xs font-semibold`}>
                                 {badge.text}
@@ -63,7 +64,9 @@ const MovieCard = ({ movie, onClick, badge }: MovieCardProps) => {
             </div>
         </div>
     );
-};
+});
+
+MovieCard.displayName = 'MovieCard';
 
 export default MovieCard;
 
