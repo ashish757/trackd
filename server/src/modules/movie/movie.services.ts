@@ -24,10 +24,10 @@ class MovieService {
     }
 
     /**
-     * Get movie details by ID from TMDB
+     * Get movie details by ID from TMDB with credits (cast and crew)
      */
     async getMovieById(id: number) {
-        const res = await fetchFromTmdb(`movie/${id}?language=en-US`);
+        const res = await fetchFromTmdb(`movie/${id}?language=en-US&append_to_response=credits`);
         if (res.error) return null;
         return res.data;
     }

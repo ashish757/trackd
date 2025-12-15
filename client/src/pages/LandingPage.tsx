@@ -1,6 +1,15 @@
 import {Link} from "react-router-dom";
+import {useSelector} from "react-redux";
+import type {RootState} from "../redux/store.ts";
 
 export default function LandingPage() {
+    // fetch state if user ia logged in
+    const {isAuthenticated} = useSelector((state: RootState) => state.auth);
+
+    if(isAuthenticated){
+        // redirect to home if logged in
+        window.location.href = "/home";
+    }
 
     return (
         <div className="bg-white">
@@ -12,12 +21,6 @@ export default function LandingPage() {
 
                         </a>
                     </div>
-
-                    {/*<div className="lg:flex lg:flex-1 lg:justify-end">*/}
-                    {/*    <a href="#" className="text-sm/6 font-semibold text-gray-900">*/}
-                    {/*        Log in <span aria-hidden="true">&rarr;</span>*/}
-                    {/*    </a>*/}
-                    {/*</div>*/}
                 </nav>
 
             <div className="relative isolate px-6 pt-14 lg:px-8">
@@ -42,7 +45,7 @@ export default function LandingPage() {
                             Track what you watch. Discover what to watch next.
                         </p>
                         <div className="mt-10 flex items-center justify-center gap-x-6">
-                            <Link to="/signup" className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                            <Link to="/home" className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
                                 Get started
                             </Link>
                             <Link to={"/signin"}  className="text-sm/6 font-semibold text-gray-900">

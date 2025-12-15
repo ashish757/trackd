@@ -487,6 +487,16 @@ function SignupPage() {
                         )}
                     </form>
 
+                    {/* Sign In Link */}
+                    <div className="mt-6 text-center">
+                        <p className="text-sm text-gray-600">
+                            Already have an account?{' '}
+                            <Link to="/signin" className="font-medium text-primary hover:text-primary/80 transition-colors">
+                                Sign in
+                            </Link>
+                        </p>
+                    </div>
+
                     {/* Divider */}
                     {!otpSent && (
                         <div className="mt-6">
@@ -506,15 +516,7 @@ function SignupPage() {
                         </div>
                     )}
 
-                    {/* Sign In Link */}
-                    <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600">
-                            Already have an account?{' '}
-                            <Link to="/signin" className="font-medium text-primary hover:text-primary/80 transition-colors">
-                                Sign in
-                            </Link>
-                        </p>
-                    </div>
+
                 </div>
             </div>
         </div>
