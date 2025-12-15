@@ -19,6 +19,7 @@ import ResetPassword from "./pages/ResetPassword.tsx";
 import ChangeEmail from "./components/ChangeEmail.tsx";
 import OauthSuccessPage from "./pages/OauthSuccessPage.tsx";
 import {useDetectCountry} from "./hooks/useDetectCountry.tsx";
+import LandingPage from "./pages/LandingPage.tsx";
 
 function App() {
   // Automatically refresh access token on page load/reload
@@ -38,17 +39,17 @@ function App() {
       <>
           <main>
               <Routes>
-                  <Route path="/" element={<ProtectedRoute authorized={<Home />} />} />
-                  <Route path="/discover" element={<ProtectedRoute authorized={<DiscoverPage />} />} />
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/home" element={<Home />} />
+                  <Route path="/discover" element={<DiscoverPage />} />
+
                   <Route path="/my-list" element={<ProtectedRoute authorized={<MyListPage />} />} />
                   <Route path="/profile" element={<ProtectedRoute authorized={<ProfilePage />} />} />
                   <Route path="/settings" element={<ProtectedRoute authorized={<SettingsPage />} />} />
-                  <Route path="/forget-password" element={<ForgetPassword />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-
-                  <Route path="/change/email" element={<ChangeEmail/>} />
-
-                  <Route path="/oauth/success" element={<OauthSuccessPage />} />
+                  <Route path="/forget-password" element={<ProtectedRoute authorized={<ForgetPassword />} />} />
+                  <Route path="/reset-password" element={<ProtectedRoute authorized={<ResetPassword />} />}/>
+                  <Route path="/change/email" element={<ProtectedRoute authorized={<ChangeEmail />} />} />
+                  <Route path="/oauth/success" element={<ProtectedRoute authorized={<OauthSuccessPage />} />} />
 
                   <Route path="/find" element={<FindUsers />} />
                   <Route path="/users/:username" element={<UserPage />} />
