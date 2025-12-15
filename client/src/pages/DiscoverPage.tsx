@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, Film, X, Filter, SlidersHorizontal } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { useLazySearchMoviesQuery, type Movie } from '../redux/movie/movieApi';
@@ -110,34 +110,38 @@ export default function DiscoverPage() {
 
     const hasActiveFilters = selectedGenres.length > 0 || selectedYear !== null || minRating > 0;
 
-    // Filter and sort results
-    const filteredResults = searchResults?.results
-        ? searchResults.results.filter(movie => {
-            if (selectedYear && movie.release_date) {
-                const movieYear = new Date(movie.release_date).getFullYear();
-                if (movieYear !== selectedYear) return false;
-            }
-            if (minRating > 0 && movie.vote_average < minRating) return false;
-            return true;
-        }).sort((a, b) => {
-            switch (sortBy) {
-                case 'popularity.desc':
-                    return (b.vote_average || 0) - (a.vote_average || 0);
-                case 'popularity.asc':
-                    return (a.vote_average || 0) - (b.vote_average || 0);
-                case 'vote_average.desc':
-                    return (b.vote_average || 0) - (a.vote_average || 0);
-                case 'vote_average.asc':
-                    return (a.vote_average || 0) - (b.vote_average || 0);
-                case 'release_date.desc':
-                    return new Date(b.release_date || 0).getTime() - new Date(a.release_date || 0).getTime();
-                case 'release_date.asc':
-                    return new Date(a.release_date || 0).getTime() - new Date(b.release_date || 0).getTime();
-                default:
-                    return 0;
-            }
-        })
-        : [];
+    // Filter and sort results with useMemo for performance
+    const filteredResults = useMemo(() => {
+        if (!searchResults?.results) return [];
+
+        return searchResults.results
+            .filter(movie => {
+                if (selectedYear && movie.release_date) {
+                    const movieYear = new Date(movie.release_date).getFullYear();
+                    if (movieYear !== selectedYear) return false;
+                }
+                if (minRating > 0 && movie.vote_average < minRating) return false;
+                return true;
+            })
+            .sort((a, b) => {
+                switch (sortBy) {
+                    case 'popularity.desc':
+                        return (b.vote_average || 0) - (a.vote_average || 0);
+                    case 'popularity.asc':
+                        return (a.vote_average || 0) - (b.vote_average || 0);
+                    case 'vote_average.desc':
+                        return (b.vote_average || 0) - (a.vote_average || 0);
+                    case 'vote_average.asc':
+                        return (a.vote_average || 0) - (b.vote_average || 0);
+                    case 'release_date.desc':
+                        return new Date(b.release_date || 0).getTime() - new Date(a.release_date || 0).getTime();
+                    case 'release_date.asc':
+                        return new Date(a.release_date || 0).getTime() - new Date(b.release_date || 0).getTime();
+                    default:
+                        return 0;
+                }
+            });
+    }, [searchResults, selectedYear, minRating, sortBy]);
 
     const suggestions = searchResults?.results || [];
     const isSearching = isLoading || isFetching;
