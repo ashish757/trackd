@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, IsOptional, Min, Max } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, Min, Max, IsInt } from 'class-validator';
 
 export enum MovieStatus {
     WATCHED = 'WATCHED',
@@ -22,9 +22,9 @@ export class RateMovieDto {
     @IsNumber()
     movieId: number;
 
-    @IsNumber()
-    @Min(1)
-    @Max(10)
+    @IsInt({ message: 'Rating must be an integer' })
+    @Min(1, { message: 'Rating must be at least 1' })
+    @Max(10, { message: 'Rating must be at most 10' })
     rating: number;
 
     @IsOptional()
