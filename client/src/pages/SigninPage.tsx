@@ -207,18 +207,24 @@ function SigninPage() {
                             </Link>
                         </p>
                     </div>
+                    {/* Divider */}
+                    <div className="mt-6">
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-gray-300"></div>
+                            </div>
+                            <div className="relative flex justify-center text-sm">
+                                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                            </div>
+                        </div>
+                        {/* Google Login Button */}
+                        <div className="mt-6">
+                            <GoogleLoginButton />
+                        </div>
+                    </div>
                 </div>
 
-                {/*/!* Terms *!/*/}
-                {/*<p className="mt-6 text-center text-xs text-gray-500">*/}
-                {/*    subject to the{' '}*/}
-                {/*    <a href="#" className="underline hover:text-gray-700">Privacy Policy</a>*/}
-                {/*</p>*/}
-                <span className="block text-center text-md text-gray-500 mt-8">OR</span>
 
-                <span className="flex justify-center  text-md text-gray-500 mt-4 mb-4">
-                    <GoogleLoginButton />
-                </span>
 
             </div>
         </div>
