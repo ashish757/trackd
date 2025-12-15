@@ -4,6 +4,9 @@ import Portal from "./Portal.tsx";
 import { useMarkMovieMutation, useRemoveMovieMutation, useGetMovieEntryQuery, MovieStatus } from '../redux/userMovie/userMovieApi';
 import { useState, useEffect } from 'react';
 import { useGetMovieByIdQuery } from '../redux/movie/movieApi';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../redux/store';
+import { Link } from 'react-router-dom';
 
 interface props {
     movie: Movie | null,
@@ -11,10 +14,12 @@ interface props {
 }
 
 const MovieInfoModel = ({onClose, movie}: props) => {
+    const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+
     const [markMovie, { isLoading: isMarking }] = useMarkMovieMutation();
     const [removeMovie, { isLoading: isRemoving }] = useRemoveMovieMutation();
     const { data: movieEntryData, isLoading: isLoadingEntry } = useGetMovieEntryQuery(movie?.id || 0, {
-        skip: !movie?.id,
+        skip: !movie?.id || !isAuthenticated,
     });
 
     // Fetch detailed movie info
@@ -262,46 +267,71 @@ const MovieInfoModel = ({onClose, movie}: props) => {
                             </div>
                         )}
 
-                        {/* Action Buttons - Moved higher */}
-                        <div className="flex flex-col gap-3 py-4 mb-4 border-y border-gray-200 dark:border-gray-700">
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => handleMarkMovie(MovieStatus.WATCHED)}
-                                    disabled={isProcessing || currentStatus === MovieStatus.WATCHED}
-                                    className={`flex-1 flex items-center justify-center gap-2 font-semibold py-2.5 px-4 rounded-lg transition-all duration-200 ${
-                                        currentStatus === MovieStatus.WATCHED
-                                            ? 'bg-green-600 text-white cursor-default'
-                                            : 'bg-green-100 hover:bg-green-200 text-green-800 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-300'
-                                    } disabled:opacity-50 disabled:cursor-not-allowed`}
-                                >
-                                    <Check className="w-5 h-5" />
-                                    {currentStatus === MovieStatus.WATCHED ? 'Watched' : 'Mark as Watched'}
-                                </button>
-                                <button
-                                    onClick={() => handleMarkMovie(MovieStatus.PLANNED)}
-                                    disabled={isProcessing || currentStatus === MovieStatus.PLANNED}
-                                    className={`flex-1 flex items-center justify-center gap-2 font-semibold py-2.5 px-4 rounded-lg transition-all duration-200 ${
-                                        currentStatus === MovieStatus.PLANNED
-                                            ? 'bg-blue-600 text-white cursor-default'
-                                            : 'bg-blue-100 hover:bg-blue-200 text-blue-800 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-300'
-                                    } disabled:opacity-50 disabled:cursor-not-allowed`}
-                                >
-                                    <Clock className="w-5 h-5" />
-                                    {currentStatus === MovieStatus.PLANNED ? 'Planned' : 'Plan to Watch'}
-                                </button>
-                            </div>
+                        {/* Action Buttons - Only show for authenticated users */}
+                        {isAuthenticated ? (
+                            <div className="flex flex-col gap-3 py-4 mb-4 border-y border-gray-200 dark:border-gray-700">
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => handleMarkMovie(MovieStatus.WATCHED)}
+                                        disabled={isProcessing || currentStatus === MovieStatus.WATCHED}
+                                        className={`flex-1 flex items-center justify-center gap-2 font-semibold py-2.5 px-4 rounded-lg transition-all duration-200 ${
+                                            currentStatus === MovieStatus.WATCHED
+                                                ? 'bg-green-600 text-white cursor-default'
+                                                : 'bg-green-100 hover:bg-green-200 text-green-800 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-300'
+                                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                    >
+                                        <Check className="w-5 h-5" />
+                                        {currentStatus === MovieStatus.WATCHED ? 'Watched' : 'Mark as Watched'}
+                                    </button>
+                                    <button
+                                        onClick={() => handleMarkMovie(MovieStatus.PLANNED)}
+                                        disabled={isProcessing || currentStatus === MovieStatus.PLANNED}
+                                        className={`flex-1 flex items-center justify-center gap-2 font-semibold py-2.5 px-4 rounded-lg transition-all duration-200 ${
+                                            currentStatus === MovieStatus.PLANNED
+                                                ? 'bg-blue-600 text-white cursor-default'
+                                                : 'bg-blue-100 hover:bg-blue-200 text-blue-800 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-300'
+                                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                    >
+                                        <Clock className="w-5 h-5" />
+                                        {currentStatus === MovieStatus.PLANNED ? 'Planned' : 'Plan to Watch'}
+                                    </button>
+                                </div>
 
-                            {/* Remove Button - Only show if movie is marked */}
-                            {currentStatus && (
-                                <button
-                                    onClick={handleRemoveMovie}
-                                    disabled={isProcessing}
-                                    className="w-full bg-red-100 hover:bg-red-200 text-red-800 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-300 font-semibold py-2.5 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    Remove from My Movies
-                                </button>
-                            )}
-                        </div>
+                                {/* Remove Button - Only show if movie is marked */}
+                                {currentStatus && (
+                                    <button
+                                        onClick={handleRemoveMovie}
+                                        disabled={isProcessing}
+                                        className="w-full bg-red-100 hover:bg-red-200 text-red-800 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-300 font-semibold py-2.5 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Remove from My Movies
+                                    </button>
+                                )}
+                            </div>
+                        ) : (
+                            /* Show sign in prompt for unauthenticated users */
+                            <div className="flex flex-col gap-3 py-4 mb-4 border-y border-gray-200 dark:border-gray-700">
+                                <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                                        Sign in to track this movie in your list
+                                    </p>
+                                    <div className="flex gap-3 justify-center">
+                                        <Link
+                                            to="/signin"
+                                            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+                                        >
+                                            Sign In
+                                        </Link>
+                                        <Link
+                                            to="/signup"
+                                            className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100 font-semibold rounded-lg transition-colors"
+                                        >
+                                            Sign Up
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Director */}
                         {director && (
