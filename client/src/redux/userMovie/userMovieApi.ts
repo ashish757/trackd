@@ -18,6 +18,16 @@ export interface UserMovieEntry {
     };
 }
 
+export interface UserMovieRating {
+    id: string;
+    user_id: string;
+    movie_id: number;
+    rating: number | null;
+    description: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
 interface UserMoviesResponse {
     status: string;
     statusCode: number;
@@ -41,6 +51,20 @@ interface MarkMovieResponse {
     statusCode: number;
     message: string;
     data: UserMovieEntry;
+}
+
+interface RateMovieResponse {
+    status: string;
+    statusCode: number;
+    message: string;
+    data: UserMovieRating;
+}
+
+interface GetRatingResponse {
+    status: string;
+    statusCode: number;
+    message: string;
+    data: UserMovieRating | null;
 }
 
 export const userMovieApi = apiSlice.injectEndpoints({
@@ -88,6 +112,28 @@ export const userMovieApi = apiSlice.injectEndpoints({
             }),
             providesTags: ['UserMovies'],
         }),
+        rateMovie: builder.mutation<RateMovieResponse, { movieId: number; rating: number; description?: string }>({
+            query: (dto) => ({
+                url: '/user-movies/rate',
+                method: 'POST',
+                body: dto,
+            }),
+            invalidatesTags: ['UserMovies', 'MovieRating'],
+        }),
+        getUserMovieRating: builder.query<GetRatingResponse, number>({
+            query: (movieId) => ({
+                url: `/user-movies/rating/${movieId}`,
+                method: 'GET',
+            }),
+            providesTags: ['MovieRating'],
+        }),
+        removeRating: builder.mutation<{ status: string; statusCode: number; message: string }, number>({
+            query: (movieId) => ({
+                url: `/user-movies/rating/${movieId}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['UserMovies', 'MovieRating'],
+        }),
     }),
 });
 
@@ -98,5 +144,10 @@ export const {
     useGetUserMoviesByStatusQuery,
     useGetMovieEntryQuery,
     useGetUserStatsQuery,
+    useRateMovieMutation,
+    useGetUserMovieRatingQuery,
+    useRemoveRatingMutation,
 } = userMovieApi;
+
+
 
