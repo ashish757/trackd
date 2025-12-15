@@ -1,12 +1,13 @@
 import { X, Calendar, Star, Film, Check, Clock, Users, Clapperboard, DollarSign, Globe } from 'lucide-react'
 import type {Movie} from "../redux/movie/movieApi.ts";
 import Portal from "./Portal.tsx";
-import { useMarkMovieMutation, useRemoveMovieMutation, useGetMovieEntryQuery, MovieStatus } from '../redux/userMovie/userMovieApi';
-import { useState, useEffect } from 'react';
+import { useMarkMovieMutation, useRemoveMovieMutation, useGetMovieEntryQuery, MovieStatus, useRateMovieMutation, useGetUserMovieRatingQuery, useRemoveRatingMutation } from '../redux/userMovie/userMovieApi';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useGetMovieByIdQuery } from '../redux/movie/movieApi';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../redux/store';
 import { Link } from 'react-router-dom';
+import StarRating from './StarRating';
 
 interface props {
     movie: Movie | null,
@@ -18,7 +19,14 @@ const MovieInfoModel = ({onClose, movie}: props) => {
 
     const [markMovie, { isLoading: isMarking }] = useMarkMovieMutation();
     const [removeMovie, { isLoading: isRemoving }] = useRemoveMovieMutation();
+    const [rateMovie, { isLoading: isRating }] = useRateMovieMutation();
+    const [removeRatingMutation, { isLoading: isRemovingRating }] = useRemoveRatingMutation();
+
     const { data: movieEntryData, isLoading: isLoadingEntry } = useGetMovieEntryQuery(movie?.id || 0, {
+        skip: !movie?.id || !isAuthenticated,
+    });
+
+    const { data: userRatingData, isLoading: isLoadingRating } = useGetUserMovieRatingQuery(movie?.id || 0, {
         skip: !movie?.id || !isAuthenticated,
     });
 
@@ -28,6 +36,16 @@ const MovieInfoModel = ({onClose, movie}: props) => {
     });
 
     const [error, setError] = useState<string | null>(null);
+    const [userRating, setUserRating] = useState<number>(0);
+
+    // Update user rating when data is fetched
+    useEffect(() => {
+        if (userRatingData?.data?.rating) {
+            setUserRating(userRatingData.data.rating);
+        } else {
+            setUserRating(0);
+        }
+    }, [userRatingData]);
 
     // Prevent body scroll when modal is open
     useEffect(() => {
@@ -44,51 +62,74 @@ const MovieInfoModel = ({onClose, movie}: props) => {
     }, []);
 
     // Use detailed movie data if available, otherwise fallback to basic movie data
-    const movieDetails = detailedMovieData || movie;
+    const movieDetails = useMemo(() => detailedMovieData || movie, [detailedMovieData, movie]);
 
-    if (!movie) return null;
+    // Memoize computed values
+    const imageUrl = useMemo(() =>
+        movieDetails?.poster_path
+            ? `https://image.tmdb.org/t/p/w500${movieDetails.poster_path}`
+            : null,
+        [movieDetails?.poster_path]
+    );
 
-    const imageUrl = movieDetails?.poster_path
-        ? `https://image.tmdb.org/t/p/w500${movieDetails.poster_path}`
-        : null;
+    const backdropUrl = useMemo(() =>
+        movieDetails?.backdrop_path
+            ? `https://image.tmdb.org/t/p/original${movieDetails.backdrop_path}`
+            : null,
+        [movieDetails?.backdrop_path]
+    );
 
-    const backdropUrl = movieDetails?.backdrop_path
-        ? `https://image.tmdb.org/t/p/original${movieDetails.backdrop_path}`
-        : null;
+    const releaseYear = useMemo(() =>
+        movieDetails?.release_date
+            ? new Date(movieDetails.release_date).getFullYear()
+            : 'N/A',
+        [movieDetails?.release_date]
+    );
 
-    const releaseYear = movieDetails?.release_date
-        ? new Date(movieDetails.release_date).getFullYear()
-        : 'N/A';
+    const rating = useMemo(() =>
+        movieDetails?.vote_average ? movieDetails.vote_average.toFixed(1) : 'N/A',
+        [movieDetails?.vote_average]
+    );
 
-    const rating = movieDetails?.vote_average ? movieDetails.vote_average.toFixed(1) : 'N/A';
-
-    const currentStatus = movieEntryData?.data?.status;
+    const currentStatus = useMemo(() => movieEntryData?.data?.status, [movieEntryData?.data?.status]);
 
     // Get director from crew
-    const director = movieDetails?.credits?.crew?.find(person => person.job === 'Director');
+    const director = useMemo(() =>
+        movieDetails?.credits?.crew?.find(person => person.job === 'Director'),
+        [movieDetails?.credits?.crew]
+    );
 
     // Get top cast members (first 5)
-    const topCast = movieDetails?.credits?.cast?.slice(0, 5) || [];
+    const topCast = useMemo(() =>
+        movieDetails?.credits?.cast?.slice(0, 5) || [],
+        [movieDetails?.credits?.cast]
+    );
+
+    const isProcessing = useMemo(() =>
+        isMarking || isRemoving || isLoadingEntry || isRating || isRemovingRating,
+        [isMarking, isRemoving, isLoadingEntry, isRating, isRemovingRating]
+    );
 
     // Format runtime
-    const formatRuntime = (minutes?: number) => {
+    const formatRuntime = useCallback((minutes?: number) => {
         if (!minutes) return 'N/A';
         const hours = Math.floor(minutes / 60);
         const mins = minutes % 60;
         return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-    };
+    }, []);
 
     // Format budget/revenue
-    const formatMoney = (amount?: number) => {
+    const formatMoney = useCallback((amount?: number) => {
         if (!amount) return 'N/A';
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: 'USD',
             minimumFractionDigits: 0,
         }).format(amount);
-    };
+    }, []);
 
-    const handleMarkMovie = async (status: MovieStatus) => {
+    const handleMarkMovie = useCallback(async (status: MovieStatus) => {
+        if (!movie) return;
         try {
             setError(null);
             await markMovie({ movieId: movie.id, status }).unwrap();
@@ -99,9 +140,10 @@ const MovieInfoModel = ({onClose, movie}: props) => {
             setError(errorMessage);
             console.error('Error marking movie:', err);
         }
-    };
+    }, [markMovie, movie]);
 
-    const handleRemoveMovie = async () => {
+    const handleRemoveMovie = useCallback(async () => {
+        if (!movie) return;
         try {
             setError(null);
             await removeMovie(movie.id).unwrap();
@@ -112,9 +154,66 @@ const MovieInfoModel = ({onClose, movie}: props) => {
             setError(errorMessage);
             console.error('Error removing movie:', err);
         }
-    };
+    }, [removeMovie, movie]);
 
-    const isProcessing = isMarking || isRemoving || isLoadingEntry;
+    const handleRateMovie = useCallback(async (rating: number) => {
+        if (!movie) return;
+
+        // Frontend validation
+        if (rating < 1 || rating > 10 || !Number.isInteger(rating)) {
+            setError('Rating must be an integer between 1 and 10');
+            return;
+        }
+
+        // Store previous rating for rollback
+        const previousRating = userRating;
+
+        try {
+            setError(null);
+            // Optimistic update - update UI immediately
+            setUserRating(rating);
+
+            // Make API call
+            await rateMovie({ movieId: movie.id, rating }).unwrap();
+            // Success - optimistic update is already applied
+        } catch (err: unknown) {
+            // Rollback on error
+            setUserRating(previousRating);
+
+            const errorMessage = err && typeof err === 'object' && 'data' in err && err.data && typeof err.data === 'object' && 'message' in err.data
+                ? String(err.data.message)
+                : 'Failed to rate movie';
+            setError(errorMessage);
+            console.error('Error rating movie:', err);
+        }
+    }, [rateMovie, movie, userRating]);
+
+    const handleRemoveRating = useCallback(async () => {
+        if (!movie) return;
+        // Store previous rating for rollback
+        const previousRating = userRating;
+
+        try {
+            setError(null);
+            // Optimistic update - update UI immediately
+            setUserRating(0);
+
+            // Make API call
+            await removeRatingMutation(movie.id).unwrap();
+            // Success - optimistic update is already applied
+        } catch (err: unknown) {
+            // Rollback on error
+            setUserRating(previousRating);
+
+            const errorMessage = err && typeof err === 'object' && 'data' in err && err.data && typeof err.data === 'object' && 'message' in err.data
+                ? String(err.data.message)
+                : 'Failed to remove rating';
+            setError(errorMessage);
+            console.error('Error removing rating:', err);
+        }
+    }, [removeRatingMutation, movie, userRating]);
+
+    if (!movie) return null;
 
     return (
         <Portal layer={"modal"}>
@@ -223,6 +322,60 @@ const MovieInfoModel = ({onClose, movie}: props) => {
                             )}
                         </div>
 
+                        {/* User Rating Section - Only show for authenticated users */}
+                        {isAuthenticated && (
+                            <div className="mb-6 p-4 bg-linear-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-xl border border-yellow-200 dark:border-yellow-800/30">
+                                <div className="flex items-center justify-between mb-3">
+                                    {userRating > 0 && (
+                                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                                            Click on stars to update your rating
+                                        </p>
+                                    )}
+                                    {userRating === 0 && (
+                                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                                            Click on stars to Rate this movie
+                                        </p>
+                                    )}
+                                    {userRating > 0 && (
+                                        <button
+                                            onClick={handleRemoveRating}
+                                            disabled={isRemovingRating}
+                                            className="text-xs text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                                        >
+                                            {isRemovingRating ? 'Removing...' : 'Remove'}
+                                        </button>
+                                    )}
+                                </div>
+
+
+
+                                {isLoadingRating ? (
+                                    <div className="flex items-center gap-2">
+                                        <div className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-yellow-500 border-t-transparent"></div>
+                                        <span className="text-sm text-gray-600 dark:text-gray-400">Loading your rating...</span>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        <StarRating
+                                            rating={userRating}
+                                            onRatingChange={handleRateMovie}
+                                            maxRating={10}
+                                            size={28}
+                                            readonly={isRating}
+                                        />
+
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Error Message */}
+                        {error && (
+                            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+                                {error}
+                            </div>
+                        )}
+
                         {/* Genres */}
                         {movieDetails?.genres && movieDetails.genres.length > 0 && (
                             <div className="mb-4">
@@ -260,12 +413,7 @@ const MovieInfoModel = ({onClose, movie}: props) => {
                             </div>
                         )}
 
-                        {/* Error Message */}
-                        {error && (
-                            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-                                {error}
-                            </div>
-                        )}
+
 
                         {/* Action Buttons - Only show for authenticated users */}
                         {isAuthenticated ? (
