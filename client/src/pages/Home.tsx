@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import { useLazySearchMoviesQuery, useGetTrendingMoviesQuery, type Movie } from '../redux/movie/movieApi';
 import MovieInfoModel from "../components/MovieInfoModel.tsx";
 import TrendingMoviesSection from "../components/TrendingMoviesSection.tsx";
+import MovieSearchItem from "../components/MovieSearchItem.tsx";
 
 
 export default function Home() {
@@ -150,31 +151,11 @@ export default function Home() {
                                     ) : suggestions.length > 0 ? (
                                         <ul className="max-h-96 overflow-y-auto">
                                             {suggestions.map((movie) => (
-                                                <li key={movie.id}>
-                                                    <button
-                                                        onClick={() => handleSuggestionClick(movie)}
-                                                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
-                                                    >
-                                                        <div className="flex-shrink-0 w-12 h-16 bg-gray-200 rounded flex items-center justify-center overflow-hidden">
-                                                            {movie.poster_path ? (
-                                                                <img
-                                                                    src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`}
-                                                                    alt={movie.title}
-                                                                    className="w-full h-full object-cover"
-                                                                />
-                                                            ) : (
-                                                                <Film className="h-6 w-6 text-gray-500" />
-                                                            )}
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="font-medium text-gray-900 truncate">{movie.title}</p>
-                                                            <p className="text-sm text-gray-500">
-                                                                {movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A'}
-                                                                {movie.vote_average > 0 && ` • ⭐ ${movie.vote_average.toFixed(1)}`}
-                                                            </p>
-                                                        </div>
-                                                    </button>
-                                                </li>
+                                                <MovieSearchItem
+                                                    key={movie.id}
+                                                    movie={movie}
+                                                    onClick={handleSuggestionClick}
+                                                />
                                             ))}
                                         </ul>
                                     ) : (
