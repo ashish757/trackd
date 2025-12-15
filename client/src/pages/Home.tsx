@@ -76,6 +76,13 @@ export default function Home() {
         setInfoMovie(movie);
 
     };
+    const handleCardClick = (movie: Movie) => {
+        console.log('Selected movie:', movie);
+        setShowSuggestions(false);
+        setShowMovieInfo(true);
+        setInfoMovie(movie);
+
+    };
 
     const clearSearch = () => {
         setSearchQuery('');
@@ -185,7 +192,7 @@ export default function Home() {
                     {showMovieInfo ? (<MovieInfoModel onClose={setShowMovieInfo} movie={infoMovie} />) : null}
 
                     {/* Trending Movies Section */}
-                    <TrendingMoviesSection handleSuggestionClick={handleSuggestionClick} isTrendingLoading={isTrendingLoading} isTrendingError={isTrendingError} trendingData={trendingData}/>
+                    <TrendingMoviesSection handleSuggestionClick={handleCardClick} isTrendingLoading={isTrendingLoading} isTrendingError={isTrendingError} trendingData={trendingData}/>
 
                     {/* Info Box */}
                     <div className="max-w-4xl mx-auto mt-12 p-6 bg-green-50 border border-green-200 rounded-xl">
