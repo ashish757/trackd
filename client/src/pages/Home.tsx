@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { Search, Film, X } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Search, X } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { useLazySearchMoviesQuery, useGetTrendingMoviesQuery, type Movie } from '../redux/movie/movieApi';
 import MovieInfoModel from "../components/MovieInfoModel.tsx";
@@ -53,26 +53,25 @@ export default function Home() {
         });
     }, [searchResults, isLoading, isFetching, isError]);
 
-    const handleSuggestionClick = (movie: Movie) => {
+    const handleSuggestionClick = useCallback((movie: Movie) => {
         logger.log('Selected movie:', movie);
         setSearchQuery(movie.title);
         setShowSuggestions(false);
         setShowMovieInfo(true);
         setInfoMovie(movie);
-    };
+    }, []);
 
-    const handleCardClick = (movie: Movie) => {
+    const handleCardClick = useCallback((movie: Movie) => {
         logger.log('Selected movie:', movie);
         setShowSuggestions(false);
         setShowMovieInfo(true);
         setInfoMovie(movie);
+    }, []);
 
-    };
-
-    const clearSearch = () => {
+    const clearSearch = useCallback(() => {
         setSearchQuery('');
         setShowSuggestions(false);
-    };
+    }, []);
 
     // Get suggestions from API results
     const suggestions = searchResults?.results || [];
