@@ -4,9 +4,13 @@ import Navbar from '../components/Navbar.tsx';
 import MovieCardWithDetails from '../components/MovieCardWithDetails.tsx';
 import StatCard from '../components/StatCard.tsx';
 import { useGetUserStatsQuery, useGetUserMoviesByStatusQuery, MovieStatus } from '../redux/userMovie/userMovieApi.ts';
+import MovieInfoModel from "../components/MovieInfoModel.tsx";
+import type {Movie} from "../redux/movie/movieApi.ts";
 
 export default function MyListPage() {
     const [activeTab, setActiveTab] = useState<'all' | 'watched' | 'planned'>('all');
+    const [showMovieInfo, setShowMovieInfo] = useState(false);
+    const [movieInfo, setMovieInfo] = useState<Movie | null>(null);
 
     // ...existing code...
     const { data: statsData, isLoading: isStatsLoading } = useGetUserStatsQuery();
@@ -35,6 +39,11 @@ export default function MyListPage() {
         // For 'all', combine both
         return [...(watchedMovies?.data || []), ...(plannedMovies?.data || [])];
     };
+
+    const handleCardClick = (movie: Movie) => {
+        setMovieInfo(movie);
+        setShowMovieInfo(true);
+    }
 
     const moviesToShow = getMoviesToShow();
     const isLoading = isStatsLoading || isWatchedLoading || isPlannedLoading;
@@ -132,10 +141,7 @@ export default function MyListPage() {
                                     <MovieCardWithDetails
                                         key={entry.id}
                                         movieId={entry.movie_id}
-                                        onClick={(movie) => {
-                                            // Handle movie click - could open modal or navigate
-                                            console.log('Clicked movie:', movie);
-                                        }}
+                                        onClick={(movie) => handleCardClick(movie)}
                                         badge={{
                                             text: entry.status === MovieStatus.WATCHED ? 'Watched' : 'Planned',
                                             color: entry.status === MovieStatus.WATCHED ? 'green' : 'blue',
@@ -158,6 +164,8 @@ export default function MyListPage() {
                     </div>
                 </div>
             </main>
+
+            {showMovieInfo && <MovieInfoModel movie={movieInfo} onClose={() => setShowMovieInfo(false)} />}
         </>
     );
 }
