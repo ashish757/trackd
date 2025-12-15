@@ -137,15 +137,6 @@ export default function Home() {
                     {/* Trending Movies Section */}
                     <TrendingMoviesSection handleSuggestionClick={handleCardClick} isTrendingLoading={isTrendingLoading} isTrendingError={isTrendingError} trendingData={trendingData}/>
 
-                    {/* Info Box */}
-                    <div className="max-w-4xl mx-auto mt-12 p-6 bg-green-50 border border-green-200 rounded-xl">
-                        <h3 className="text-lg font-semibold text-green-900 mb-2">
-                            Search Integration Active
-                        </h3>
-                        <p className="text-green-800">
-                            Live movie search powered by TMDB API. Start typing in the search bar to see real-time suggestions with a {SEARCH_CONFIG.DEBOUNCE_DELAY}ms debounce for optimal performance.
-                        </p>
-                    </div>
 
 
                 </div>
