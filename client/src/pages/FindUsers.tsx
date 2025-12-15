@@ -3,28 +3,23 @@ import {Search} from "lucide-react";
 import {useEffect, useState} from "react";
 import {useLazySearchUsersQuery} from "../redux/user/userApi.ts";
 import {Link} from "react-router-dom";
+import { useDebounce } from '../hooks/useDebounce';
+import { SEARCH_CONFIG } from '../constants/search';
 
 const FindUsers = () => {
     const [searchQuery, setSearchQuery] = useState("");
-    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
     const [triggerSearch, {isLoading, isFetching, data}] = useLazySearchUsersQuery();
-    // isLoading -> fetched the data for the first time
-    // isFetching -> data already exists in cache , rtk is updating it
 
+    // Custom hook for debouncing
+    const debouncedSearchQuery = useDebounce(searchQuery, SEARCH_CONFIG.DEBOUNCE_DELAY);
 
     // Trigger API search when debounced query changes
     useEffect(() => {
+        if (debouncedSearchQuery) {
             triggerSearch(debouncedSearchQuery).unwrap();
+        }
     }, [debouncedSearchQuery, triggerSearch]);
 
-    // Debounce search query with 300ms delay
-    useEffect(() => {
-            const timer = setTimeout(() => {
-                setDebouncedSearchQuery(searchQuery);
-            }, 300); // 300ms debounce delay
-
-            return () => clearTimeout(timer);
-    }, [searchQuery]);
 
     const users = data || [];
     const isSearching = isLoading || isFetching;

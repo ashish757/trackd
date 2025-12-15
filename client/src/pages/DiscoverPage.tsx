@@ -1,9 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, Film, X, Filter, SlidersHorizontal } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { useLazySearchMoviesQuery, type Movie } from '../redux/movie/movieApi';
 import MovieInfoModel from "../components/MovieInfoModel.tsx";
 import MovieCard from "../components/MovieCard.tsx";
+import SearchDropdown from "../components/SearchDropdown.tsx";
+import { useDebounce } from '../hooks/useDebounce';
+import { useClickOutside } from '../hooks/useClickOutside';
+import { SEARCH_CONFIG } from '../constants/search';
 
 // Genre mapping from TMDB
 const GENRES = [
@@ -42,7 +46,6 @@ const YEARS = Array.from({ length: 50 }, (_, i) => currentYear - i);
 
 export default function DiscoverPage() {
     const [searchQuery, setSearchQuery] = useState('');
-    const [debouncedQuery, setDebouncedQuery] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
@@ -55,43 +58,28 @@ export default function DiscoverPage() {
     const [minRating, setMinRating] = useState<number>(0);
     const [sortBy, setSortBy] = useState<string>('popularity.desc');
 
+    // Custom hooks
+    const debouncedQuery = useDebounce(searchQuery, SEARCH_CONFIG.DEBOUNCE_DELAY);
+    useClickOutside(searchRef, () => setShowSuggestions(false));
+
     // RTK Query hooks
     const [triggerSearch, { data: searchResults, isLoading, isFetching, isError }] = useLazySearchMoviesQuery();
 
-    // Debounce search query with 300ms delay
+    // Hide suggestions when query is too short
     useEffect(() => {
-        if (searchQuery.length < 2) {
-            setDebouncedQuery('');
+        if (searchQuery.length < SEARCH_CONFIG.MIN_SEARCH_LENGTH) {
             setShowSuggestions(false);
-            return;
         }
-
-        const timer = setTimeout(() => {
-            setDebouncedQuery(searchQuery);
-        }, 300);
-
-        return () => clearTimeout(timer);
     }, [searchQuery]);
 
     // Trigger API search when debounced query changes
     useEffect(() => {
-        if (debouncedQuery.length >= 2) {
+        if (debouncedQuery.length >= SEARCH_CONFIG.MIN_SEARCH_LENGTH) {
             triggerSearch(debouncedQuery);
             setShowSuggestions(true);
         }
     }, [debouncedQuery, triggerSearch]);
 
-    // Close suggestions when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-                setShowSuggestions(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
 
     const handleSuggestionClick = (movie: Movie) => {
         setSearchQuery(movie.title);
@@ -102,7 +90,6 @@ export default function DiscoverPage() {
 
     const clearSearch = () => {
         setSearchQuery('');
-        setDebouncedQuery('');
         setShowSuggestions(false);
     };
 
@@ -123,34 +110,38 @@ export default function DiscoverPage() {
 
     const hasActiveFilters = selectedGenres.length > 0 || selectedYear !== null || minRating > 0;
 
-    // Filter and sort results
-    const filteredResults = searchResults?.results
-        ? searchResults.results.filter(movie => {
-            if (selectedYear && movie.release_date) {
-                const movieYear = new Date(movie.release_date).getFullYear();
-                if (movieYear !== selectedYear) return false;
-            }
-            if (minRating > 0 && movie.vote_average < minRating) return false;
-            return true;
-        }).sort((a, b) => {
-            switch (sortBy) {
-                case 'popularity.desc':
-                    return (b.vote_average || 0) - (a.vote_average || 0);
-                case 'popularity.asc':
-                    return (a.vote_average || 0) - (b.vote_average || 0);
-                case 'vote_average.desc':
-                    return (b.vote_average || 0) - (a.vote_average || 0);
-                case 'vote_average.asc':
-                    return (a.vote_average || 0) - (b.vote_average || 0);
-                case 'release_date.desc':
-                    return new Date(b.release_date || 0).getTime() - new Date(a.release_date || 0).getTime();
-                case 'release_date.asc':
-                    return new Date(a.release_date || 0).getTime() - new Date(b.release_date || 0).getTime();
-                default:
-                    return 0;
-            }
-        })
-        : [];
+    // Filter and sort results with useMemo for performance
+    const filteredResults = useMemo(() => {
+        if (!searchResults?.results) return [];
+
+        return searchResults.results
+            .filter(movie => {
+                if (selectedYear && movie.release_date) {
+                    const movieYear = new Date(movie.release_date).getFullYear();
+                    if (movieYear !== selectedYear) return false;
+                }
+                if (minRating > 0 && movie.vote_average < minRating) return false;
+                return true;
+            })
+            .sort((a, b) => {
+                switch (sortBy) {
+                    case 'popularity.desc':
+                        return (b.vote_average || 0) - (a.vote_average || 0);
+                    case 'popularity.asc':
+                        return (a.vote_average || 0) - (b.vote_average || 0);
+                    case 'vote_average.desc':
+                        return (b.vote_average || 0) - (a.vote_average || 0);
+                    case 'vote_average.asc':
+                        return (a.vote_average || 0) - (b.vote_average || 0);
+                    case 'release_date.desc':
+                        return new Date(b.release_date || 0).getTime() - new Date(a.release_date || 0).getTime();
+                    case 'release_date.asc':
+                        return new Date(a.release_date || 0).getTime() - new Date(b.release_date || 0).getTime();
+                    default:
+                        return 0;
+                }
+            });
+    }, [searchResults, selectedYear, minRating, sortBy]);
 
     const suggestions = searchResults?.results || [];
     const isSearching = isLoading || isFetching;
@@ -182,7 +173,7 @@ export default function DiscoverPage() {
                                             type="text"
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            onFocus={() => searchQuery.length >= 2 && setShowSuggestions(true)}
+                                            onFocus={() => searchQuery.length >= SEARCH_CONFIG.MIN_SEARCH_LENGTH && setShowSuggestions(true)}
                                             placeholder="Search for movies..."
                                             className="w-full pl-12 pr-12 py-4 text-lg border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-colors shadow-sm"
                                             autoComplete="off"
@@ -199,55 +190,14 @@ export default function DiscoverPage() {
                                     </div>
 
                                     {/* Search Suggestions Dropdown */}
-                                    {showSuggestions && (
-                                        <div className="absolute w-full mt-2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50">
-                                            {isSearching ? (
-                                                <div className="px-4 py-8 text-center text-gray-500">
-                                                    <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-blue-500 border-t-transparent"></div>
-                                                    <p className="mt-2">Searching...</p>
-                                                </div>
-                                            ) : isError ? (
-                                                <div className="px-4 py-8 text-center text-red-500">
-                                                    <p>Error loading results. Please try again.</p>
-                                                </div>
-                                            ) : suggestions.length > 0 ? (
-                                                <ul className="max-h-96 overflow-y-auto">
-                                                    {suggestions.map((movie) => (
-                                                        <li key={movie.id}>
-                                                            <button
-                                                                onClick={() => handleSuggestionClick(movie)}
-                                                                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
-                                                            >
-                                                                <div className="flex-shrink-0 w-12 h-16 bg-gray-200 rounded flex items-center justify-center overflow-hidden">
-                                                                    {movie.poster_path ? (
-                                                                        <img
-                                                                            src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`}
-                                                                            alt={movie.title}
-                                                                            className="w-full h-full object-cover"
-                                                                        />
-                                                                    ) : (
-                                                                        <Film className="h-6 w-6 text-gray-500" />
-                                                                    )}
-                                                                </div>
-                                                                <div className="flex-1 min-w-0">
-                                                                    <p className="font-medium text-gray-900 truncate">{movie.title}</p>
-                                                                    <p className="text-sm text-gray-500">
-                                                                        {movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A'}
-                                                                        {movie.vote_average > 0 && ` • ⭐ ${movie.vote_average.toFixed(1)}`}
-                                                                    </p>
-                                                                </div>
-                                                            </button>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            ) : (
-                                                <div className="px-4 py-8 text-center text-gray-500">
-                                                    <Film className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-                                                    <p>No results found for "{searchQuery}"</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
+                                    <SearchDropdown
+                                        show={showSuggestions}
+                                        isSearching={isSearching}
+                                        isError={isError}
+                                        suggestions={suggestions}
+                                        searchQuery={searchQuery}
+                                        onMovieClick={handleSuggestionClick}
+                                    />
                                 </div>
 
                                 <button
