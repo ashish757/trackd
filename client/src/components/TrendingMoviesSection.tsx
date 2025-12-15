@@ -1,6 +1,7 @@
 import { Film, TrendingUp } from "lucide-react";
 import type { Movie } from "../redux/movie/movieApi.ts";
 import MovieCard from "./MovieCard.tsx";
+import EmptyState from "./EmptyState.tsx";
 
 interface MovieInfo {
     isTrendingLoading: boolean;
@@ -40,10 +41,12 @@ const TrendingMoviesSection = ({ isTrendingLoading, trendingData, isTrendingErro
                     ))}
                 </div>
             ) : (
-                <div className="text-center py-20">
-                    <Film className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                    <p className="text-gray-500">No trending movies available at the moment.</p>
-                </div>
+                <EmptyState
+                    icon={Film}
+                    title="No trending movies"
+                    description="No trending movies available at the moment."
+                    size="medium"
+                />
             )}
         </div>
     );
