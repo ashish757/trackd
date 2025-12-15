@@ -5,50 +5,46 @@ import { useLazySearchMoviesQuery, useGetTrendingMoviesQuery, type Movie } from 
 import MovieInfoModel from "../components/MovieInfoModel.tsx";
 import TrendingMoviesSection from "../components/TrendingMoviesSection.tsx";
 import MovieSearchItem from "../components/MovieSearchItem.tsx";
+import { useDebounce } from '../hooks/useDebounce';
+import { useClickOutside } from '../hooks/useClickOutside';
+import { SEARCH_CONFIG } from '../constants/search';
+import { logger } from '../utils/logger';
 
 
 export default function Home() {
     const [searchQuery, setSearchQuery] = useState('');
-    const [debouncedQuery, setDebouncedQuery] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
     const [showMovieInfo, setShowMovieInfo] = useState(false);
     const [infoMovie, setInfoMovie] = useState<Movie | null>(null);
 
+    // Custom hooks
+    const debouncedQuery = useDebounce(searchQuery, SEARCH_CONFIG.DEBOUNCE_DELAY);
+    useClickOutside(searchRef, () => setShowSuggestions(false));
+
     // RTK Query hooks
     const [triggerSearch, { data: searchResults, isLoading, isFetching, isError }] = useLazySearchMoviesQuery();
     const { data: trendingData, isLoading: isTrendingLoading, isError: isTrendingError } = useGetTrendingMoviesQuery();
 
-    // Debounce search query with 300ms delay
+    // Hide suggestions when query is too short
     useEffect(() => {
-        console.log('Search query changed:', searchQuery);
-        if (searchQuery.length < 2) {
-            setDebouncedQuery('');
+        if (searchQuery.length < SEARCH_CONFIG.MIN_SEARCH_LENGTH) {
             setShowSuggestions(false);
-            return;
         }
-
-        const timer = setTimeout(() => {
-            console.log('Debounce complete, setting debounced query:', searchQuery);
-            setDebouncedQuery(searchQuery);
-        }, 300); // 300ms debounce delay
-
-        return () => clearTimeout(timer);
     }, [searchQuery]);
 
     // Trigger API search when debounced query changes
     useEffect(() => {
-        if (debouncedQuery.length >= 2) {
-            console.log('Triggering search for:', debouncedQuery);
-
+        if (debouncedQuery.length >= SEARCH_CONFIG.MIN_SEARCH_LENGTH) {
+            logger.log('Triggering search for:', debouncedQuery);
             triggerSearch(debouncedQuery);
             setShowSuggestions(true);
         }
     }, [debouncedQuery, triggerSearch]);
 
-    // Log search results
+    // Log search results (development only)
     useEffect(() => {
-        console.log('Search state:', {
+        logger.debug('Search state:', {
             isLoading,
             isFetching,
             isError,
@@ -57,28 +53,16 @@ export default function Home() {
         });
     }, [searchResults, isLoading, isFetching, isError]);
 
-    // Close suggestions when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-                setShowSuggestions(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
     const handleSuggestionClick = (movie: Movie) => {
-        console.log('Selected movie:', movie);
+        logger.log('Selected movie:', movie);
         setSearchQuery(movie.title);
         setShowSuggestions(false);
         setShowMovieInfo(true);
         setInfoMovie(movie);
-
     };
+
     const handleCardClick = (movie: Movie) => {
-        console.log('Selected movie:', movie);
+        logger.log('Selected movie:', movie);
         setShowSuggestions(false);
         setShowMovieInfo(true);
         setInfoMovie(movie);
@@ -87,7 +71,6 @@ export default function Home() {
 
     const clearSearch = () => {
         setSearchQuery('');
-        setDebouncedQuery('');
         setShowSuggestions(false);
     };
 
@@ -120,7 +103,7 @@ export default function Home() {
                                         type="text"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        onFocus={() => searchQuery.length >= 2 && setShowSuggestions(true)}
+                                        onFocus={() => searchQuery.length >= SEARCH_CONFIG.MIN_SEARCH_LENGTH && setShowSuggestions(true)}
                                         placeholder="Search for movies, TV shows..."
                                         className="w-full pl-12 pr-12 py-4 text-lg border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-colors shadow-sm"
                                         autoComplete="off"
@@ -181,7 +164,7 @@ export default function Home() {
                             Search Integration Active
                         </h3>
                         <p className="text-green-800">
-                            Live movie search powered by TMDB API. Start typing in the search bar to see real-time suggestions with a 300ms debounce for optimal performance.
+                            Live movie search powered by TMDB API. Start typing in the search bar to see real-time suggestions with a {SEARCH_CONFIG.DEBOUNCE_DELAY}ms debounce for optimal performance.
                         </p>
                     </div>
 
