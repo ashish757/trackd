@@ -5,6 +5,7 @@ import { useLazySearchMoviesQuery, type Movie } from '../redux/movie/movieApi';
 import MovieInfoModel from "../components/MovieInfoModel.tsx";
 import MovieCard from "../components/MovieCard.tsx";
 import MovieSearchItem from "../components/MovieSearchItem.tsx";
+import { useClickOutside } from '../hooks/useClickOutside';
 
 // Genre mapping from TMDB
 const GENRES = [
@@ -55,6 +56,8 @@ export default function DiscoverPage() {
     const [selectedYear, setSelectedYear] = useState<number | null>(null);
     const [minRating, setMinRating] = useState<number>(0);
     const [sortBy, setSortBy] = useState<string>('popularity.desc');
+
+    useClickOutside(searchRef, () => setShowSuggestions(false));
 
     // RTK Query hooks
     const [triggerSearch, { data: searchResults, isLoading, isFetching, isError }] = useLazySearchMoviesQuery();
