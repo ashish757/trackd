@@ -15,7 +15,7 @@ import { Request } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { UserMovieService } from './user-movie.service';
 import { AuthGuard } from '../../common/guards/auth.guard';
-import { MarkMovieDto, MovieStatus } from './DTO/user-movie.dto';
+import { MarkMovieDto, MovieStatus, RateMovieDto } from './DTO/user-movie.dto';
 
 @Controller('user-movies')
 @UseGuards(AuthGuard)
@@ -134,6 +134,68 @@ export class UserMovieController {
             status: 'success',
             statusCode: HttpStatus.OK,
             message: 'User stats fetched successfully',
+            data,
+        };
+    }
+
+    /**
+     * Rate a movie
+     * POST /user-movies/rate
+     */
+    @Post('rate')
+    @Throttle({ default: { limit: 30, ttl: 60000 } })
+    async rateMovie(
+        @Body() dto: RateMovieDto,
+        @Req() req: Request & { user?: { sub: string; email: string } }
+    ) {
+        const userId = req.user?.sub!;
+        const data = await this.userMovieService.rateMovie(dto, userId);
+
+        return {
+            status: 'success',
+            statusCode: HttpStatus.OK,
+            message: 'Movie rated successfully',
+            data,
+        };
+    }
+
+    /**
+     * Get user's rating for a movie
+     * GET /user-movies/rating/:movieId
+     */
+    @Get('rating/:movieId')
+    async getUserMovieRating(
+        @Param('movieId', ParseIntPipe) movieId: number,
+        @Req() req: Request & { user?: { sub: string; email: string } }
+    ) {
+        const userId = req.user?.sub!;
+        const data = await this.userMovieService.getUserMovieRating(userId, movieId);
+
+        return {
+            status: 'success',
+            statusCode: HttpStatus.OK,
+            message: data ? 'Rating fetched successfully' : 'No rating found',
+            data,
+        };
+    }
+
+    /**
+     * Remove rating
+     * DELETE /user-movies/rating/:movieId
+     */
+    @Delete('rating/:movieId')
+    @Throttle({ default: { limit: 30, ttl: 60000 } })
+    async removeRating(
+        @Param('movieId', ParseIntPipe) movieId: number,
+        @Req() req: Request & { user?: { sub: string; email: string } }
+    ) {
+        const userId = req.user?.sub!;
+        const data = await this.userMovieService.removeRating(movieId, userId);
+
+        return {
+            status: 'success',
+            statusCode: HttpStatus.OK,
+            message: 'Rating removed successfully',
             data,
         };
     }

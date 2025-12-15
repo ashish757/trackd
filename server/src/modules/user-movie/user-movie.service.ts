@@ -4,7 +4,7 @@ import {
     ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { MarkMovieDto, RemoveMovieDto, MovieStatus } from './DTO/user-movie.dto';
+import { MarkMovieDto, RemoveMovieDto, MovieStatus, RateMovieDto } from './DTO/user-movie.dto';
 
 @Injectable()
 export class UserMovieService {
@@ -157,5 +157,83 @@ export class UserMovieService {
             total,
         };
     }
-}
 
+    /**
+     * Rate a movie (1-10 scale)
+     */
+    async rateMovie(dto: RateMovieDto, userId: string) {
+        // Ensure movie exists in movies table
+        await this.prisma.movies.upsert({
+            where: { id: dto.movieId },
+            update: {},
+            create: { id: dto.movieId },
+        });
+
+        // Upsert UserMovieData for rating
+        const movieData = await this.prisma.userMovieData.upsert({
+            where: {
+                user_id_movie_id: {
+                    user_id: userId,
+                    movie_id: dto.movieId,
+                },
+            },
+            update: {
+                rating: dto.rating,
+                description: dto.description,
+            },
+            create: {
+                user_id: userId,
+                movie_id: dto.movieId,
+                rating: dto.rating,
+                description: dto.description,
+            },
+        });
+
+        return movieData;
+    }
+
+    /**
+     * Get user's rating for a specific movie
+     */
+    async getUserMovieRating(userId: string, movieId: number) {
+        const movieData = await this.prisma.userMovieData.findUnique({
+            where: {
+                user_id_movie_id: {
+                    user_id: userId,
+                    movie_id: movieId,
+                },
+            },
+        });
+
+        return movieData;
+    }
+
+    /**
+     * Remove user's rating for a movie
+     */
+    async removeRating(movieId: number, userId: string) {
+        const movieData = await this.prisma.userMovieData.findUnique({
+            where: {
+                user_id_movie_id: {
+                    user_id: userId,
+                    movie_id: movieId,
+                },
+            },
+        });
+
+        if (!movieData) {
+            throw new NotFoundException('Movie rating not found');
+        }
+
+        await this.prisma.userMovieData.delete({
+            where: {
+                user_id_movie_id: {
+                    user_id: userId,
+                    movie_id: movieId,
+                },
+            },
+        });
+
+        return { message: 'Rating removed successfully' };
+    }
+}
