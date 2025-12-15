@@ -1,5 +1,6 @@
 import { Film } from 'lucide-react';
 import type { Movie } from '../redux/movie/movieApi';
+import { getTMDBImageUrl } from '../constants/tmdb';
 
 interface MovieSearchItemProps {
     movie: Movie;
@@ -11,6 +12,8 @@ interface MovieSearchItemProps {
  * Displays a small poster thumbnail with movie title, year, and rating.
  */
 const MovieSearchItem = ({ movie, onClick }: MovieSearchItemProps) => {
+    const posterUrl = getTMDBImageUrl(movie.poster_path, 'POSTER_SMALL');
+
     return (
         <li>
             <button
@@ -18,9 +21,9 @@ const MovieSearchItem = ({ movie, onClick }: MovieSearchItemProps) => {
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
             >
                 <div className="shrink-0 w-12 h-16 bg-gray-200 rounded flex items-center justify-center overflow-hidden">
-                    {movie.poster_path ? (
+                    {posterUrl ? (
                         <img
-                            src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`}
+                            src={posterUrl}
                             alt={movie.title}
                             className="w-full h-full object-cover"
                         />
