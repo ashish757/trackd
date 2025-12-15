@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Film, Check, Clock } from 'lucide-react';
 import Navbar from '../components/Navbar.tsx';
 import MovieCardWithDetails from '../components/MovieCardWithDetails.tsx';
+import StatCard from '../components/StatCard.tsx';
 import { useGetUserStatsQuery, useGetUserMoviesByStatusQuery, MovieStatus } from '../redux/userMovie/userMovieApi.ts';
 
 export default function MyListPage() {
@@ -52,39 +53,24 @@ export default function MyListPage() {
                     {/* Stats Cards */}
                     <div className="max-w-6xl mx-auto mb-8">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-purple-100 rounded-lg">
-                                        <Film className="h-6 w-6 text-purple-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
-                                        <p className="text-sm text-gray-600">Total Movies</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-green-100 rounded-lg">
-                                        <Check className="h-6 w-6 text-green-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-3xl font-bold text-gray-900">{stats.watched}</p>
-                                        <p className="text-sm text-gray-600">Watched</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-blue-100 rounded-lg">
-                                        <Clock className="h-6 w-6 text-blue-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-3xl font-bold text-gray-900">{stats.planned}</p>
-                                        <p className="text-sm text-gray-600">Planned</p>
-                                    </div>
-                                </div>
-                            </div>
+                            <StatCard
+                                icon={Film}
+                                value={stats.total}
+                                label="Total Movies"
+                                color="purple"
+                            />
+                            <StatCard
+                                icon={Check}
+                                value={stats.watched}
+                                label="Watched"
+                                color="green"
+                            />
+                            <StatCard
+                                icon={Clock}
+                                value={stats.planned}
+                                label="Planned"
+                                color="blue"
+                            />
                         </div>
                     </div>
 
