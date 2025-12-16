@@ -15,6 +15,7 @@ import {useSelector} from "react-redux";
 import type {RootState} from "../redux/store.ts";
 import {useGetMovieByIdQuery} from "../redux/movie/movieApi.ts";
 import {useState} from "react";
+import MutualFriends from "../components/MutualFriends.tsx";
 
 const UserPage = () => {
     const { username } = useParams();
@@ -248,10 +249,12 @@ const UserPage = () => {
                                             )}
                                         </div>
 
-                                        {
-                                            <p>Mutual</p>
-
-                                        }
+                                        {/* Mutual Friends - Show only for non-current users who are friends */}
+                                        {!isCurrentUser && isFriend && user?.id && (
+                                            <div className="mb-4">
+                                                <MutualFriends targetUserId={user.id} />
+                                            </div>
+                                        )}
 
                                         {/* Name and Bio */}
                                         <div>

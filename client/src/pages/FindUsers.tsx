@@ -5,6 +5,7 @@ import {useLazySearchUsersQuery} from "../redux/user/userApi.ts";
 import {Link} from "react-router-dom";
 import { useDebounce } from '../hooks/useDebounce';
 import { SEARCH_CONFIG } from '../constants/search';
+import MutualFriendsCount from '../components/MutualFriendsCount.tsx';
 
 const FindUsers = () => {
     const [searchQuery, setSearchQuery] = useState("");
@@ -74,9 +75,11 @@ const FindUsers = () => {
                                                 }
 
                                             </div>
-                                            <div>
+                                            <div className="flex-1">
                                                 <p className="text-gray-700 text-md">{user.username}</p>
                                                 <p className="text-gray-500 text-sm leading-3">{user.name}</p>
+                                                {/* Show mutual friends count if any */}
+                                                <MutualFriendsCount targetUserId={user.id} className="mt-1" />
                                             </div>
                                         </div>
                                     </Link>

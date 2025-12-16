@@ -33,6 +33,13 @@ interface GetMyFriendsResponse {
     data: FriendT[];
 }
 
+interface GetMutualFriendsResponse {
+    status: string;
+    statusCode: number;
+    message: string;
+    data: FriendT[];
+}
+
 export const friendApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
 
@@ -59,7 +66,23 @@ export const friendApi = apiSlice.injectEndpoints({
                 return response.data ?? [];
             },
         }),
+
+        getMutualFriends: builder.query<FriendT[], string>({
+            query: (userId: string) => ({
+                url: `/friend/mutual/${userId}`,
+                method: 'GET',
+            }),
+
+            // Transform the response to match our interface
+            transformResponse: (response: GetMutualFriendsResponse): FriendT[] => {
+                return response.data ?? [];
+            },
+        }),
     }),
 });
 
-export const { useGetFriendRequestsQuery, useGetMyFriendsQuery } = friendApi;
+export const {
+    useGetFriendRequestsQuery,
+    useGetMyFriendsQuery,
+    useGetMutualFriendsQuery
+} = friendApi;

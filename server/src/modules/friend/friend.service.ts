@@ -217,4 +217,64 @@ export default class FriendService {
 
         return friends;
     }
+
+    /**
+     * Get mutual friends between current user and target user
+     * Uses an efficient query with raw SQL for better performance
+     */
+    async getMutualFriends(currentUserId: string, targetUserId: string) {
+
+        // Check if users are friends first (optional - remove if you want to allow checking mutual friends even without being friends)
+        const areFriends = await this.checkIfFriends(currentUserId, targetUserId);
+
+
+        if (!areFriends) {
+            throw new ForbiddenException('You must be friends to view mutual friends');
+        }
+
+        // Efficient query to find mutual friends using raw SQL
+        // This finds all user IDs that are friends with BOTH currentUserId and targetUserId
+        const mutualFriendIds = await this.prisma.$queryRaw<Array<{ id: string }>>`
+            SELECT DISTINCT 
+                CASE 
+                    WHEN f1.friend_a_id = ${currentUserId} THEN f1.friend_b_id
+                    ELSE f1.friend_a_id
+                END as id
+            FROM "Friendship" f1
+            WHERE (f1.friend_a_id = ${currentUserId} OR f1.friend_b_id = ${currentUserId})
+            
+            INTERSECT
+            
+            SELECT DISTINCT 
+                CASE 
+                    WHEN f2.friend_a_id = ${targetUserId} THEN f2.friend_b_id
+                    ELSE f2.friend_a_id
+                END as id
+            FROM "Friendship" f2
+            WHERE (f2.friend_a_id = ${targetUserId} OR f2.friend_b_id = ${targetUserId})
+        `;
+
+        // If no mutual friends found
+        if (mutualFriendIds.length === 0) {
+            return [];
+        }
+
+        // Fetch full user details for mutual friends
+        const mutualFriends = await this.prisma.user.findMany({
+            where: {
+                id: {
+                    in: mutualFriendIds.map(mf => mf.id)
+                }
+            },
+            select: {
+                id: true,
+                name: true,
+                username: true,
+                avatar: true,
+                friendCount: true,
+            }
+        });
+
+        return mutualFriends;
+    }
 }
