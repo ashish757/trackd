@@ -96,4 +96,24 @@ export default class FriendController {
         };
     }
 
+    /**
+     * Get mutual friends between current user and another user
+     * GET /friend/mutual/:userId
+     */
+    @Get("/mutual/:userId")
+    async getMutualFriends(
+        @Param('userId') targetUserId: string,
+        @Req() req: Request & { user?: { sub: string; email: string }}
+    ) {
+        const currentUserId = req.user.sub;
+        const data = await this.friendService.getMutualFriends(currentUserId, targetUserId);
+
+        return {
+            status: 'success',
+            statusCode: HttpStatus.OK,
+            message: 'Mutual friends fetched successfully',
+            data: data
+        };
+    }
+
 }
