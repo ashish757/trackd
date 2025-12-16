@@ -191,7 +191,7 @@ const UserPage = () => {
                                     <div className="shrink-0">
                                         {
                                             user?.avatar ? (
-                                                <img src={user?.avatar} alt="Profile" className="rounded-full " />
+                                                <img src={user?.avatar} alt="Profile" className="rounded-full w-32 h-32 sm:w-40 sm:h-40" />
                                             ) : (
                                                 <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg">
                                                     {user?.name?.[0]?.toUpperCase() || 'U'}
@@ -247,6 +247,11 @@ const UserPage = () => {
                                                 </div>
                                             )}
                                         </div>
+
+                                        {
+                                            <p>Mutual</p>
+
+                                        }
 
                                         {/* Name and Bio */}
                                         <div>
