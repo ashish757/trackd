@@ -1,17 +1,20 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X, TrendingUp, Rss } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { useLazySearchMoviesQuery, useGetTrendingMoviesQuery, type Movie } from '../redux/movie/movieApi';
 import MovieInfoModel from "../components/MovieInfoModel.tsx";
 import TrendingMoviesSection from "../components/TrendingMoviesSection.tsx";
 import SearchDropdown from "../components/SearchDropdown.tsx";
+import Feed from "../components/Feed.tsx";
 import { useDebounce } from '../hooks/useDebounce';
 import { useClickOutside } from '../hooks/useClickOutside';
 import { SEARCH_CONFIG } from '../constants/search';
 import { logger } from '../utils/logger';
 
+type TabType = 'feed' | 'trending';
 
 export default function Home() {
+    const [activeTab, setActiveTab] = useState<TabType>('feed');
     const [searchQuery, setSearchQuery] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
@@ -118,6 +121,8 @@ export default function Home() {
                                     )}
                                 </div>
 
+
+
                             {/* Search Suggestions Dropdown */}
                             <SearchDropdown
                                 show={showSuggestions}
@@ -127,16 +132,56 @@ export default function Home() {
                                 searchQuery={searchQuery}
                                 onMovieClick={handleSuggestionClick}
                             />
+
                         </div>
                     </div>
 
+
+                    {/* Tabs */}
+                    <div className="flex  my-6">
+                        <div className="inline-flex  p-1">
+                            <button
+                                onClick={() => setActiveTab('feed')}
+                                className={`flex items-center gap-2 px-6 py-2.5 font-medium hover:bg-gray-200 text-gray-600 ${
+                                    activeTab === 'feed'
+                                        ? 'border-b-2 border-gray-700 text-gray-800'
+                                        :  ''
+                                }`}
+                            >
+                                <Rss className="w-4 h-4" />
+                                Feed
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('trending')}
+                                className={`flex items-center gap-2 px-6 py-2.5 font-medium hover:bg-gray-200 text-gray-600 ${
+                                    activeTab === 'trending'
+                                        ? 'border-b-2 border-gray-700 text-gray-800'
+                                        :  ''
+                                }`}
+                            >
+                                <TrendingUp className="w-4 h-4" />
+                                Trending
+                            </button>
+                        </div>
+                    </div>
+
+
+
+                    {/* Conditional Content Based on Active Tab */}
+                    {activeTab === 'feed' ? (
+                        <Feed />
+                    ) : (
+                        <TrendingMoviesSection
+                            handleSuggestionClick={handleCardClick}
+                            isTrendingLoading={isTrendingLoading}
+                            isTrendingError={isTrendingError}
+                            trendingData={trendingData}
+                        />
+                    )}
+
+
                     {/*{Movie info model}*/}
                     {showMovieInfo ? (<MovieInfoModel onClose={setShowMovieInfo} movie={infoMovie} />) : null}
-
-                    {/* Trending Movies Section */}
-                    <TrendingMoviesSection handleSuggestionClick={handleCardClick} isTrendingLoading={isTrendingLoading} isTrendingError={isTrendingError} trendingData={trendingData}/>
-
-
 
                 </div>
             </main>

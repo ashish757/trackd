@@ -8,6 +8,7 @@ import SearchDropdown from "../components/SearchDropdown.tsx";
 import { useDebounce } from '../hooks/useDebounce';
 import { useClickOutside } from '../hooks/useClickOutside';
 import { SEARCH_CONFIG } from '../constants/search';
+import { MovieGridSkeleton } from '../components/skeletons';
 
 // Genre mapping from TMDB
 const GENRES = [
@@ -337,9 +338,7 @@ export default function DiscoverPage() {
                             </div>
 
                             {isSearching ? (
-                                <div className="flex justify-center items-center py-20">
-                                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
-                                </div>
+                                <MovieGridSkeleton count={15} />
                             ) : filteredResults.length > 0 ? (
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                                     {filteredResults.map((movie) => (

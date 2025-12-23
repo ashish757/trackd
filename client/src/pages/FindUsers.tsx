@@ -6,6 +6,7 @@ import {Link} from "react-router-dom";
 import { useDebounce } from '../hooks/useDebounce';
 import { SEARCH_CONFIG } from '../constants/search';
 import MutualFriendsCount from '../components/MutualFriendsCount.tsx';
+// import { UserCardSkeleton } from '../components/skeletons';
 
 const FindUsers = () => {
     const [searchQuery, setSearchQuery] = useState("");
@@ -60,7 +61,19 @@ const FindUsers = () => {
                         {/*search results*/}
                         <div className="flex flex-wrap gap-8 mt-10">
                             {isSearching ? (
-                                <p className="text-sm text-gray-900">Loading</p>
+                                <div className="w-full">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {Array.from({ length: 6 }).map((_, index) => (
+                                            <div key={index} className="flex gap-3 border-1 border-gray-200 p-4 rounded-sm animate-pulse">
+                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
+                                                <div className="flex-1 space-y-2">
+                                                    <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                                    <div className="h-3 bg-gray-200 rounded w-32"></div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             )
                                 :  users.length > 0 ? users.map(user => (
                                     <Link to={"/users/" + user.username} key={user.id}>

@@ -12,7 +12,6 @@ const Navbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useDispatch();
-    const [showNotifications, setShowNotifications] = useState(false);
     const [logout, { isLoading }] = useLogoutMutation();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -116,26 +115,7 @@ const Navbar = () => {
                     {isAuthenticated ? (
                         <div className="flex items-center gap-4">
                             {/* Notifications */}
-                            <div className="relative">
-                                <button
-                                    onClick={() => setShowNotifications(!showNotifications)}
-                                    className="p-2 rounded-full hover:bg-gray-100 transition-colors" >
-                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                        className="h-6 w-6 text-gray-700"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor" >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                                        />
-                                    </svg>
-                                </button>
-
-                                {showNotifications && <Notifications />}
-                            </div>
+                            <Notifications />
 
                             {/* User Dropdown */}
                             <div className="relative" ref={dropdownRef}>
@@ -151,19 +131,22 @@ const Navbar = () => {
                                                 className="w-8 h-8 rounded-full object-cover"
                                             />
                                         ) : (
-                                            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
+                                            <div
+                                                className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
                                                 {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
                                             </div>
                                         )
                                     }
 
                                     <span className="hidden md:inline">{user?.name || user?.email || 'User'}</span>
-                                    <ChevronDown className={`h-4 w-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                                    <ChevronDown
+                                        className={`h-4 w-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}/>
                                 </button>
 
                                 {/* Dropdown Menu */}
                                 {dropdownOpen && (
-                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                                    <div
+                                        className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
                                         <button
                                             onClick={() => {
                                                 setDropdownOpen(false);
@@ -171,7 +154,7 @@ const Navbar = () => {
                                             }}
                                             className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                                         >
-                                            <UserIcon className="h-4 w-4" />
+                                            <UserIcon className="h-4 w-4"/>
                                             Profile
                                         </button>
                                         <button
@@ -181,16 +164,16 @@ const Navbar = () => {
                                             }}
                                             className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                                         >
-                                            <Settings className="h-4 w-4" />
+                                            <Settings className="h-4 w-4"/>
                                             Settings
                                         </button>
-                                        <hr className="my-1 border-gray-200" />
+                                        <hr className="my-1 border-gray-200"/>
                                         <button
                                             onClick={handleLogout}
                                             disabled={isLoading}
                                             className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            <LogOut className="h-4 w-4" />
+                                            <LogOut className="h-4 w-4"/>
                                             {isLoading ? 'Logging out...' : 'Logout'}
                                         </button>
                                     </div>

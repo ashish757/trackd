@@ -5,6 +5,7 @@ import EditUserProfileModel from "../components/EditUserProfileModel.tsx";
 import {useGetUserQuery} from "../redux/user/userApi.ts";
 import {Link} from "react-router-dom";
 import {useGetMyFriendsQuery} from "../redux/friend/friendApi.ts";
+import { ProfileHeaderSkeleton } from '../components/skeletons';
 
 export default function ProfilePage() {
     const {data: user, isLoading, isError} = useGetUserQuery();
@@ -24,9 +25,28 @@ export default function ProfilePage() {
             <main className="min-h-screen bg-gray-50">
                 <div className="container mx-auto px-4 py-8 max-w-4xl">
                     {isLoading ? (
-                        <div className="flex justify-center items-center h-64">
-                            <p className="text-gray-500">Loading...</p>
-                        </div>
+                        <>
+                            <ProfileHeaderSkeleton />
+                            <div className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse">
+                                <div className="h-6 bg-gray-200 rounded w-40 mb-4"></div>
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
+                                        <div className="w-10 h-10 rounded-full bg-gray-200"></div>
+                                        <div className="flex-1 space-y-2">
+                                            <div className="h-4 bg-gray-200 rounded w-32"></div>
+                                            <div className="h-3 bg-gray-200 rounded w-48"></div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
+                                        <div className="w-10 h-10 rounded-full bg-gray-200"></div>
+                                        <div className="flex-1 space-y-2">
+                                            <div className="h-4 bg-gray-200 rounded w-32"></div>
+                                            <div className="h-3 bg-gray-200 rounded w-48"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </>
                     ) : (
                         <>
                             {/* Profile Header - Instagram Style */}
@@ -167,8 +187,14 @@ export default function ProfilePage() {
                         {/* Modal Content */}
                         <div className="p-6 overflow-y-auto max-h-[calc(80vh-88px)]">
                             {isFriendListLoading ? (
-                                <div className="flex justify-center py-12">
-                                    <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                    {Array.from({ length: 6 }).map((_, index) => (
+                                        <div key={index} className="flex flex-col items-center p-4 rounded-lg border border-gray-100 animate-pulse">
+                                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 mb-3"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-20 mb-2"></div>
+                                            <div className="h-3 bg-gray-200 rounded w-16"></div>
+                                        </div>
+                                    ))}
                                 </div>
                             ) : friendList && friendList.length > 0 ? (
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
