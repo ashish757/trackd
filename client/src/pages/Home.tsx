@@ -86,6 +86,14 @@ export default function Home() {
             <main className="min-h-screen bg-gray-50">
                 <div className="container mx-auto px-4 py-8">
 
+                    {/* Logo Section - Mobile Only, Scrollable */}
+                    <div className="md:hidden flex justify-center mb-8">
+                        <div className="flex items-center gap-2">
+                            <img alt="Trackd" src="/logo.svg" className="h-10 w-auto" />
+                            <span className="text-2xl font-bold text-gray-900">Trackd</span>
+                        </div>
+                    </div>
+
                     {/* Hero Section with Search */}
                     <div className="max-w-4xl mx-auto mb-12">
                         <div className="text-center mb-8">
