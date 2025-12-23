@@ -9,6 +9,22 @@
 
 }
 
+/* Safe area for mobile devices with notches */
+.safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Ensure content doesn't get hidden behind bottom nav on mobile */
+.content-with-bottom-nav {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 768px) {
+    .content-with-bottom-nav {
+        padding-bottom: 2rem;
+    }
+}
+
 
 
 /*@layer components {*/
