@@ -2,6 +2,7 @@ import { Film } from "lucide-react";
 import type { Movie } from "../redux/movie/movieApi.ts";
 import MovieCard from "./MovieCard.tsx";
 import EmptyState from "./EmptyState.tsx";
+import { MovieGridSkeleton } from "./skeletons";
 
 interface MovieInfo {
     isTrendingLoading: boolean;
@@ -18,8 +19,8 @@ const TrendingMoviesSection = ({ isTrendingLoading, trendingData, isTrendingErro
     return (
         <div className="max-w-6xl mx-auto">
             {isTrendingLoading ? (
-                <div className="flex justify-center items-center py-20">
-                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                    <MovieGridSkeleton count={15} />
                 </div>
             ) : isTrendingError ? (
                 <div className="text-center py-20">

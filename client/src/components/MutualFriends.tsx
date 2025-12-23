@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useGetMutualFriendsQuery, type FriendT } from '../redux/friend/friendApi';
-import { Users, X, Loader2 } from 'lucide-react';
+import { Users, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MutualFriendsCount from './MutualFriendsCount';
+import { FriendListItemSkeleton } from './skeletons';
 
 interface MutualFriendsProps {
     targetUserId: string;
@@ -56,9 +57,7 @@ const MutualFriends = ({ targetUserId, }: MutualFriendsProps) => {
                         {/* Content */}
                         <div className="flex-1 overflow-y-auto p-4">
                             {isLoading ? (
-                                <div className="flex items-center justify-center py-8">
-                                    <Loader2 className="animate-spin text-blue-600" size={32} />
-                                </div>
+                                <FriendListItemSkeleton count={3} />
                             ) : error ? (
                                 <div className="text-center py-8">
                                     <p className="text-red-600">

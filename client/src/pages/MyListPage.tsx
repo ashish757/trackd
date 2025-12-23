@@ -6,6 +6,7 @@ import StatCard from '../components/StatCard.tsx';
 import { useGetUserStatsQuery, useGetUserMoviesByStatusQuery, MovieStatus } from '../redux/userMovie/userMovieApi.ts';
 import MovieInfoModel from "../components/MovieInfoModel.tsx";
 import type {Movie} from "../redux/movie/movieApi.ts";
+import { StatCardSkeleton, MovieGridSkeleton } from '../components/skeletons';
 
 export default function MyListPage() {
     const [activeTab, setActiveTab] = useState<'all' | 'watched' | 'planned'>('all');
@@ -62,24 +63,34 @@ export default function MyListPage() {
                     {/* Stats Cards */}
                     <div className="max-w-6xl mx-auto mb-8">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <StatCard
-                                icon={Film}
-                                value={stats.total}
-                                label="Total Movies"
-                                color="purple"
-                            />
-                            <StatCard
-                                icon={Check}
-                                value={stats.watched}
-                                label="Watched"
-                                color="green"
-                            />
-                            <StatCard
-                                icon={Clock}
-                                value={stats.planned}
-                                label="Planned"
-                                color="blue"
-                            />
+                            {isStatsLoading ? (
+                                <>
+                                    <StatCardSkeleton />
+                                    <StatCardSkeleton />
+                                    <StatCardSkeleton />
+                                </>
+                            ) : (
+                                <>
+                                    <StatCard
+                                        icon={Film}
+                                        value={stats.total}
+                                        label="Total Movies"
+                                        color="purple"
+                                    />
+                                    <StatCard
+                                        icon={Check}
+                                        value={stats.watched}
+                                        label="Watched"
+                                        color="green"
+                                    />
+                                    <StatCard
+                                        icon={Clock}
+                                        value={stats.planned}
+                                        label="Planned"
+                                        color="blue"
+                                    />
+                                </>
+                            )}
                         </div>
                     </div>
 
@@ -122,9 +133,7 @@ export default function MyListPage() {
                     {/* Movie List */}
                     <div className="max-w-6xl mx-auto">
                         {isLoading ? (
-                            <div className="flex justify-center items-center py-12">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                            </div>
+                            <MovieGridSkeleton count={10} />
                         ) : moviesToShow.length === 0 ? (
                             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
                                 <Film className="h-16 w-16 text-gray-400 mx-auto mb-4" />

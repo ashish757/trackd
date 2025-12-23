@@ -1,6 +1,7 @@
 import { useGetMovieByIdQuery, type Movie } from '../redux/movie/movieApi';
 import MovieCard from './MovieCard';
 import { Film } from 'lucide-react';
+import { MovieCardSkeleton } from './skeletons';
 
 interface MovieCardWithDetailsProps {
     movieId: number;
@@ -15,17 +16,7 @@ const MovieCardWithDetails = ({ movieId, onClick, badge }: MovieCardWithDetailsP
     const { data: movieData, isLoading, isError } = useGetMovieByIdQuery(movieId);
 
     if (isLoading) {
-        return (
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="aspect-[2/3] bg-gray-200 flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
-                </div>
-                <div className="p-3">
-                    <div className="h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2"></div>
-                </div>
-            </div>
-        );
+        return <MovieCardSkeleton />;
     }
 
     if (isError || !movieData) {

@@ -1,6 +1,7 @@
 import { Film } from 'lucide-react';
 import type { Movie } from '../redux/movie/movieApi';
 import MovieSearchItem from './MovieSearchItem';
+import { SearchSuggestionSkeleton } from './skeletons';
 
 interface SearchDropdownProps {
   show: boolean;
@@ -28,10 +29,7 @@ export default function SearchDropdown({
   return (
     <div className="absolute w-full mt-2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50">
       {isSearching ? (
-        <div className="px-4 py-8 text-center text-gray-500">
-          <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-blue-500 border-t-transparent"></div>
-          <p className="mt-2">Searching...</p>
-        </div>
+        <SearchSuggestionSkeleton count={5} />
       ) : isError ? (
         <div className="px-4 py-8 text-center text-red-500">
           <p>Error loading results. Please try again.</p>
