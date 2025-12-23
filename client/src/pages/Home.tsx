@@ -83,7 +83,7 @@ export default function Home() {
     return (
         <>
             <Navbar />
-            <main className="min-h-screen bg-gray-50">
+            <main className="min-h-screen bg-gray-50 pb-20 md:pb-8">
                 <div className="container mx-auto px-4 py-8">
 
                     {/* Logo Section - Mobile Only, Scrollable */}

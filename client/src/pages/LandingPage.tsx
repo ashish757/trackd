@@ -12,7 +12,7 @@ export default function LandingPage() {
     }
 
     return (
-        <div className="bg-white">
+        <div className="bg-white pb-20 md:pb-0">
             <nav aria-label="Global" className="flex items-center justify-between p-6 lg:px-32">
                     <div className="flex lg:flex-1">
                         <a href="#" className="flex justify-center items-center gap-2">
