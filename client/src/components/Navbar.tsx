@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useLogoutMutation } from '../redux/auth/authApi';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout as logoutAction } from '../redux/auth/authSlice';
-import { LogOut, User as UserIcon, Settings, ChevronDown } from 'lucide-react';
+import { LogOut, User as UserIcon, Settings } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import type { RootState } from '../redux/store';
 import type { User } from '../redux/user/userApi';
@@ -52,18 +52,17 @@ const Navbar = () => {
     const isActive = (path: string) => location.pathname === path;
 
     return (
-        <nav className="bg-white shadow-sm border-b border-gray-200">
+        <nav className={`bg-white shadow-sm border-b border-gray-200 hidden md:block`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
-                    {/* Logo */}
-                    <div className="flex items-center gap-8">
+                    <div className={`flex items-center gap-8 ${isAuthenticated ? 'hidden md:flex' : 'flex'} flex-1`}>
                         <Link to="/" className="flex items-center gap-2">
                             <img alt="Trackd" src="/logo.svg" className="h-8 w-auto" />
                             <span className="text-xl font-bold text-gray-900">Trackd</span>
                         </Link>
 
-                        {/* Nav Links */}
-                        <div className="hidden md:flex items-center gap-6">
+                        {/* Nav Links - Desktop Only */}
+                        <div className="flex items-center gap-6">
                             <Link
                                 to="/home"
                                 className={`text-sm font-medium transition-colors ${
@@ -111,17 +110,17 @@ const Navbar = () => {
                         </div>
                     </div>
 
-                    {/* Right side - Authenticated vs Unauthenticated */}
+                    {/* Right side - Desktop Only */}
                     {isAuthenticated ? (
-                        <div className="flex items-center gap-4">
-                            {/* Notifications */}
+                        <div className="hidden md:flex items-center gap-4">
+                            {/* Notifications - Desktop Only */}
                             <Notifications />
 
-                            {/* User Dropdown */}
+                            {/* User Dropdown - Desktop Only */}
                             <div className="relative" ref={dropdownRef}>
                                 <button
                                     onClick={() => setDropdownOpen(!dropdownOpen)}
-                                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                                 >
                                     {
                                         user?.avatar ? (
@@ -137,10 +136,7 @@ const Navbar = () => {
                                             </div>
                                         )
                                     }
-
-                                    <span className="hidden md:inline">{user?.name || user?.email || 'User'}</span>
-                                    <ChevronDown
-                                        className={`h-4 w-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}/>
+                                    <span>{user?.name || user?.email || 'User'}</span>
                                 </button>
 
                                 {/* Dropdown Menu */}

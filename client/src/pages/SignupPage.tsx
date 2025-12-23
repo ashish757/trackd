@@ -222,7 +222,7 @@ function SignupPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex items-center justify-center px-4 py-12">
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex items-center justify-center px-4 py-12 pb-24 md:pb-12">
             <div className="max-w-md w-full">
                 {/* Header */}
                 <div className="text-center mb-8">

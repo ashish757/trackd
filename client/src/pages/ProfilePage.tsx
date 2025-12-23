@@ -1,28 +1,47 @@
-import {User, Mail, Calendar, Settings, Users, X} from 'lucide-react';
+import {User, Mail, Calendar, Settings, Users, X, UserPlus, LogOut} from 'lucide-react';
 import Navbar from '../components/Navbar';
 import {useState} from "react";
 import EditUserProfileModel from "../components/EditUserProfileModel.tsx";
 import {useGetUserQuery} from "../redux/user/userApi.ts";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {useGetMyFriendsQuery} from "../redux/friend/friendApi.ts";
 import { ProfileHeaderSkeleton } from '../components/skeletons';
+import { useLogoutMutation } from '../redux/auth/authApi';
+import { useDispatch } from 'react-redux';
+import { logout as logoutAction } from '../redux/auth/authSlice';
+import Notifications from '../components/Notifications';
 
 export default function ProfilePage() {
     const {data: user, isLoading, isError} = useGetUserQuery();
     const [showModal, setShowModal] = useState(false);
     const [showFriendsModal, setShowFriendsModal] = useState(false);
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
 
     // Fetch friends list only when modal is open
     const { data: friendList, isLoading: isFriendListLoading } = useGetMyFriendsQuery(undefined, {
         skip: !showFriendsModal
     });
 
+    const handleLogout = async () => {
+        try {
+            await logout({}).unwrap();
+            dispatch(logoutAction());
+            navigate('/signin');
+        } catch (error) {
+            console.error('Logout error:', error);
+            dispatch(logoutAction());
+            navigate('/signin');
+        }
+    };
+
     if(isError) return ("Error occurred");
 
     return (
         <>
             <Navbar />
-            <main className="min-h-screen bg-gray-50">
+            <main className="min-h-screen bg-gray-50 pb-20 md:pb-8">
                 <div className="container mx-auto px-4 py-8 max-w-4xl">
                     {isLoading ? (
                         <>
@@ -49,22 +68,85 @@ export default function ProfilePage() {
                         </>
                     ) : (
                         <>
+                            {/* Mobile Top Bar - Only visible on mobile */}
+                            <div className="md:hidden bg-white rounded-lg border border-gray-200 p-4 mb-4">
+                                <div className="flex items-center justify-between">
+                                    <h1 className="text-xl font-bold text-gray-900">Profile</h1>
+                                    <div className="flex items-center gap-2">
+                                        <Notifications />
+                                        <Link to={'/settings'} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                                            <Settings className="h-5 w-5 text-gray-700" />
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
+
                             {/* Profile Header - Instagram Style */}
-                            <div className="bg-white rounded-lg border border-gray-200 p-8 mb-6">
-                                <div className="flex items-start gap-8 mb-6">
+                            <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-8 mb-6">
+                                {/* Mobile Layout */}
+                                <div className="md:hidden">
+                                    {/* Profile Picture - Centered on mobile */}
+                                    <div className="flex flex-col items-center mb-6">
+                                        {user?.avatar ? (
+                                            <img src={user?.avatar} alt="Profile" className="rounded-full w-24 h-24 mb-4" />
+                                        ) : (
+                                            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg mb-4">
+                                                {user?.name?.[0]?.toUpperCase() || 'U'}
+                                            </div>
+                                        )}
+
+                                        {/* Username and Name */}
+                                        <h2 className="text-xl font-semibold text-gray-900 mb-1 text-center">
+                                            {user?.name || 'Name not set'}
+                                        </h2>
+                                        <p className="text-gray-600 text-sm mb-3">@{user?.username}</p>
+
+                                        {/* Bio */}
+                                        {user?.bio && (
+                                            <p className="text-gray-700 text-sm text-center mb-4 px-2">
+                                                {user.bio}
+                                            </p>
+                                        )}
+
+                                        {/* Stats */}
+                                        <button
+                                            onClick={() => setShowFriendsModal(true)}
+                                            className="text-center mb-4"
+                                        >
+                                            <span className="font-semibold text-gray-900 text-lg">{user?.friendCount || 0}</span>
+                                            <span className="text-gray-600 ml-1 text-sm">friends</span>
+                                        </button>
+
+                                        {/* Action Buttons */}
+                                        <div className="w-full space-y-2">
+                                            <button
+                                                onClick={() => setShowModal(true)}
+                                                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg transition-colors"
+                                            >
+                                                Edit Profile
+                                            </button>
+                                            <Link
+                                                to="/find"
+                                                className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium text-sm rounded-lg transition-colors"
+                                            >
+                                                <UserPlus className="h-4 w-4" />
+                                                Find Friends
+                                            </Link>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Desktop Layout */}
+                                <div className="hidden md:flex items-start gap-8 mb-6">
                                     {/* Profile Picture */}
-                                    <div className="flex-shrink-0">
-                                        {
-                                            user?.avatar ? (
-                                                    <img src={user?.avatar} alt="Profile" className="rounded-full w-32 h-32 sm:w-40 sm:h-40" />
-                                                ) : (
-                                                <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg">
-                                                    {user?.name?.[0]?.toUpperCase() || 'U'}
-                                                </div>
-                                            )
-                                        }
-
-
+                                    <div className="shrink-0">
+                                        {user?.avatar ? (
+                                            <img src={user?.avatar} alt="Profile" className="rounded-full w-32 h-32 sm:w-40 sm:h-40" />
+                                        ) : (
+                                            <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-lg">
+                                                {user?.name?.[0]?.toUpperCase() || 'U'}
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Profile Info */}
@@ -79,6 +161,7 @@ export default function ProfilePage() {
                                             >
                                                 Edit Profile
                                             </button>
+                                            <Notifications />
                                             <Link to={'/settings'} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <Settings className="h-5 w-5 text-gray-700" />
                                             </Link>
@@ -108,6 +191,18 @@ export default function ProfilePage() {
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+
+                            {/* Mobile Logout Button - Only visible on mobile */}
+                            <div className="md:hidden bg-white rounded-lg border border-gray-200 p-4 mb-6">
+                                <button
+                                    onClick={handleLogout}
+                                    disabled={isLoggingOut}
+                                    className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-red-50 hover:bg-red-100 text-red-600 font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <LogOut className="h-5 w-5" />
+                                    {isLoggingOut ? 'Logging out...' : 'Logout'}
+                                </button>
                             </div>
 
                             {/* Additional Info Card */}

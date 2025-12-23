@@ -20,6 +20,7 @@ import ChangeEmail from "./components/ChangeEmail.tsx";
 import OauthSuccessPage from "./pages/OauthSuccessPage.tsx";
 import {useDetectCountry} from "./hooks/useDetectCountry.tsx";
 import LandingPage from "./pages/LandingPage.tsx";
+import BottomNav from "./components/BottomNav.tsx";
 
 function App() {
   // Automatically refresh access token on page load/reload
@@ -60,6 +61,9 @@ function App() {
                   <Route path="*" element={<NotFoundPage />} />
               </Routes>
           </main>
+
+          {/* Bottom Navigation - Mobile Only */}
+          <BottomNav />
       </>
 
   )
