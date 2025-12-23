@@ -1,4 +1,4 @@
-import { Film, TrendingUp } from "lucide-react";
+import { Film } from "lucide-react";
 import type { Movie } from "../redux/movie/movieApi.ts";
 import MovieCard from "./MovieCard.tsx";
 import EmptyState from "./EmptyState.tsx";
@@ -17,11 +17,6 @@ interface MovieInfo {
 const TrendingMoviesSection = ({ isTrendingLoading, trendingData, isTrendingError, handleSuggestionClick }: MovieInfo) => {
     return (
         <div className="max-w-6xl mx-auto">
-            <div className="flex items-center gap-2 mb-6">
-                <TrendingUp className="h-6 w-6 text-blue-600" />
-                <h2 className="text-2xl font-bold text-gray-900">Trending Today</h2>
-            </div>
-
             {isTrendingLoading ? (
                 <div className="flex justify-center items-center py-20">
                     <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
