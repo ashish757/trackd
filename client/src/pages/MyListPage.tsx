@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Film, Check, Clock } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar.tsx';
 import MovieCardWithDetails from '../components/MovieCardWithDetails.tsx';
 import StatCard from '../components/StatCard.tsx';
@@ -9,8 +10,10 @@ import type {Movie} from "../redux/movie/movieApi.ts";
 import { StatCardSkeleton, MovieGridSkeleton } from '../components/skeletons';
 
 export default function MyListPage() {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const movieId = searchParams.get('movie');
+
     const [activeTab, setActiveTab] = useState<'all' | 'watched' | 'planned'>('all');
-    const [showMovieInfo, setShowMovieInfo] = useState(false);
     const [movieInfo, setMovieInfo] = useState<Movie | null>(null);
 
     // ...existing code...
@@ -41,10 +44,19 @@ export default function MyListPage() {
         return [...(watchedMovies?.data || []), ...(plannedMovies?.data || [])];
     };
 
-    const handleCardClick = (movie: Movie) => {
+    const handleCardClick = useCallback((movie: Movie) => {
         setMovieInfo(movie);
-        setShowMovieInfo(true);
-    }
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set('movie', movie.id.toString());
+        setSearchParams(newParams);
+    }, [searchParams, setSearchParams]);
+
+    const handleCloseMovie = useCallback(() => {
+        setMovieInfo(null);
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete('movie');
+        setSearchParams(newParams);
+    }, [searchParams, setSearchParams]);
 
     const moviesToShow = getMoviesToShow();
     const isLoading = isStatsLoading || isWatchedLoading || isPlannedLoading;
@@ -174,7 +186,7 @@ export default function MyListPage() {
                 </div>
             </main>
 
-            {showMovieInfo && <MovieInfoModel movie={movieInfo} onClose={() => setShowMovieInfo(false)} />}
+            {movieId && movieInfo && <MovieInfoModel movie={movieInfo} onClose={handleCloseMovie} />}
         </>
     );
 }

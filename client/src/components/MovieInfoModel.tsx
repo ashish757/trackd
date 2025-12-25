@@ -11,7 +11,7 @@ import StarRating from './StarRating';
 
 interface props {
     movie: Movie | null,
-    onClose: (a: boolean) => void
+    onClose: () => void
 }
 
 const MovieInfoModel = ({onClose, movie}: props) => {
@@ -219,7 +219,7 @@ const MovieInfoModel = ({onClose, movie}: props) => {
         <Portal layer={"modal"}>
         <div
             className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto"
-            onClick={() => onClose(false)}
+            onClick={() => onClose()}
         >
             <div
                 className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl animate-in fade-in duration-200 relative"
@@ -227,7 +227,7 @@ const MovieInfoModel = ({onClose, movie}: props) => {
             >
                 {/* Close Button */}
                 <button
-                    onClick={() => onClose(false)}
+                    onClick={() => onClose()}
                     className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors duration-200"
                     aria-label="Close modal"
                 >

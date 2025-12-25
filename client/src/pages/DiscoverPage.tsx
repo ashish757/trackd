@@ -1,12 +1,11 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Search, Film, X, Filter, SlidersHorizontal } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { useLazySearchMoviesQuery, type Movie } from '../redux/movie/movieApi';
+import { useLazySearchMoviesQuery, useGetMovieByIdQuery, type Movie } from '../redux/movie/movieApi';
 import MovieInfoModel from "../components/MovieInfoModel.tsx";
 import MovieCard from "../components/MovieCard.tsx";
-import SearchDropdown from "../components/SearchDropdown.tsx";
 import { useDebounce } from '../hooks/useDebounce';
-import { useClickOutside } from '../hooks/useClickOutside';
 import { SEARCH_CONFIG } from '../constants/search';
 import { MovieGridSkeleton } from '../components/skeletons';
 
@@ -46,12 +45,14 @@ const currentYear = new Date().getFullYear();
 const YEARS = Array.from({ length: 50 }, (_, i) => currentYear - i);
 
 export default function DiscoverPage() {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const movieId = searchParams.get('movie');
+    const urlQuery = searchParams.get('q') || '';
+
+    const [searchQuery, setSearchQuery] = useState(urlQuery);
     const [showFilters, setShowFilters] = useState(false);
-    const searchRef = useRef<HTMLDivElement>(null);
-    const [showMovieInfo, setShowMovieInfo] = useState(false);
     const [infoMovie, setInfoMovie] = useState<Movie | null>(null);
+    const isInitialMount = useRef(true);
 
     // Filter states
     const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
@@ -61,38 +62,78 @@ export default function DiscoverPage() {
 
     // Custom hooks
     const debouncedQuery = useDebounce(searchQuery, SEARCH_CONFIG.DEBOUNCE_DELAY);
-    useClickOutside(searchRef, () => setShowSuggestions(false));
 
     // RTK Query hooks
-    const [triggerSearch, { data: searchResults, isLoading, isFetching, isError }] = useLazySearchMoviesQuery();
+    const [triggerSearch, { data: searchResults, isLoading, isFetching }] = useLazySearchMoviesQuery();
 
-    // Hide suggestions when query is too short
+    // Fetch movie details if movieId in URL
+    const { data: movieFromUrl } = useGetMovieByIdQuery(Number(movieId), {
+        skip: !movieId,
+    });
+
+    // Set infoMovie when movie is fetched from URL
     useEffect(() => {
-        if (searchQuery.length < SEARCH_CONFIG.MIN_SEARCH_LENGTH) {
-            setShowSuggestions(false);
+        if (movieFromUrl && movieId && !infoMovie) {
+            setInfoMovie(movieFromUrl);
         }
-    }, [searchQuery]);
+    }, [movieFromUrl, movieId, infoMovie]);
+
+    // Sync search query with URL parameter
+    useEffect(() => {
+        if (debouncedQuery.length >= SEARCH_CONFIG.MIN_SEARCH_LENGTH) {
+            const newParams = new URLSearchParams(searchParams);
+            newParams.set('q', debouncedQuery);
+            setSearchParams(newParams, { replace: true });
+        } else if (debouncedQuery.length === 0) {
+            const newParams = new URLSearchParams(searchParams);
+            newParams.delete('q');
+            setSearchParams(newParams, { replace: true });
+        }
+    }, [debouncedQuery, searchParams, setSearchParams]);
+
+    // Trigger search on mount if URL has query
+    useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            if (urlQuery.length >= SEARCH_CONFIG.MIN_SEARCH_LENGTH) {
+                triggerSearch(urlQuery);
+            }
+        }
+    }, [urlQuery, triggerSearch]);
 
     // Trigger API search when debounced query changes
     useEffect(() => {
         if (debouncedQuery.length >= SEARCH_CONFIG.MIN_SEARCH_LENGTH) {
             triggerSearch(debouncedQuery);
-            setShowSuggestions(true);
         }
     }, [debouncedQuery, triggerSearch]);
 
-
-    const handleSuggestionClick = (movie: Movie) => {
-        setSearchQuery(movie.title);
-        setShowSuggestions(false);
-        setShowMovieInfo(true);
+    // Handle opening movie modal via URL
+    const handleOpenMovie = useCallback((movie: Movie) => {
         setInfoMovie(movie);
-    };
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set('movie', movie.id.toString());
+        setSearchParams(newParams);
+    }, [searchParams, setSearchParams]);
 
-    const clearSearch = () => {
+    // Handle closing movie modal
+    const handleCloseMovie = useCallback(() => {
+        setInfoMovie(null);
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete('movie');
+        setSearchParams(newParams);
+    }, [searchParams, setSearchParams]);
+
+    const handleMovieClick = useCallback((movie: Movie) => {
+        handleOpenMovie(movie);
+    }, [handleOpenMovie]);
+
+    const clearSearch = useCallback(() => {
         setSearchQuery('');
-        setShowSuggestions(false);
-    };
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete('q');
+        setSearchParams(newParams, { replace: true });
+    }, [searchParams, setSearchParams]);
 
     const toggleGenre = (genreId: number) => {
         setSelectedGenres(prev =>
@@ -144,7 +185,6 @@ export default function DiscoverPage() {
             });
     }, [searchResults, selectedYear, minRating, sortBy]);
 
-    const suggestions = searchResults?.results || [];
     const isSearching = isLoading || isFetching;
 
     return (
@@ -167,14 +207,13 @@ export default function DiscoverPage() {
                         {/* Search Bar with Filter Toggle */}
                         <div className="space-y-4">
                             <div className="flex gap-3">
-                                <div className="flex-1 relative" ref={searchRef}>
+                                <div className="flex-1 relative">
                                     <div className="relative">
                                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                                         <input
                                             type="text"
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            onFocus={() => searchQuery.length >= SEARCH_CONFIG.MIN_SEARCH_LENGTH && setShowSuggestions(true)}
                                             placeholder="Search for movies..."
                                             className="w-full pl-12 pr-12 py-4 text-lg border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-colors shadow-sm"
                                             autoComplete="off"
@@ -189,16 +228,6 @@ export default function DiscoverPage() {
                                             </button>
                                         )}
                                     </div>
-
-                                    {/* Search Suggestions Dropdown */}
-                                    <SearchDropdown
-                                        show={showSuggestions}
-                                        isSearching={isSearching}
-                                        isError={isError}
-                                        suggestions={suggestions}
-                                        searchQuery={searchQuery}
-                                        onMovieClick={handleSuggestionClick}
-                                    />
                                 </div>
 
                                 <button
@@ -323,7 +352,7 @@ export default function DiscoverPage() {
                     </div>
 
                     {/* Movie Info Modal */}
-                    {showMovieInfo && <MovieInfoModel onClose={setShowMovieInfo} movie={infoMovie} />}
+                    {movieId && infoMovie && <MovieInfoModel onClose={handleCloseMovie} movie={infoMovie} />}
 
                     {/* Search Results */}
                     {debouncedQuery && (
@@ -345,7 +374,7 @@ export default function DiscoverPage() {
                                         <MovieCard
                                             key={movie.id}
                                             movie={movie}
-                                            onClick={() => handleSuggestionClick(movie)}
+                                            onClick={() => handleMovieClick(movie)}
                                         />
                                     ))}
                                 </div>

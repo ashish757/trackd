@@ -7,6 +7,7 @@ import {
 import {AuthGuard} from "../../common/guards/auth.guard";
 import {UserService} from "./user.service";
 import type {Request, Response} from "express";
+import { CookieConfig } from '../../utils/cookie';
 
 interface AuthenticatedRequest extends Request {
     user?: {
@@ -93,13 +94,7 @@ export class UserController {
 
         if(!res) throw new InternalServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
 
-        res.cookie('refreshToken', data.refreshToken, {
-            httpOnly: true,
-            secure: process.env.ENV === 'production',
-            sameSite: process.env.ENV == "production" ? "none" : "lax" ,
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-            path: '/',
-        });
+        CookieConfig.setRefreshTokenCookie(res, data.refreshToken);
 
         return {
             status: 'success',

@@ -26,6 +26,7 @@ import {
 import { LoginDto } from './DTO/login.dto';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import {OptionalAuthGuard} from "../../common/guards/optionalAuth.guard";
+import { CookieConfig } from '../../utils/cookie';
 
 interface AuthorizedRequest extends Request {
     user?: {
@@ -47,13 +48,7 @@ export class AuthController {
         const data = await this.authService.login(req);
 
         // Set refresh token in HttpOnly cookie
-        res.cookie('refreshToken', data.refreshToken, {
-            httpOnly: true,
-            secure: process.env.ENV === 'production', // HTTPS only in production
-            sameSite: process.env.ENV == "production" ? "none" : "lax" ,  // CSRF protection but our client is on a different domain
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-            path: '/',
-        });
+        CookieConfig.setRefreshTokenCookie(res, data.refreshToken);
 
         // Only send access token in response body
         return {
@@ -105,13 +100,7 @@ export class AuthController {
         const data = await this.authService.register(req.user);
 
         // Set refresh token in HttpOnly cookie
-        res.cookie('refreshToken', data.refreshToken, {
-            httpOnly: true,
-            secure: process.env.ENV === 'production',
-            sameSite: process.env.ENV == "production" ? "none" : "lax" ,
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-            path: '/',
-        });
+        CookieConfig.setRefreshTokenCookie(res, data.refreshToken);
 
         return {
             status: 'success',
@@ -165,13 +154,7 @@ export class AuthController {
         const data = await this.authService.refreshToken(refreshToken);
 
         // Set new refresh token in HttpOnly cookie
-        res.cookie('refreshToken', data.refreshToken, {
-            httpOnly: true,
-            secure: process.env.ENV === 'production',
-            sameSite: process.env.ENV == "production" ? "none" : "lax" ,
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-            path: '/',
-        });
+        CookieConfig.setRefreshTokenCookie(res, data.refreshToken);
 
         return {
             status: 'success',
@@ -204,13 +187,7 @@ export class AuthController {
         const data = await this.authService.changeEmail(dto, req.isAuthenticated, req?.user.sub);
 
         // Set new refresh token in HttpOnly cookie
-        res.cookie('refreshToken', data.refreshToken, {
-            httpOnly: true,
-            secure: process.env.ENV === 'production',
-            sameSite: process.env.ENV == "production" ? "none" : "lax" ,
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-            path: '/',
-        });
+        CookieConfig.setRefreshTokenCookie(res, data.refreshToken);
 
         return {
             status: 'success',
@@ -234,12 +211,7 @@ export class AuthController {
         }
 
         // Clear refresh token cookie
-        res.clearCookie('refreshToken', {
-            httpOnly: true,
-            secure: process.env.ENV === 'production',
-            sameSite: process.env.ENV == "production" ? "none" : "lax" ,
-            path: '/',
-        });
+        CookieConfig.clearRefreshTokenCookie(res);
 
         return {
             status: 'success',
@@ -253,12 +225,7 @@ export class AuthController {
     async googleAuth(@Res() res: Response) {
         const {url, state} = this.authService.getGoogleAuthURL();
 
-        res.cookie('oauth_state', state, {
-            httpOnly: true,
-            secure: process.env.ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 15 * 60 * 1000,
-        });
+        CookieConfig.setOAuthStateCookie(res, state);
 
         return res.redirect(url);
     }
@@ -275,7 +242,7 @@ export class AuthController {
             }
 
             // Cleanup: Clear the state cookie (it's one-time use)
-            res.clearCookie('oauth_state');
+            CookieConfig.clearOAuthStateCookie(res);
 
             if (!code) {
                 if (process.env.ENV === 'production') return res.redirect(`${process.env.FRONTEND_URL}/signin?error=missing_code`);
@@ -285,13 +252,7 @@ export class AuthController {
             const { accessToken, refreshToken } = await this.authService.googleLogin(code);
 
             // Set refresh token in HttpOnly cookie (SECURE!)
-            res.cookie('refreshToken', refreshToken, {
-                httpOnly: true,
-                secure: process.env.ENV === 'production',
-                sameSite: process.env.ENV === 'production' ? 'none' : 'lax',
-                maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-                path: '/',
-            });
+            CookieConfig.setRefreshTokenCookie(res, refreshToken);
 
             // Redirect to frontend OAuth success page with only accessToken in URL
             // The frontend will then store it in memory and fetch user data

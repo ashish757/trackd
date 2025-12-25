@@ -52,7 +52,7 @@ function SigninPage() {
             const result = await login(formData).unwrap();
             console.log('Login successful:', result);
             // Only navigate on success
-            navigate('/');
+            navigate('/home');
         } catch (err: unknown) {
             console.error('Login error:', err);
             // Handle RTK Query error object

@@ -7,11 +7,17 @@ import MovieCardSkeleton from './MovieCardSkeleton';
 
 interface MovieGridSkeletonProps {
     count?: number;
+    gridCols?: string;
+    gap?: string;
 }
 
-export default function MovieGridSkeleton({ count = 10 }: MovieGridSkeletonProps) {
+export default function MovieGridSkeleton({
+    count = 10,
+    gridCols = "grid-cols-2 md:grid-cols-4 lg:grid-cols-5",
+    gap = "gap-4"
+}: MovieGridSkeletonProps) {
     return (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <div className={`grid ${gridCols} ${gap}`}>
             {Array.from({ length: count }).map((_, index) => (
                 <MovieCardSkeleton key={index} />
             ))}

@@ -19,9 +19,11 @@ const TrendingMoviesSection = ({ isTrendingLoading, trendingData, isTrendingErro
     return (
         <div className="max-w-6xl mx-auto">
             {isTrendingLoading ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                    <MovieGridSkeleton count={15} />
-                </div>
+                <MovieGridSkeleton
+                    count={15}
+                    gridCols="grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+                    gap="gap-6"
+                />
             ) : isTrendingError ? (
                 <div className="text-center py-20">
                     <p className="text-red-500">Failed to load trending movies. Please try again later.</p>

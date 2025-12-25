@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, X, TrendingUp, Rss } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useLazySearchMoviesQuery, useGetTrendingMoviesQuery, type Movie } from '../redux/movie/movieApi';
 import MovieInfoModel from "../components/MovieInfoModel.tsx";
@@ -10,16 +11,32 @@ import { useDebounce } from '../hooks/useDebounce';
 import { useClickOutside } from '../hooks/useClickOutside';
 import { SEARCH_CONFIG } from '../constants/search';
 import { logger } from '../utils/logger';
+import { storage } from '../utils/config';
 
 type TabType = 'feed' | 'trending';
 
+const LAST_TAB_KEY = 'home_last_active_tab';
+
 export default function Home() {
-    const [activeTab, setActiveTab] = useState<TabType>('feed');
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Get state from URL, fallback to localStorage, then default to 'feed'
+    const getInitialTab = (): TabType => {
+        const urlTab = searchParams.get('tab') as TabType;
+        if (urlTab) return urlTab;
+
+        const savedTab = storage.getItem(LAST_TAB_KEY) as TabType;
+        return savedTab || 'feed';
+    };
+
+    const activeTab = getInitialTab();
+    const movieId = searchParams.get('movie');
+
     const [searchQuery, setSearchQuery] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
-    const [showMovieInfo, setShowMovieInfo] = useState(false);
     const [infoMovie, setInfoMovie] = useState<Movie | null>(null);
+    const isInitialMount = useRef(true);
 
     // Custom hooks
     const debouncedQuery = useDebounce(searchQuery, SEARCH_CONFIG.DEBOUNCE_DELAY);
@@ -28,6 +45,25 @@ export default function Home() {
     // RTK Query hooks
     const [triggerSearch, { data: searchResults, isLoading, isFetching, isError }] = useLazySearchMoviesQuery();
     const { data: trendingData, isLoading: isTrendingLoading, isError: isTrendingError } = useGetTrendingMoviesQuery();
+
+    // Sync URL with saved tab preference on mount
+    useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            const urlTab = searchParams.get('tab');
+            if (!urlTab && activeTab !== 'feed') {
+                // No tab in URL but we have a saved preference, update URL
+                const newParams = new URLSearchParams(searchParams);
+                newParams.set('tab', activeTab);
+                setSearchParams(newParams, { replace: true }); // Use replace to avoid adding to history
+            }
+        }
+    }, [activeTab, searchParams, setSearchParams]);
+
+    // Save active tab to localStorage whenever it changes
+    useEffect(() => {
+        storage.setItem(LAST_TAB_KEY, activeTab);
+    }, [activeTab]);
 
     // Hide suggestions when query is too short
     useEffect(() => {
@@ -56,20 +92,41 @@ export default function Home() {
         });
     }, [searchResults, isLoading, isFetching, isError]);
 
+    // Handle tab switching via URL
+    const handleTabChange = useCallback((tab: TabType) => {
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set('tab', tab);
+        // Keep movie param if it exists
+        setSearchParams(newParams);
+    }, [searchParams, setSearchParams]);
+
+    // Handle opening movie modal via URL
+    const handleOpenMovie = useCallback((movie: Movie) => {
+        logger.log('Opening movie:', movie);
+        setInfoMovie(movie);
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set('movie', movie.id.toString());
+        setSearchParams(newParams);
+    }, [searchParams, setSearchParams]);
+
+    // Handle closing movie modal
+    const handleCloseMovie = useCallback(() => {
+        setInfoMovie(null);
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete('movie');
+        setSearchParams(newParams);
+    }, [searchParams, setSearchParams]);
+
     const handleSuggestionClick = useCallback((movie: Movie) => {
-        logger.log('Selected movie:', movie);
         setSearchQuery(movie.title);
         setShowSuggestions(false);
-        setShowMovieInfo(true);
-        setInfoMovie(movie);
-    }, []);
+        handleOpenMovie(movie);
+    }, [handleOpenMovie]);
 
     const handleCardClick = useCallback((movie: Movie) => {
-        logger.log('Selected movie:', movie);
         setShowSuggestions(false);
-        setShowMovieInfo(true);
-        setInfoMovie(movie);
-    }, []);
+        handleOpenMovie(movie);
+    }, [handleOpenMovie]);
 
     const clearSearch = useCallback(() => {
         setSearchQuery('');
@@ -149,7 +206,7 @@ export default function Home() {
                     <div className="flex  my-6">
                         <div className="inline-flex  p-1">
                             <button
-                                onClick={() => setActiveTab('feed')}
+                                onClick={() => handleTabChange('feed')}
                                 className={`flex items-center gap-2 px-6 py-2.5 font-medium hover:bg-gray-200 text-gray-600 ${
                                     activeTab === 'feed'
                                         ? 'border-b-2 border-gray-700 text-gray-800'
@@ -160,7 +217,7 @@ export default function Home() {
                                 Feed
                             </button>
                             <button
-                                onClick={() => setActiveTab('trending')}
+                                onClick={() => handleTabChange('trending')}
                                 className={`flex items-center gap-2 px-6 py-2.5 font-medium hover:bg-gray-200 text-gray-600 ${
                                     activeTab === 'trending'
                                         ? 'border-b-2 border-gray-700 text-gray-800'
@@ -189,7 +246,9 @@ export default function Home() {
 
 
                     {/*{Movie info model}*/}
-                    {showMovieInfo ? (<MovieInfoModel onClose={setShowMovieInfo} movie={infoMovie} />) : null}
+                    {movieId && infoMovie ? (
+                        <MovieInfoModel onClose={handleCloseMovie} movie={infoMovie} />
+                    ) : null}
 
                 </div>
             </main>
