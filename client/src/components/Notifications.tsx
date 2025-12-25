@@ -1,12 +1,15 @@
 import { useGetFriendRequestsQuery } from '../redux/friend/friendApi';
-import { Link } from 'react-router-dom';
-import {useState} from "react";
+import { Link, useSearchParams } from 'react-router-dom';
+import { useCallback } from "react";
 import Portal from "./Portal.tsx";
 
 
 const Notifications = () => {
     const { data } = useGetFriendRequestsQuery();
-    const [showNotifications, setShowNotifications] = useState(false);
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Get notifications state from URL
+    const showNotifications = searchParams.get('notifications') === 'open';
 
     function timeAgo(date: string) {
         const now = new Date();
@@ -21,15 +24,27 @@ const Notifications = () => {
         return past.toDateString();
     }
 
-    const onClose = () => {
-        setShowNotifications(false);
-    }
+    const handleToggleNotifications = useCallback(() => {
+        const newParams = new URLSearchParams(searchParams);
+        if (showNotifications) {
+            newParams.delete('notifications');
+        } else {
+            newParams.set('notifications', 'open');
+        }
+        setSearchParams(newParams);
+    }, [searchParams, setSearchParams, showNotifications]);
+
+    const handleClose = useCallback(() => {
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete('notifications');
+        setSearchParams(newParams);
+    }, [searchParams, setSearchParams]);
 
 
     return (
         <>
             <button
-                onClick={() => setShowNotifications(!showNotifications)}
+                onClick={handleToggleNotifications}
                 className="p-2 rounded-full hover:bg-gray-100 transition-colors relative"
                 aria-label="Notifications"
             >
@@ -58,7 +73,7 @@ const Notifications = () => {
             {/* Backdrop Overlay */}
             <div
                 className={`fixed inset-0 bg-black/40 transition-opacity z-40 ${showNotifications ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                onClick={onClose}
+                onClick={handleClose}
             />
 
             {/* Sidebar Container */}
@@ -96,7 +111,7 @@ const Notifications = () => {
                                     <div className="flex gap-2">
                                         <Link
                                             to={`/users/${req.sender.username}`}
-                                            onClick={onClose} // Close sidebar on click
+                                            onClick={handleClose} // Close sidebar on click
                                             className="px-4 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                                         >
                                             View Profile
