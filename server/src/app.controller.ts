@@ -11,13 +11,9 @@ export class AppController {
     constructor(private readonly appService: AppService) {}
 
 
-    @Get('/health')
-    async health() {
-        return {
-            status: 'success',
-            message: 'Service is healthy',
-            timestamp: new Date().toISOString(),
-        };
+    @Get('health')
+    health() {
+        return { status: 'ok' };
     }
 
     @Post('/test-email-otp')

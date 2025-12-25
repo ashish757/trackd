@@ -3,8 +3,6 @@ node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
-yarn.lock
 
 # Build output
 dist
@@ -70,15 +68,3 @@ Thumbs.db
 scripts/test-email.ts
 scripts/generate-env-example.ts
 .env.local
-.env
-# Environment files
-
-build
-dist
-# Build output
-
-yarn-error.log*
-yarn-debug.log*
-npm-debug.log*
-node_modules
-
