@@ -237,7 +237,7 @@ function SignupPage() {
     };
 
     return (
-        <div className="min-h-screen bg-white md:bg-gradient-to-br md:from-purple-50 md:via-white md:to-indigo-50 flex items-center justify-center md:px-4 md:py-12 pb-24 md:pb-12">
+        <div className="min-h-screen bg-white md:bg-gradient-to-br md:from-purple-50 md:via-white md:to-indigo-50 md:flex md:items-center md:justify-center md:px-4 md:py-12 pb-24 md:pb-12">
             <div className="max-w-md w-full px-4 md:px-0">
                 {/* Header */}
                 <div className="text-center mb-6 md:mb-8 pt-8 md:pt-0">

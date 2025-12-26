@@ -61,23 +61,23 @@ export default function SettingsPage() {
                             </div>
 
                             {/* Preferences */}
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <Globe className="h-6 w-6 text-gray-700" />
-                                    <h2 className="text-xl font-semibold text-gray-900">Preferences</h2>
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">
+                                <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+                                    <Globe className="h-5 w-5 md:h-6 md:w-6 text-gray-700" />
+                                    <h2 className="text-lg md:text-xl font-semibold text-gray-900">Preferences</h2>
                                 </div>
-                                <div className="space-y-4">
+                                <div className="space-y-3 md:space-y-4">
                                     <div>
-                                        <label className="block text-gray-700 mb-2">Language</label>
-                                        <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                                        <label className="block text-sm md:text-base text-gray-700 mb-2">Language</label>
+                                        <select className="w-full px-3 py-1.5 md:px-4 md:py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
                                             <option>English</option>
                                             <option>Spanish</option>
                                             <option>French</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-gray-700 mb-2">Default view</label>
-                                        <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                                        <label className="block text-sm md:text-base text-gray-700 mb-2">Default view</label>
+                                        <select className="w-full px-3 py-1.5 md:px-4 md:py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
                                             <option>Grid</option>
                                             <option>List</option>
                                         </select>

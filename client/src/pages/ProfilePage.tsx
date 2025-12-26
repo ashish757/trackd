@@ -69,10 +69,10 @@ export default function ProfilePage() {
                     ) : (
                         <>
                             {/* Mobile Top Bar - Only visible on mobile */}
-                            <div className="md:hidden bg-white rounded-lg border border-gray-200 p-4 mb-4">
+                            <div className="md:hidden bg-white border-b border-gray-200 p-3 mb-0">
                                 <div className="flex items-center justify-between">
-                                    <h1 className="text-xl font-bold text-gray-900">Profile</h1>
-                                    <div className="flex items-center gap-2">
+                                    <h1 className="text-lg font-semibold text-gray-900">{user?.username}</h1>
+                                    <div className="flex items-center gap-1">
                                         <Notifications />
                                         <Link to={'/settings'} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                                             <Settings className="h-5 w-5 text-gray-700" />
@@ -82,57 +82,64 @@ export default function ProfilePage() {
                             </div>
 
                             {/* Profile Header - Instagram Style */}
-                            <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-8 mb-6">
+                            <div className="bg-white md:rounded-lg md:border md:border-gray-200 p-4 md:p-8 mb-4 md:mb-6">
                                 {/* Mobile Layout */}
                                 <div className="md:hidden">
-                                    {/* Profile Picture - Centered on mobile */}
-                                    <div className="flex flex-col items-center mb-6">
+                                    {/* Top Section: Avatar, Stats, and Buttons in Row */}
+                                    <div className="flex items-start gap-4 mb-4">
+                                        {/* Profile Picture */}
                                         {user?.avatar ? (
-                                            <img src={user?.avatar} alt="Profile" className="rounded-full w-24 h-24 mb-4" />
+                                            <img src={user?.avatar} alt="Profile" className="rounded-full w-20 h-20 border border-gray-200" />
                                         ) : (
-                                            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg mb-4">
+                                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold shadow-sm border border-gray-200">
                                                 {user?.name?.[0]?.toUpperCase() || 'U'}
                                             </div>
                                         )}
 
-                                        {/* Username and Name */}
-                                        <h2 className="text-xl font-semibold text-gray-900 mb-1 text-center">
-                                            {user?.name || 'Name not set'}
-                                        </h2>
-                                        <p className="text-gray-600 text-sm mb-3">@{user?.username}</p>
+                                        {/* Stats and Username */}
+                                        <div className="flex-1 min-w-0">
+                                            <h2 className="text-lg font-semibold text-gray-900 mb-2 truncate">
+                                                {user?.username}
+                                            </h2>
 
-                                        {/* Bio */}
+                                            {/* Friends Count */}
+                                            <button
+                                                onClick={() => setShowFriendsModal(true)}
+                                                className="text-sm hover:opacity-80 transition-opacity"
+                                            >
+                                                <span className="font-semibold text-gray-900">{user?.friendCount || 0}</span>
+                                                <span className="text-gray-600 ml-1">friends</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Name and Bio */}
+                                    <div className="mb-4">
+                                        <p className="font-semibold text-gray-900 text-sm mb-1">
+                                            {user?.name || 'Name not set'}
+                                        </p>
                                         {user?.bio && (
-                                            <p className="text-gray-700 text-sm text-center mb-4 px-2">
+                                            <p className="text-gray-700 text-sm whitespace-pre-wrap">
                                                 {user.bio}
                                             </p>
                                         )}
+                                    </div>
 
-                                        {/* Stats */}
+                                    {/* Action Buttons */}
+                                    <div className="grid grid-cols-2 gap-2">
                                         <button
-                                            onClick={() => setShowFriendsModal(true)}
-                                            className="text-center mb-4"
+                                            onClick={() => setShowModal(true)}
+                                            className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-900 font-semibold text-sm rounded-lg transition-colors"
                                         >
-                                            <span className="font-semibold text-gray-900 text-lg">{user?.friendCount || 0}</span>
-                                            <span className="text-gray-600 ml-1 text-sm">friends</span>
+                                            Edit Profile
                                         </button>
-
-                                        {/* Action Buttons */}
-                                        <div className="w-full space-y-2">
-                                            <button
-                                                onClick={() => setShowModal(true)}
-                                                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg transition-colors"
-                                            >
-                                                Edit Profile
-                                            </button>
-                                            <Link
-                                                to="/find"
-                                                className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium text-sm rounded-lg transition-colors"
-                                            >
-                                                <UserPlus className="h-4 w-4" />
-                                                Find Friends
-                                            </Link>
-                                        </div>
+                                        <Link
+                                            to="/find"
+                                            className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-900 font-semibold text-sm rounded-lg transition-colors"
+                                        >
+                                            <UserPlus className="h-3.5 w-3.5" />
+                                            Find Friends
+                                        </Link>
                                     </div>
                                 </div>
 
@@ -194,52 +201,52 @@ export default function ProfilePage() {
                             </div>
 
                             {/* Mobile Logout Button - Only visible on mobile */}
-                            <div className="md:hidden bg-white rounded-lg border border-gray-200 p-4 mb-6">
+                            <div className="md:hidden bg-white p-3 mb-4">
                                 <button
                                     onClick={handleLogout}
                                     disabled={isLoggingOut}
-                                    className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-red-50 hover:bg-red-100 text-red-600 font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-white border border-red-200 hover:bg-red-50 text-red-600 font-medium text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    <LogOut className="h-5 w-5" />
+                                    <LogOut className="h-4 w-4" />
                                     {isLoggingOut ? 'Logging out...' : 'Logout'}
                                 </button>
                             </div>
 
                             {/* Additional Info Card */}
-                            <div className="bg-white rounded-lg border border-gray-200 p-6">
-                                <h2 className="text-lg font-semibold text-gray-900 mb-4">Account Information</h2>
-                                <div className="space-y-4">
-                                    <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
-                                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                                            <User className="h-5 w-5 text-gray-600" />
+                            <div className="bg-white md:rounded-lg md:border md:border-gray-200 p-4 md:p-6">
+                                <h2 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">Account Information</h2>
+                                <div className="space-y-3 md:space-y-4">
+                                    <div className="flex items-center gap-3 md:gap-4 pb-3 md:pb-4 border-b border-gray-100">
+                                        <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+                                            <User className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
                                         </div>
                                         <div className="min-w-0 flex-1">
                                             <p className="text-xs text-gray-500 mb-0.5">Name</p>
-                                            <p className="font-medium text-gray-900 truncate">
+                                            <p className="text-sm md:text-base font-medium text-gray-900 truncate">
                                                 {user?.name || 'Not set'}
                                             </p>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
-                                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                                            <Mail className="h-5 w-5 text-gray-600" />
+                                    <div className="flex items-center gap-3 md:gap-4 pb-3 md:pb-4 border-b border-gray-100">
+                                        <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+                                            <Mail className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
                                         </div>
                                         <div className="min-w-0 flex-1">
                                             <p className="text-xs text-gray-500 mb-0.5">Email</p>
-                                            <p className="font-medium text-gray-900 truncate">
+                                            <p className="text-sm md:text-base font-medium text-gray-900 truncate">
                                                 {user?.email || 'Not set'}
                                             </p>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                                            <Calendar className="h-5 w-5 text-gray-600" />
+                                    <div className="flex items-center gap-3 md:gap-4">
+                                        <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+                                            <Calendar className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
                                         </div>
                                         <div className="min-w-0 flex-1">
                                             <p className="text-xs text-gray-500 mb-0.5">Member Since</p>
-                                            <p className="font-medium text-gray-900">
+                                            <p className="text-sm md:text-base font-medium text-gray-900">
                                                 {user?.createdAt
                                                     ? new Date(user.createdAt).toLocaleDateString('en-US', {
                                                         year: 'numeric',

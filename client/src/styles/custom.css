@@ -9,6 +9,10 @@
 
 }
 
+main {
+    padding-top: 1rem;
+}
+
 /* Safe area for mobile devices with notches */
 .safe-area-bottom {
     padding-bottom: env(safe-area-inset-bottom);
