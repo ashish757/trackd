@@ -9,7 +9,7 @@ import {
     useGetUserFriendListQuery,
     useGetUserMovieStatsQuery
 } from "../redux/user/userApi.ts";
-import {useParams, Link} from "react-router-dom";
+import {useParams, Link, useNavigate} from "react-router-dom";
 import Navbar from "../components/Navbar.tsx";
 import {useSelector} from "react-redux";
 import type {RootState} from "../redux/store.ts";
@@ -25,6 +25,8 @@ const UserPage = () => {
     const isInitialized = useSelector((state: RootState) => state.auth.isInitialized);
     const [selectedTab, setSelectedTab] = useState<'watched' | 'planned'>('watched');
     const [showFriendsModal, setShowFriendsModal] = useState(false);
+
+    const navigate = useNavigate();
 
     // Skip query until auth initialization completes to prevent race condition
     // where the query fires before refresh token rotation finishes
@@ -48,7 +50,12 @@ const UserPage = () => {
     const isAnyActionLoading = isFollowLoading || isUnfollowLoading || isCancelLoading || isAcceptLoading || isRejectLoading;
 
     const handleFollowUser = async (id: string | undefined) => {
-        if (!id) return;
+        if (user?.relationshipStatus === null) {
+            navigate(`/signin`);
+            return
+        }
+
+        if(!id) return;
         try {
             await followUser({ id, username }).unwrap();
         } catch (error) {
