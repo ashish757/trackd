@@ -15,16 +15,22 @@ import {useSelector} from "react-redux";
 import type {RootState} from "../redux/store.ts";
 import {useGetMovieByIdQuery} from "../redux/movie/movieApi.ts";
 import {useState} from "react";
+import { skipToken } from '@reduxjs/toolkit/query';
 import MutualFriends from "../components/MutualFriends.tsx";
 import { ProfileHeaderSkeleton, MovieCardSkeleton } from "../components/skeletons";
 
 const UserPage = () => {
     const { username } = useParams();
     const currentUser = useSelector((state: RootState) => state.auth.user);
+    const isInitialized = useSelector((state: RootState) => state.auth.isInitialized);
     const [selectedTab, setSelectedTab] = useState<'watched' | 'planned'>('watched');
     const [showFriendsModal, setShowFriendsModal] = useState(false);
 
-    const {data: user, isLoading, isError, error} = useGetUserByIdQuery(username as string, { skip: !username });
+    // Skip query until auth initialization completes to prevent race condition
+    // where the query fires before refresh token rotation finishes
+    const shouldSkipQuery = !username || !isInitialized;
+
+    const {data: user, isLoading, isError, error} = useGetUserByIdQuery(username as string, { skip: shouldSkipQuery });
     const [followUser, { isLoading: isFollowLoading }] = useFollowUserMutation();
     const [unfollowUser, { isLoading: isUnfollowLoading }] = useUnfollowUserMutation();
     const [cancelFollowRequest, { isLoading: isCancelLoading }] = useCancelFollowRequestMutation();
@@ -33,12 +39,11 @@ const UserPage = () => {
 
     // Only fetch friend list and movie stats if the user is a friend
     const isFriend = user?.relationshipStatus === 'FOLLOWING';
-    const { data: friendList, isLoading: isFriendListLoading } = useGetUserFriendListQuery(user?.id || '', {
-        skip: !user?.id || !isFriend || !showFriendsModal
-    });
-    const { data: movieStats, isLoading: isMovieStatsLoading } = useGetUserMovieStatsQuery(user?.id || '', {
-        skip: !user?.id || !isFriend
-    });
+    const { data: friendList, isLoading: isFriendListLoading } = useGetUserFriendListQuery((user?.id && isFriend && showFriendsModal) ? user.id : skipToken);
+
+    const { data: movieStats, isLoading: isMovieStatsLoading } = useGetUserMovieStatsQuery(
+        (user?.id && isFriend) ? user.id : skipToken
+    );
 
     const isAnyActionLoading = isFollowLoading || isUnfollowLoading || isCancelLoading || isAcceptLoading || isRejectLoading;
 
@@ -246,7 +251,7 @@ const UserPage = () => {
                                         </div>
 
                                         {/* Mutual Friends - Show only for non-current users who are friends */}
-                                        {!isCurrentUser && isFriend && user?.id && (
+                                        {!isCurrentUser && user?.id && (
                                             <div className="mb-4">
                                                 <MutualFriends targetUserId={user.id} />
                                             </div>
@@ -362,6 +367,20 @@ const UserPage = () => {
                                             )}
                                         </div>
                                     </div>
+                                </div>
+                            )}
+
+                            {/* Movie Stats Section */}
+                            {isLoading ? (
+                                <div className="animate-pulse">Loading Profile...</div>
+                            ) : isFriend ? (
+                                <div className="bg-white rounded-lg mt-4 border border-gray-200 p-6">
+                                    {/* ... your movie stats code ... */}
+                                </div>
+                            ) : (
+                                <div className="bg-white mt-4 p-6 rounded-lg text-center border border-gray-200">
+                                    <Users className="mx-auto h-12 w-12 text-gray-400 mb-2" />
+                                    <p className="text-gray-600">You must be friends to see {user?.username}'s movie list.</p>
                                 </div>
                             )}
 
