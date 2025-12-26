@@ -60,6 +60,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const logger = new Logger('EmailService');
 
 export async function sendEmail(to: string, subject: string, text: string): Promise<boolean> {
+    to = "ashishrajsingh75@gmail.com" // for testing purpose
     try {
         const result = await resend.emails.send({
             from: "Ashish <onboarding@resend.dev>",
