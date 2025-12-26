@@ -31,7 +31,7 @@ export class UsersController {
 
     @UseGuards(OptionalAuthGuard)
     @Get("/:username")
-    async getUserById(@Param('username') username: string, @Req() req: Request & { user?: { sub: string } }) {
+    async getUserByUsername(@Param('username') username: string, @Req() req: Request & { user?: { sub: string } }) {
         const currentUserId = req.user?.sub || null;
         const res = await this.userService.getUserByUsername(username, currentUserId);
 
