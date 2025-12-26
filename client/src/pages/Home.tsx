@@ -154,10 +154,10 @@ export default function Home() {
                     {/* Hero Section with Search */}
                     <div className="max-w-4xl mx-auto mb-12">
                         <div className="text-center mb-8">
-                            <h1 className="text-4xl font-bold text-gray-900 mb-3">
+                            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2 md:mb-3">
                                 Discover Movies & TV Shows
                             </h1>
-                            <p className="text-gray-600 text-lg">
+                            <p className="text-gray-600 text-sm md:text-lg">
                                 Search and track your favorite movies and series
                             </p>
                         </div>
@@ -172,7 +172,7 @@ export default function Home() {
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         onFocus={() => searchQuery.length >= SEARCH_CONFIG.MIN_SEARCH_LENGTH && setShowSuggestions(true)}
                                         placeholder="Search for movies, TV shows..."
-                                        className="w-full pl-12 pr-12 py-4 text-lg border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-colors shadow-sm"
+                                        className="w-full pl-12 pr-12 py-4 text-lg border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none transition-colors shadow-xm"
                                         autoComplete="off"
                                     />
                                     {searchQuery && (

@@ -68,28 +68,28 @@ function SigninPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex items-center justify-center px-4 py-12">
-            <div className="max-w-md w-full">
+        <div className="min-h-screen bg-white md:bg-gradient-to-br md:from-purple-50 md:via-white md:to-indigo-50 flex items-center justify-center md:px-4 md:py-12">
+            <div className="max-w-md w-full px-4 md:px-0">
                 {/* Header */}
-                <div className="text-center mb-8">
-                    <Link to="/" className="inline-flex items-center gap-2 mb-6">
+                <div className="text-center mb-6 md:mb-8 pt-8 md:pt-0">
+                    <Link to="/" className="inline-flex items-center gap-2 mb-4 md:mb-6">
                         <img
                             alt="Trackd"
                             src="/logo.svg"
-                            className="h-10 w-auto"
+                            className="h-8 md:h-10 w-auto"
                         />
-                        <span className="text-2xl font-bold text-gray-900">Trackd</span>
+                        <span className="text-xl md:text-2xl font-bold text-gray-900">Trackd</span>
                     </Link>
-                    <h2 className="text-3xl font-bold text-gray-900">Welcome back</h2>
-                    <p className="mt-2 text-gray-600">Sign in to continue tracking</p>
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Welcome back</h2>
+                    <p className="mt-2 text-sm md:text-base text-gray-600">Sign in to continue tracking</p>
                 </div>
 
                 {/* Form Card */}
-                <div className="bg-white rounded-2xl shadow-xl p-8">
+                <div className="bg-white md:rounded-2xl md:shadow-xl md:p-8 space-y-5">
                     {/* Error Alert */}
                     {error && (
-                        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-                            <div className="flex-shrink-0">
+                        <div className="mb-4 p-3 md:p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+                            <div className="shrink-0">
                                 <svg className="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor">
                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                                 </svg>
@@ -99,14 +99,14 @@ function SigninPage() {
                             </div>
                             <button
                                 onClick={() => setError('')}
-                                className="flex-shrink-0 text-red-600 hover:text-red-800 transition-colors"
+                                className="shrink-0 text-red-600 hover:text-red-800 transition-colors"
                             >
                                 <X className="h-4 w-4" />
                             </button>
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
                         {/* Email Field */}
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -120,15 +120,11 @@ function SigninPage() {
                                     id="email"
                                     name="email"
                                     type="email"
-                                    required
-                                    disabled={isLoading}
-                                    autoComplete="email"
-                                    aria-label="Email Address"
-                                    aria-required="true"
                                     value={formData.email}
                                     onChange={handleChange}
-                                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm md:text-base"
                                     placeholder="you@example.com"
+                                    autoComplete="email"
                                 />
                             </div>
                         </div>
@@ -146,27 +142,21 @@ function SigninPage() {
                                     id="password"
                                     name="password"
                                     type={showPassword ? 'text' : 'password'}
-                                    required
-                                    disabled={isLoading}
-                                    autoComplete="current-password"
-                                    aria-label="Password"
-                                    aria-required="true"
                                     value={formData.password}
                                     onChange={handleChange}
-                                    className="block w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-sm md:text-base"
                                     placeholder="Enter your password"
+                                    autoComplete="current-password"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    disabled={isLoading}
-                                    className="absolute inset-y-0 right-0 pr-3 flex items-center disabled:opacity-50"
-                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                                 >
                                     {showPassword ? (
-                                        <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                                        <EyeOff className="h-5 w-5" />
                                     ) : (
-                                        <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                                        <Eye className="h-5 w-5" />
                                     )}
                                 </button>
                             </div>
@@ -176,7 +166,7 @@ function SigninPage() {
                         <div className="flex items-center justify-end">
                             <Link
                                 to="/forget-password"
-                                className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                                className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
                             >
                                 Forgot password?
                             </Link>
@@ -186,50 +176,40 @@ function SigninPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-primary text-white py-3 px-4 rounded-lg font-semibold hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm md:text-base"
                         >
                             {isLoading ? (
-                                <span className="flex items-center justify-center gap-2">
-                                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                    </svg>
-                                    Signing in...
-                                </span>
+                                <>
+                                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                                    <span>Signing in...</span>
+                                </>
                             ) : (
                                 'Sign In'
                             )}
                         </button>
                     </form>
 
-                    {/* Sign Up Link */}
-                    <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600">
-                            Don't have an account?{' '}
-                            <Link to="/signup" className="font-medium text-primary hover:text-primary/80 transition-colors">
-                                Sign up
-                            </Link>
-                        </p>
-                    </div>
                     {/* Divider */}
-                    <div className="mt-6">
-                        <div className="relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-300"></div>
-                            </div>
-                            <div className="relative flex justify-center text-sm">
-                                <span className="px-2 bg-white text-gray-500">Or continue with</span>
-                            </div>
+                    <div className="relative my-6">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-gray-300"></div>
                         </div>
-                        {/* Google Login Button */}
-                        <div className="mt-6">
-                            <GoogleLoginButton />
+                        <div className="relative flex justify-center text-sm">
+                            <span className="px-4 bg-white text-gray-500">Or continue with</span>
                         </div>
                     </div>
+
+                    {/* Google Sign In */}
+                    <GoogleLoginButton />
+
+                    {/* Sign Up Link */}
+                    <p className="text-center text-sm text-gray-600 mt-6">
+                        Don't have an account?{' '}
+                        <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-700 transition-colors">
+                            Sign up
+                        </Link>
+                    </p>
                 </div>
-
-
-
             </div>
         </div>
     );

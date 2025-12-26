@@ -191,40 +191,40 @@ export default function DiscoverPage() {
         <>
             <Navbar />
             <main className="min-h-screen bg-gray-50 pb-20 md:pb-8">
-                <div className="container mx-auto px-4 py-8">
+                <div className="container mx-auto px-4 py-4 md:py-8">
 
                     {/* Hero Section */}
-                    <div className="max-w-6xl mx-auto mb-8">
-                        <div className="text-center mb-8">
-                            <h1 className="text-4xl font-bold text-gray-900 mb-3">
+                    <div className="max-w-6xl mx-auto mb-4 md:mb-8">
+                        <div className="text-center mb-4 md:mb-8">
+                            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2 md:mb-3">
                                 Advanced Movie Discovery
                             </h1>
-                            <p className="text-gray-600 text-lg">
+                            <p className="text-gray-600 text-sm md:text-lg">
                                 Search with filters to find exactly what you're looking for
                             </p>
                         </div>
 
                         {/* Search Bar with Filter Toggle */}
-                        <div className="space-y-4">
-                            <div className="flex gap-3">
+                        <div className="space-y-3 md:space-y-4">
+                            <div className="flex gap-2 md:gap-3">
                                 <div className="flex-1 relative">
                                     <div className="relative">
-                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                        <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-gray-400" />
                                         <input
                                             type="text"
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
                                             placeholder="Search for movies..."
-                                            className="w-full pl-12 pr-12 py-4 text-lg border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-colors shadow-sm"
+                                            className="w-full pl-10 md:pl-12 pr-10 md:pr-12 py-3 md:py-4 text-sm md:text-lg border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none transition-colors shadow-xm"
                                             autoComplete="off"
                                         />
                                         {searchQuery && (
                                             <button
                                                 type="button"
                                                 onClick={clearSearch}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+                                                className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
                                             >
-                                                <X className="h-5 w-5 text-gray-400" />
+                                                <X className="h-4 w-4 md:h-5 md:w-5 text-gray-400" />
                                             </button>
                                         )}
                                     </div>
@@ -232,16 +232,16 @@ export default function DiscoverPage() {
 
                                 <button
                                     onClick={() => setShowFilters(!showFilters)}
-                                    className={`px-6 py-4 rounded-xl font-medium transition-colors flex items-center gap-2 ${
+                                    className={`px-3 md:px-6 py-3 md:py-4 rounded-md font-medium transition-colors flex items-center gap-2 relative ${
                                         showFilters || hasActiveFilters
                                             ? 'bg-blue-600 text-white'
-                                            : 'bg-white border-2 border-gray-300 text-gray-700 hover:border-gray-400'
+                                            : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400'
                                     }`}
                                 >
                                     <SlidersHorizontal className="h-5 w-5" />
-                                    Filters
+                                    <span className="hidden md:inline">Filters</span>
                                     {hasActiveFilters && (
-                                        <span className="bg-white text-blue-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                                        <span className="absolute -top-1 -right-1 md:static md:translate-x-0 md:translate-y-0 bg-white text-blue-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
                                             {selectedGenres.length + (selectedYear ? 1 : 0) + (minRating > 0 ? 1 : 0)}
                                         </span>
                                     )}
@@ -250,11 +250,11 @@ export default function DiscoverPage() {
 
                             {/* Filters Panel */}
                             {showFilters && (
-                                <div className="bg-white border-2 border-gray-200 rounded-xl p-6 shadow-sm space-y-6">
+                                <div className="bg-white border-2 border-gray-200 rounded-xl p-4 md:p-6 shadow-sm space-y-4 md:space-y-6">
                                     {/* Genres */}
                                     <div>
-                                        <div className="flex items-center justify-between mb-3">
-                                            <label className="text-sm font-semibold text-gray-700">Genres</label>
+                                        <div className="flex items-center justify-between mb-2 md:mb-3">
+                                            <label className="text-xs md:text-sm font-semibold text-gray-700">Genres</label>
                                             {selectedGenres.length > 0 && (
                                                 <button
                                                     onClick={() => setSelectedGenres([])}
@@ -269,7 +269,7 @@ export default function DiscoverPage() {
                                                 <button
                                                     key={genre.id}
                                                     onClick={() => toggleGenre(genre.id)}
-                                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                                    className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-colors ${
                                                         selectedGenres.includes(genre.id)
                                                             ? 'bg-blue-600 text-white'
                                                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -281,16 +281,16 @@ export default function DiscoverPage() {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                                         {/* Year */}
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-2">
                                                 Release Year
                                             </label>
                                             <select
                                                 value={selectedYear || ''}
                                                 onChange={(e) => setSelectedYear(e.target.value ? Number(e.target.value) : null)}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                                                className="w-full px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
                                             >
                                                 <option value="">All Years</option>
                                                 {YEARS.map(year => (
@@ -301,7 +301,7 @@ export default function DiscoverPage() {
 
                                         {/* Rating */}
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-2">
                                                 Minimum Rating: {minRating > 0 ? minRating.toFixed(1) : 'Any'}
                                             </label>
                                             <input
@@ -317,13 +317,13 @@ export default function DiscoverPage() {
 
                                         {/* Sort */}
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-2">
                                                 Sort By
                                             </label>
                                             <select
                                                 value={sortBy}
                                                 onChange={(e) => setSortBy(e.target.value)}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                                                className="w-full px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
                                             >
                                                 {SORT_OPTIONS.map(option => (
                                                     <option key={option.value} value={option.value}>
@@ -339,7 +339,7 @@ export default function DiscoverPage() {
                                         <div className="flex justify-end pt-4 border-t border-gray-200">
                                             <button
                                                 onClick={clearFilters}
-                                                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors flex items-center gap-2"
+                                                className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors flex items-center gap-2"
                                             >
                                                 <X className="h-4 w-4" />
                                                 Clear All Filters
@@ -358,10 +358,10 @@ export default function DiscoverPage() {
                     {debouncedQuery && (
                         <div className="max-w-6xl mx-auto">
                             <div className="mb-4">
-                                <h2 className="text-2xl font-bold text-gray-900">
+                                <h2 className="text-xl md:text-2xl font-bold text-gray-900">
                                     Search Results for "{debouncedQuery}"
                                 </h2>
-                                <p className="text-gray-600 mt-1">
+                                <p className="text-gray-600 text-sm md:text-base mt-1">
                                     {filteredResults.length} {filteredResults.length === 1 ? 'movie' : 'movies'} found
                                 </p>
                             </div>
@@ -369,7 +369,7 @@ export default function DiscoverPage() {
                             {isSearching ? (
                                 <MovieGridSkeleton count={15} />
                             ) : filteredResults.length > 0 ? (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6">
                                     {filteredResults.map((movie) => (
                                         <MovieCard
                                             key={movie.id}
@@ -379,9 +379,9 @@ export default function DiscoverPage() {
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-20">
-                                    <Film className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                                    <p className="text-gray-600 text-lg">
+                                <div className="text-center py-12 md:py-20">
+                                    <Film className="h-12 w-12 md:h-16 md:w-16 mx-auto mb-4 text-gray-400" />
+                                    <p className="text-gray-600 text-sm md:text-lg">
                                         No movies match your filters. Try adjusting your search criteria.
                                     </p>
                                 </div>
@@ -391,12 +391,12 @@ export default function DiscoverPage() {
 
                     {/* Empty State */}
                     {!debouncedQuery && (
-                        <div className="max-w-4xl mx-auto text-center py-20">
-                            <Filter className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                        <div className="max-w-4xl mx-auto text-center py-12 md:py-20">
+                            <Filter className="h-12 w-12 md:h-16 md:w-16 mx-auto mb-4 text-gray-400" />
+                            <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
                                 Start Your Search
                             </h3>
-                            <p className="text-gray-600 text-lg">
+                            <p className="text-gray-600 text-sm md:text-lg">
                                 Use the search bar and filters above to discover movies
                             </p>
                         </div>

@@ -217,17 +217,17 @@ interface props {
     return (
         <Portal layer={"modal"}>
         <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center md:items-start justify-center z-50 md:p-4 overflow-y-auto"
             onClick={() => onClose()}
         >
             <div
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl animate-in fade-in duration-200 relative"
+                className="bg-white dark:bg-gray-800 md:rounded-2xl shadow-2xl w-full h-full md:h-auto md:max-w-4xl animate-in fade-in duration-200 relative overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Close Button */}
                 <button
                     onClick={() => onClose()}
-                    className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors duration-200"
+                    className="absolute top-2 right-2 md:top-4 md:right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors duration-200"
                     aria-label="Close modal"
                 >
                     <X className="w-5 h-5" />
@@ -235,20 +235,20 @@ interface props {
 
                 {/* Backdrop Image Header */}
                 {backdropUrl && (
-                    <div className="relative w-full min-h-64  rounded-t-2xl">
+                    <div className="relative w-full h-48 md:min-h-64 md:rounded-t-2xl">
                         <img
                             src={backdropUrl}
                             alt={movieDetails?.title}
-                            className="w-full h-64 object-cover"
+                            className="w-full h-48 md:h-64 object-cover"
                             loading="eager"
                         />
                         <div className="absolute inset-0 bg-linear-to-t from-white dark:from-gray-800 to-transparent"></div>
                     </div>
                 )}
 
-                <div className={`flex flex-col md:flex-row p-6 md:p-8 gap-6 ${backdropUrl ? 'relative -translate-y-20 md:-translate-y-24' : ''} `}>
+                <div className={`flex flex-col md:flex-row p-4 md:p-6 lg:p-8 gap-4 md:gap-6 ${backdropUrl ? 'relative -translate-y-16 md:-translate-y-20 lg:-translate-y-24' : ''} `}>
                     {/* Movie Poster */}
-                    <div className={`md:w-1/3 shrink-0 ${backdropUrl ? 'relative -translate-y-20 md:-translate-y-24' : ''}`}>
+                    <div className={`md:w-1/3 shrink-0 ${backdropUrl ? 'relative -translate-y-12 md:-translate-y-20 lg:-translate-y-24' : ''}`}>
 
                         <div className={`bg-gray-200 dark:bg-gray-700 rounded-xl shadow-xl`}>
 
@@ -269,23 +269,23 @@ interface props {
                     {/* Movie Details */}
                     <div className={`md:w-2/3 flex flex-col `}>
                         {/* Title */}
-                        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                        <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">
                             {movieDetails?.title}
                         </h2>
 
                         {/* Tagline */}
                         {movieDetails?.tagline && (
-                            <p className="text-gray-600 dark:text-gray-400 italic mb-4">
+                            <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 italic mb-3 md:mb-4">
                                 "{movieDetails.tagline}"
                             </p>
                         )}
 
                         {/* Meta Information */}
-                        <div className="flex flex-wrap gap-3 mb-6">
+                        <div className="flex flex-wrap gap-2 md:gap-3 mb-4 md:mb-6">
                             {/* Rating */}
-                            <div className="flex items-center gap-2 bg-yellow-100 dark:bg-yellow-900/30 px-3 py-1.5 rounded-full">
-                                <Star className="w-4 h-4 text-yellow-600 dark:text-yellow-500 fill-yellow-600 dark:fill-yellow-500" />
-                                <span className="text-sm font-semibold text-yellow-800 dark:text-yellow-300">
+                            <div className="flex items-center gap-2 bg-yellow-100 dark:bg-yellow-900/30 px-2 md:px-3 py-1 md:py-1.5 rounded-full">
+                                <Star className="w-3 h-3 md:w-4 md:h-4 text-yellow-600 dark:text-yellow-500 fill-yellow-600 dark:fill-yellow-500" />
+                                <span className="text-xs md:text-sm font-semibold text-yellow-800 dark:text-yellow-300">
                                     {rating}
                                     {movieDetails?.vote_count && (
                                         <span className="text-xs ml-1">({movieDetails.vote_count.toLocaleString()})</span>
@@ -294,18 +294,18 @@ interface props {
                             </div>
 
                             {/* Release Year */}
-                            <div className="flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 px-3 py-1.5 rounded-full">
-                                <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                <span className="text-sm font-semibold text-blue-800 dark:text-blue-300">
+                            <div className="flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 px-2 md:px-3 py-1 md:py-1.5 rounded-full">
+                                <Calendar className="w-3 h-3 md:w-4 md:h-4 text-blue-600 dark:text-blue-400" />
+                                <span className="text-xs md:text-sm font-semibold text-blue-800 dark:text-blue-300">
                                     {releaseYear}
                                 </span>
                             </div>
 
                             {/* Runtime */}
                             {movieDetails?.runtime && (
-                                <div className="flex items-center gap-2 bg-purple-100 dark:bg-purple-900/30 px-3 py-1.5 rounded-full">
-                                    <Clock className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                                    <span className="text-sm font-semibold text-purple-800 dark:text-purple-300">
+                                <div className="flex items-center gap-2 bg-purple-100 dark:bg-purple-900/30 px-2 md:px-3 py-1 md:py-1.5 rounded-full">
+                                    <Clock className="w-3 h-3 md:w-4 md:h-4 text-purple-600 dark:text-purple-400" />
+                                    <span className="text-xs md:text-sm font-semibold text-purple-800 dark:text-purple-300">
                                         {formatRuntime(movieDetails.runtime)}
                                     </span>
                                 </div>
@@ -313,8 +313,8 @@ interface props {
 
                             {/* Status */}
                             {movieDetails?.status && (
-                                <div className="flex items-center gap-2 bg-green-100 dark:bg-green-900/30 px-3 py-1.5 rounded-full">
-                                    <span className="text-sm font-semibold text-green-800 dark:text-green-300">
+                                <div className="flex items-center gap-2 bg-green-100 dark:bg-green-900/30 px-2 md:px-3 py-1 md:py-1.5 rounded-full">
+                                    <span className="text-xs md:text-sm font-semibold text-green-800 dark:text-green-300">
                                         {movieDetails.status}
                                     </span>
                                 </div>
@@ -570,3 +570,4 @@ interface props {
 };
 
 export default MovieInfoModel;
+

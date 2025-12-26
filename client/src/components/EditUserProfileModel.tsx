@@ -149,14 +149,14 @@ export default function EditUserProfileModel({ isOpen, user, onClose }: Props) {
         <div
             ref={modalRef}
             onClick={onBackdropClick}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+            className="fixed inset-0 z-50 flex items-center md:items-center justify-center bg-black/40 md:px-4"
             aria-modal="true"
             role="dialog"
         >
-            <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 overflow-hidden">
+            <div className="w-full h-full md:h-auto md:max-w-md md:rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 overflow-hidden flex flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-                    <h2 className="text-lg font-semibold text-gray-900">Edit Profile</h2>
+                <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-200">
+                    <h2 className="text-base md:text-lg font-semibold text-gray-900">Edit Profile</h2>
                     <button
                         onClick={onClose}
                         aria-label="Close"
@@ -167,24 +167,24 @@ export default function EditUserProfileModel({ isOpen, user, onClose }: Props) {
                 </div>
 
                 {/* Body */}
-                <div className="px-6 py-6 space-y-6 max-h-[70vh] overflow-y-auto">
+                <div className="px-4 md:px-6 py-4 md:py-6 space-y-4 md:space-y-6 overflow-y-auto flex-1">
                     {success && <SuccessAlert success={success}/>}
                     {/* Username Section */}
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">
+                        <label className="block text-xs md:text-sm font-medium text-gray-700">
                             Username
                         </label>
                         <div className="flex gap-2">
                             <input
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
-                                className="flex-1 rounded-md border border-gray-300 px-4 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                className="flex-1 rounded-md border border-gray-300 px-3 md:px-4 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                 placeholder={user.username || "Enter username"}
                                 maxLength={30}
                             />
                             <button
                                 onClick={handleSaveUsername}
-                                className={`px-4 py-2 text-sm font-medium rounded-md text-white transition ${
+                                className={`px-3 md:px-4 py-2 text-xs md:text-sm font-medium rounded-md text-white transition ${
                                     isSavingUsername ? "bg-indigo-300 cursor-wait" : "bg-indigo-600 hover:bg-indigo-700"
                                 }`}
                                 disabled={isSavingUsername}
@@ -197,20 +197,20 @@ export default function EditUserProfileModel({ isOpen, user, onClose }: Props) {
 
                     {/* Name Section */}
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">
+                        <label className="block text-xs md:text-sm font-medium text-gray-700">
                             Name
                         </label>
                         <div className="flex gap-2">
                             <input
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="flex-1 rounded-md border border-gray-300 px-4 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                className="flex-1 rounded-md border border-gray-300 px-3 md:px-4 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                 placeholder={user.name || "Enter name"}
                                 maxLength={50}
                             />
                             <button
                                 onClick={handleSaveName}
-                                className={`px-4 py-2 text-sm font-medium rounded-md text-white transition ${
+                                className={`px-3 md:px-4 py-2 text-xs md:text-sm font-medium rounded-md text-white transition ${
                                     isSavingName ? "bg-indigo-300 cursor-wait" : "bg-indigo-600 hover:bg-indigo-700"
                                 }`}
                                 disabled={isSavingName}
@@ -223,32 +223,28 @@ export default function EditUserProfileModel({ isOpen, user, onClose }: Props) {
 
                     {/* Bio Section */}
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">
+                        <label className="block text-xs md:text-sm font-medium text-gray-700">
                             Bio
                         </label>
-                        <div className="space-y-2">
-                            <textarea
-                                value={bio}
-                                onChange={(e) => setBio(e.target.value)}
-                                className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
-                                placeholder={user.bio || "Tell us about yourself"}
-                                rows={4}
-                                maxLength={200}
-                            />
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs text-gray-500">
-                                    {bio.length}/200 characters
-                                </span>
-                                <button
-                                    onClick={handleSaveBio}
-                                    className={`px-4 py-2 text-sm font-medium rounded-md text-white transition ${
-                                        isSavingBio ? "bg-indigo-300 cursor-wait" : "bg-indigo-600 hover:bg-indigo-700"
-                                    }`}
-                                    disabled={isSavingBio}
-                                >
-                                    {isSavingBio ? "Saving..." : "Save"}
-                                </button>
-                            </div>
+                        <textarea
+                            value={bio}
+                            onChange={(e) => setBio(e.target.value)}
+                            className="w-full rounded-md border border-gray-300 px-3 md:px-4 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                            placeholder={user.bio || "Tell us about yourself..."}
+                            maxLength={200}
+                            rows={4}
+                        />
+                        <div className="flex items-center justify-between">
+                            <p className="text-xs text-gray-500">{bio.length}/200</p>
+                            <button
+                                onClick={handleSaveBio}
+                                className={`px-3 md:px-4 py-2 text-xs md:text-sm font-medium rounded-md text-white transition ${
+                                    isSavingBio ? "bg-indigo-300 cursor-wait" : "bg-indigo-600 hover:bg-indigo-700"
+                                }`}
+                                disabled={isSavingBio}
+                            >
+                                {isSavingBio ? "Saving..." : "Save"}
+                            </button>
                         </div>
                         {bioError && <ErrorAlert error={bioError} />}
                     </div>

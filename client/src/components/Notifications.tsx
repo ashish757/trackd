@@ -72,12 +72,12 @@ const Notifications = () => {
 
             {/* Backdrop Overlay */}
             <div
-                className={`fixed inset-0 bg-black/40 transition-opacity z-40 ${showNotifications ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                className={`fixed inset-0 bg-black/40 transition-opacity z-40 ${showNotifications ? 'md:opacity-100 opacity-0 ' : 'opacity-0 pointer-events-none'}`}
                 onClick={handleClose}
             />
 
             {/* Sidebar Container */}
-            <div className={`fixed right-0 top-0 h-screen w-full sm:w-96 bg-white shadow-2xl z-50 transition-transform duration-300 ease-in-out transform 
+            <div className={`fixed right-0 top-0 h-screen w-full sm:w-96 bg-white  z-50 transition-transform duration-300 ease-in-out transform 
                 ${showNotifications ? 'translate-x-0' : 'translate-x-full'}`}>
 
                 {/* Header */}
