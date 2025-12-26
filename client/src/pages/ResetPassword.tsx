@@ -1,9 +1,10 @@
 import {Link, useNavigate, useSearchParams} from "react-router-dom";
 import { Lock, Loader2} from "lucide-react";
-import {useState, type FormEvent} from "react";
+import {useState, useRef, type FormEvent} from "react";
 import {useResetPasswordMutation} from "../redux/auth/authApi.ts";
 import SuccessAlert from "../components/SuccessAlert.tsx";
 import ErrorAlert from "../components/ErrorAlert.tsx";
+import { useKeyboardHandler } from "../hooks/useKeyboardHandler.ts";
 
 const ResetPassword = () => {
 
@@ -15,6 +16,13 @@ const ResetPassword = () => {
     const [cnfPassword, setCnfPassword] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+
+    // Refs for input fields
+    const passwordRef = useRef<HTMLInputElement>(null);
+    const cnfPasswordRef = useRef<HTMLInputElement>(null);
+
+    // Apply keyboard handler for mobile
+    useKeyboardHandler([passwordRef, cnfPasswordRef]);
 
     const [resetPassword, {isLoading}] = useResetPasswordMutation();
 
@@ -95,6 +103,7 @@ const ResetPassword = () => {
                                     <Lock className="h-5 w-5 text-gray-400" />
                                 </div>
                                 <input
+                                    ref={passwordRef}
                                     id="password"
                                     name="password"
                                     type="password"
@@ -121,6 +130,7 @@ const ResetPassword = () => {
                                     <Lock className="h-5 w-5 text-gray-400" />
                                 </div>
                                 <input
+                                    ref={cnfPasswordRef}
                                     id="cnf-password"
                                     name="cnf-password"
                                     type="password"

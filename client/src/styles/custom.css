@@ -43,6 +43,34 @@
         transition: opacity 0.1s;
     }
 }
+
+/* Mobile keyboard behavior - prevent layout shift */
+@media (max-width: 768px) {
+    /* Ensure body can scroll smoothly */
+    html, body {
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Smooth transition when input is focused */
+    input:focus,
+    textarea:focus {
+        transform: translateY(0);
+        transition: transform 0.3s ease;
+    }
+
+    /* Prevent zoom on input focus while maintaining accessibility */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    input[type="number"],
+    textarea,
+    select {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+    }
+}
+
 @media (min-width: 768px) {
     .content-with-bottom-nav {
         padding-bottom: 2rem;
