@@ -41,7 +41,7 @@ function App() {
       <>
           <main>
               <Routes>
-                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/" element={<GuestRoute><LandingPage /></GuestRoute>} />
                   <Route path="/home" element={<Home />} />
                   <Route path="/discover" element={<DiscoverPage />} />
 

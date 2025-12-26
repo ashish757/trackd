@@ -1,15 +1,6 @@
 import {Link} from "react-router-dom";
-import {useSelector} from "react-redux";
-import type {RootState} from "../redux/store.ts";
 
 export default function LandingPage() {
-    // fetch state if user ia logged in
-    const {isAuthenticated} = useSelector((state: RootState) => state.auth);
-
-    if(isAuthenticated){
-        // redirect to home if logged in
-        window.location.href = "/home";
-    }
 
     return (
         <div className="bg-white pb-20 md:pb-0">
