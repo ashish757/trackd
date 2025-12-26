@@ -48,10 +48,10 @@ function App() {
                   <Route path="/my-list" element={<ProtectedRoute authorized={<MyListPage />} />} />
                   <Route path="/profile" element={<ProtectedRoute authorized={<ProfilePage />} />} />
                   <Route path="/settings" element={<ProtectedRoute authorized={<SettingsPage />} />} />
-                  <Route path="/forget-password" element={<ProtectedRoute authorized={<ForgetPassword />} />} />
-                  <Route path="/reset-password" element={<ProtectedRoute authorized={<ResetPassword />} />}/>
+                  <Route path="/forget-password" element={<ForgetPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/change/email" element={<ProtectedRoute authorized={<ChangeEmail />} />} />
-                  <Route path="/oauth/success" element={<ProtectedRoute authorized={<OauthSuccessPage />} />} />
+                  <Route path="/oauth/success" element={<OauthSuccessPage />} />
 
                   <Route path="/find" element={<FindUsers />} />
                   <Route path="/users/:username" element={<UserPage />} />
