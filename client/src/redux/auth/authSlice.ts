@@ -8,11 +8,13 @@ import type { User } from "../user/userApi.ts";
 interface AuthState {
     user: User | null;
     isAuthenticated: boolean;
+    isInitialized: boolean; // Guards against race conditions on page reload
 }
 
 const initialState: AuthState = {
     user: null,
     isAuthenticated: tokenManager.isAuthenticated(),
+    isInitialized: false, // Set to true after first auth check completes
 };
 
 const authSlice = createSlice({
@@ -23,6 +25,10 @@ const authSlice = createSlice({
         setUser: (state, action: PayloadAction<User>) => {
             state.user = action.payload;
             state.isAuthenticated = true;
+        },
+        // Mark auth as initialized (called after initial refresh token check)
+        setInitialized: (state) => {
+            state.isInitialized = true;
         },
         // Manual logout action
         logout: (state) => {
@@ -100,5 +106,5 @@ const authSlice = createSlice({
     },
 });
 
-export const { logout, setUser } = authSlice.actions;
+export const { logout, setUser, setInitialized } = authSlice.actions;
 export default authSlice.reducer;
