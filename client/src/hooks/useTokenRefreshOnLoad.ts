@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { API_CONFIG } from '../config/api.config';
 import { tokenManager } from '../utils/tokenManager';
-import { setUser } from '../redux/auth/authSlice';
+import { setUser, setInitialized } from '../redux/auth/authSlice';
 
 /**
  * Custom hook to refresh access token on page load/reload
@@ -41,6 +41,8 @@ export const useTokenRefreshOnLoad = (): boolean => {
 
             if (hasAccessToken) {
                 console.log('Access token already exists in memory, skipping refresh');
+                // Mark as initialized even if we skip the refresh
+                dispatch(setInitialized());
                 return;
             }
 
@@ -83,6 +85,8 @@ export const useTokenRefreshOnLoad = (): boolean => {
                 tokenManager.clearAccessToken();
             } finally {
                 setIsLoading(false);
+                // Always mark as initialized after the refresh attempt completes
+                dispatch(setInitialized());
             }
         };
 

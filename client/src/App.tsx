@@ -9,6 +9,7 @@ import MyListPage from "./pages/MyListPage.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
 import SettingsPage from "./pages/SettingsPage.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
+import GuestRoute from "./components/GuestRoute.tsx";
 import LoadingSpinner from "./components/LoadingSpinner.tsx";
 import { useTokenRefreshOnLoad } from "./hooks/useTokenRefreshOnLoad.ts";
 import FindUsers from "./pages/FindUsers.tsx";
@@ -40,7 +41,7 @@ function App() {
       <>
           <main>
               <Routes>
-                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/" element={<GuestRoute><LandingPage /></GuestRoute>} />
                   <Route path="/home" element={<Home />} />
                   <Route path="/discover" element={<DiscoverPage />} />
 
@@ -55,8 +56,8 @@ function App() {
                   <Route path="/find" element={<FindUsers />} />
                   <Route path="/users/:username" element={<UserPage />} />
 
-                  <Route path="/signin" element={<SigninPage />} />
-                  <Route path="/signup" element={<SignupPage />} />
+                  <Route path="/signin" element={<GuestRoute><SigninPage /></GuestRoute>} />
+                  <Route path="/signup" element={<GuestRoute><SignupPage /></GuestRoute>} />
 
                   <Route path="*" element={<NotFoundPage />} />
               </Routes>
