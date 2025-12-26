@@ -20,8 +20,8 @@ export const validatePassword = (password: string): {
 
     // Calculate strength for indicator (but don't enforce)
     let strengthScore = 0;
+    if (password.length >= 6) strengthScore++;
     if (password.length >= 8) strengthScore++;
-    if (password.length >= 12) strengthScore++;
     if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strengthScore++;
     if (/[0-9]/.test(password)) strengthScore++;
     if (/[^a-zA-Z0-9]/.test(password)) strengthScore++;
