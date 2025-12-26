@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {Link, useNavigate, useSearchParams} from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, X } from 'lucide-react';
 import {useLoginMutation} from "../redux/auth/authApi.ts";
 import { validateEmail } from "../utils/validation.ts";
 import { getSafeRedirect } from "../utils/redirect.ts";
 import GoogleLoginButton from "../components/GoogleLoginButton.tsx";
+import { useKeyboardHandler } from "../hooks/useKeyboardHandler.ts";
 
 function SigninPage() {
     const [formData, setFormData] = useState({
@@ -15,6 +16,13 @@ function SigninPage() {
     const [searchParams] = useSearchParams();
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
+
+    // Refs for input fields
+    const emailRef = useRef<HTMLInputElement>(null);
+    const passwordRef = useRef<HTMLInputElement>(null);
+
+    // Apply keyboard handler for mobile
+    useKeyboardHandler([emailRef, passwordRef]);
 
     const [login, {isLoading}] = useLoginMutation();
 
@@ -117,6 +125,7 @@ function SigninPage() {
                                     <Mail className="h-5 w-5 text-gray-400" />
                                 </div>
                                 <input
+                                    ref={emailRef}
                                     id="email"
                                     name="email"
                                     type="email"
@@ -139,6 +148,7 @@ function SigninPage() {
                                     <Lock className="h-5 w-5 text-gray-400" />
                                 </div>
                                 <input
+                                    ref={passwordRef}
                                     id="password"
                                     name="password"
                                     type={showPassword ? 'text' : 'password'}

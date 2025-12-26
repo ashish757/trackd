@@ -1,9 +1,10 @@
 import {Link} from 'react-router-dom';
 import {Mail, Loader2} from "lucide-react";
-import React, {useState} from "react";
+import React, {useState, useRef} from "react";
 import {useForgetPasswordMutation} from "../redux/auth/authApi.ts";
 import ErrorAlert from "../components/ErrorAlert.tsx";
 import SuccessAlert from "../components/SuccessAlert.tsx";
+import { useKeyboardHandler } from "../hooks/useKeyboardHandler.ts";
 
 function ForgetPassword() {
 
@@ -11,6 +12,12 @@ function ForgetPassword() {
     const [forgetPassword, {isLoading}] = useForgetPasswordMutation();
     const [error, setError] = useState<string>('');
     const [success, setSuccess] = useState<string>('');
+
+    // Ref for input field
+    const emailRef = useRef<HTMLInputElement>(null);
+
+    // Apply keyboard handler for mobile
+    useKeyboardHandler([emailRef]);
 
     const handelSubmit  = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -63,6 +70,7 @@ function ForgetPassword() {
                                     <Mail className="h-5 w-5 text-gray-400" />
                                 </div>
                                 <input
+                                    ref={emailRef}
                                     id="email"
                                     name="email"
                                     type="email"

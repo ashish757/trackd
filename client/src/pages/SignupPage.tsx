@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {Link, useNavigate, useSearchParams} from 'react-router-dom';
 import { Mail, Lock, User, X, Loader, Eye, EyeOff, Clock } from 'lucide-react';
 import { useRequestOtpMutation, useVerifyOtpMutation, useRegisterMutation } from "../redux/auth/authApi.ts";
@@ -6,6 +6,7 @@ import { validateEmail, validatePassword, validateName } from "../utils/validati
 import { storage } from "../utils/config.ts";
 import { getSafeRedirect } from "../utils/redirect.ts";
 import GoogleLoginButton from "../components/GoogleLoginButton.tsx";
+import { useKeyboardHandler } from "../hooks/useKeyboardHandler.ts";
 
 function SignupPage() {
 
@@ -21,6 +22,16 @@ function SignupPage() {
     const [resendTimer, setResendTimer] = useState(0);
     const [canResend, setCanResend] = useState(false);
     const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+
+    // Refs for input fields
+    const nameRef = useRef<HTMLInputElement>(null);
+    const emailRef = useRef<HTMLInputElement>(null);
+    const passwordRef = useRef<HTMLInputElement>(null);
+    const otp0Ref = useRef<HTMLInputElement>(null);
+
+    // Apply keyboard handler for mobile
+    useKeyboardHandler([nameRef, emailRef, passwordRef, otp0Ref]);
+
     const [ reqOtp, {isLoading}] = useRequestOtpMutation();
     const [verifyOtp, {isLoading: isVerifying}] = useVerifyOtpMutation();
     const [register] = useRegisterMutation();
@@ -277,6 +288,7 @@ function SignupPage() {
                                         <User className="h-5 w-5 text-gray-400" />
                                     </div>
                                     <input
+                                        ref={nameRef}
                                         id="name"
                                         name="name"
                                         type="text"
@@ -299,6 +311,7 @@ function SignupPage() {
                                         <Mail className="h-5 w-5 text-gray-400" />
                                     </div>
                                     <input
+                                        ref={emailRef}
                                         id="email"
                                         name="email"
                                         type="email"
@@ -321,6 +334,7 @@ function SignupPage() {
                                         <Lock className="h-5 w-5 text-gray-400" />
                                     </div>
                                     <input
+                                        ref={passwordRef}
                                         id="password"
                                         name="password"
                                         type={showPassword ? 'text' : 'password'}
@@ -422,6 +436,7 @@ function SignupPage() {
                                     {otp.map((digit, index) => (
                                         <input
                                             key={index}
+                                            ref={index === 0 ? otp0Ref : null}
                                             id={`otp-${index}`}
                                             type="text"
                                             inputMode="numeric"
