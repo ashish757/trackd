@@ -190,7 +190,7 @@ export default function DiscoverPage() {
     return (
         <>
             <Navbar />
-            <main className="min-h-screen bg-gray-50 pb-20 md:pb-8">
+            <main className="min-h-screen pb-20 md:pb-8">
                 <div className="container mx-auto px-4 py-4 md:py-8">
 
                     {/* Hero Section */}

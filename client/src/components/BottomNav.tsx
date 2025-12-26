@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, Film, User, LogIn, UserPlus } from 'lucide-react';
+import { Home, Search, Film, User, LogIn, UserPlus, UserSearch } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../redux/store';
 
@@ -18,6 +18,7 @@ const BottomNav = () => {
     const authenticatedNavItems = [
         { path: '/home', icon: Home, label: 'Home' },
         { path: '/discover', icon: Search, label: 'Discover' },
+        { path: '/find', icon: UserSearch, label: 'Find' },
         { path: '/my-list', icon: Film, label: 'My List' },
         { path: '/profile', icon: User, label: 'Profile' },
     ];
@@ -26,6 +27,7 @@ const BottomNav = () => {
     const unauthenticatedNavItems = [
         { path: '/home', icon: Home, label: 'Home' },
         { path: '/discover', icon: Search, label: 'Discover' },
+        { path: '/find', icon: UserSearch, label: 'Find' },
         { path: '/signin', icon: LogIn, label: 'Sign In' },
         { path: '/signup', icon: UserPlus, label: 'Sign Up' },
     ];
