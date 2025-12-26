@@ -6,6 +6,12 @@ on:
       - main
     paths:
       - 'server/**' # Only trigger if files in the server directory change
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual deploy'
+        required: false
+        default: 'Manual trigger'
 
 jobs:
   build-and-deploy:
