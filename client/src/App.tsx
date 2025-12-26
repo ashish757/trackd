@@ -31,7 +31,7 @@ function App() {
   if (isRefreshingToken) {
     return (
       <div className="flex justify-center items-center h-screen bg-slate-900">
-        <LoadingSpinner size="large" message="Restoring session..." />
+        <LoadingSpinner size="large" message="Loading.." />
       </div>
     );
   }
