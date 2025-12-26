@@ -23,6 +23,6 @@ jobs:
         uses: azure/container-apps-deploy-action@v1
         with:
           appSourcePath: ${{ github.workspace }}/server # Point to your subdirectory
-          acrName: <your_registry_name>
-          containerAppName: <your_container_app_name>
-          resourceGroup: <your_resource_group>
+          acrName: trackdregistry
+          containerAppName: trackd-app
+          resourceGroup: trackd-group
