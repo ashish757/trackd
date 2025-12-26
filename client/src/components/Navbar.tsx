@@ -180,13 +180,13 @@ const Navbar = () => {
                         /* Unauthenticated - Show Sign In / Sign Up */
                         <div className="flex items-center gap-3">
                             <Link
-                                to="/signin"
+                                to={`/signin?redirect=${encodeURIComponent(location.pathname + location.search)}`}
                                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
                             >
                                 Sign In
                             </Link>
                             <Link
-                                to="/signup"
+                                to={`/signup?redirect=${encodeURIComponent(location.pathname + location.search)}`}
                                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
                             >
                                 Sign Up
