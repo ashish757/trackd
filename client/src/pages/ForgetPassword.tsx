@@ -37,7 +37,7 @@ function ForgetPassword() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex items-center justify-center px-4 py-12">
+        <div className="min-h-screen bg-white md:bg-gradient-to-br md:from-purple-50 md:via-white md:to-indigo-50 md:flex items-center md:justify-center md:px-4 md:py-12 pt-10">
             <div className="max-w-md w-full">
                 {/* Header */}
                 <div className="text-center mb-8">
@@ -54,7 +54,7 @@ function ForgetPassword() {
                 </div>
 
                 {/* Form Card */}
-                <div className="bg-white rounded-2xl shadow-xl p-8">
+                <div className="bg-white md:rounded-2xl md:shadow-xl md:p-8 space-y-5">
 
                     {error && <ErrorAlert error={error}/>  }
                     {success && <SuccessAlert success={success} />}
@@ -92,7 +92,7 @@ function ForgetPassword() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-primary text-white py-3 px-4 rounded-lg font-semibold hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm md:text-base"
                         >
                             {isLoading ? (
                                 <>
