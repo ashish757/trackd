@@ -224,14 +224,6 @@ export default class FriendService {
      */
     async getMutualFriends(currentUserId: string, targetUserId: string) {
 
-        // Check if users are friends first (optional - remove if you want to allow checking mutual friends even without being friends)
-        const areFriends = await this.checkIfFriends(currentUserId, targetUserId);
-
-
-        if (!areFriends) {
-            throw new ForbiddenException('You must be friends to view mutual friends');
-        }
-
         // Efficient query to find mutual friends using raw SQL
         // This finds all user IDs that are friends with BOTH currentUserId and targetUserId
         const mutualFriendIds = await this.prisma.$queryRaw<Array<{ id: string }>>`
