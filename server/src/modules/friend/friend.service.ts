@@ -252,7 +252,7 @@ export default class FriendService {
         }
 
         // Fetch full user details for mutual friends
-        const mutualFriends = await this.prisma.user.findMany({
+        return  this.prisma.user.findMany({
             where: {
                 id: {
                     in: mutualFriendIds.map(mf => mf.id)
@@ -267,6 +267,5 @@ export default class FriendService {
             }
         });
 
-        return mutualFriends;
     }
 }
