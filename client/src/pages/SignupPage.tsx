@@ -344,9 +344,19 @@ function SignupPage() {
                                 </div>
 
                                 {/* Password Strength Indicator */}
-                                <div className="mt-2">
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
+                                {formData.password && (
+                                    <div className="mt-3">
+                                        <div className="flex items-center justify-between mb-1">
+                                            <span className="text-xs text-gray-600">Password strength</span>
+                                            <span className={`text-xs font-semibold ${
+                                                passwordStrength === 'weak' ? 'text-red-600' :
+                                                    passwordStrength === 'medium' ? 'text-yellow-600' :
+                                                        'text-green-600'
+                                            }`}>
+                                                {passwordStrength.charAt(0).toUpperCase() + passwordStrength.slice(1)}
+                                            </span>
+                                        </div>
+                                        <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                                             <div
                                                 className={`h-full transition-all duration-300 ${
                                                     passwordStrength === 'weak' ? 'w-1/3 bg-red-500' :
@@ -355,15 +365,13 @@ function SignupPage() {
                                                 }`}
                                             />
                                         </div>
-                                        <span className={`text-xs font-medium ${
-                                            passwordStrength === 'weak' ? 'text-red-600' :
-                                                passwordStrength === 'medium' ? 'text-yellow-600' :
-                                                    'text-green-600'
-                                        }`}>
-                                            {formData.password ? passwordStrength.charAt(0).toUpperCase() + passwordStrength.slice(1) : ''}
-                                        </span>
+                                        {passwordStrength === 'weak' && (
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                Try using uppercase, lowercase, numbers, and special characters
+                                            </p>
+                                        )}
                                     </div>
-                                </div>
+                                )}
                             </div>
 
                             {/* Submit Button */}

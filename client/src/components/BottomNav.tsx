@@ -34,7 +34,7 @@ const BottomNav = () => {
 
     return (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 safe-area-bottom">
-            <div className="flex justify-around items-center h-16">
+            <div className="flex justify-around items-center h-16 px-2">
                 {navItems.map((item) => {
                     const Icon = item.icon;
                     const active = isActive(item.path);
@@ -43,7 +43,7 @@ const BottomNav = () => {
                         <Link
                             key={item.path}
                             to={item.path}
-                            className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
+                            className={`flex flex-col items-center justify-center flex-1 h-full transition-all ${
                                 active ? 'text-blue-600' : 'text-gray-600'
                             }`}
                         >
@@ -53,9 +53,11 @@ const BottomNav = () => {
                                 }`}
                                 strokeWidth={active ? 2.5 : 2}
                             />
-                            <span className={`text-xs mt-1 font-medium ${
-                                active ? 'text-blue-600' : 'text-gray-600'
-                            }`}>
+                            <span
+                                className={`text-xs mt-1 transition-all ${
+                                    active ? 'font-semibold opacity-100' : 'opacity-70'
+                                }`}
+                            >
                                 {item.label}
                             </span>
                         </Link>

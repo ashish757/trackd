@@ -19,6 +19,30 @@
     padding-bottom: calc(4rem + env(safe-area-inset-bottom));
 }
 
+/* Hide scrollbar but keep scrolling functionality */
+.scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Smooth scrolling for tab containers */
+.scroll-smooth {
+    scroll-behavior: smooth;
+}
+
+/* Native-like tap feedback (iOS style) */
+@media (hover: none) and (pointer: coarse) {
+    button:active,
+    a:active,
+    .tap-highlight:active {
+        opacity: 0.7;
+        transition: opacity 0.1s;
+    }
+}
 @media (min-width: 768px) {
     .content-with-bottom-nav {
         padding-bottom: 2rem;

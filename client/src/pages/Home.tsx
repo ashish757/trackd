@@ -141,10 +141,10 @@ export default function Home() {
         <>
             <Navbar />
             <main className="min-h-screen bg-gray-50 pb-20 md:pb-8">
-                <div className="container mx-auto px-4 py-8">
+                <div className="container mx-auto px-4 py-4 md:py-8">
 
                     {/* Logo Section - Mobile Only, Scrollable */}
-                    <div className="md:hidden flex justify-center mb-8">
+                    <div className="md:hidden flex justify-center mb-6">
                         <div className="flex items-center gap-2">
                             <img alt="Trackd" src="/logo.svg" className="h-10 w-auto" />
                             <span className="text-2xl font-bold text-gray-900">Trackd</span>
@@ -152,9 +152,9 @@ export default function Home() {
                     </div>
 
                     {/* Hero Section with Search */}
-                    <div className="max-w-4xl mx-auto mb-12">
-                        <div className="text-center mb-8">
-                            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2 md:mb-3">
+                    <div className="max-w-4xl mx-auto mb-8 md:mb-12">
+                        <div className="text-center mb-6 md:mb-8">
+                            <h1 className="text-xl md:text-4xl font-bold text-gray-900 mb-1 md:mb-3">
                                 Discover Movies & TV Shows
                             </h1>
                             <p className="text-gray-600 text-sm md:text-lg">
@@ -164,29 +164,27 @@ export default function Home() {
 
                         {/* Search Bar */}
                         <div className="relative" ref={searchRef}>
-                                <div className="relative">
-                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                    <input
-                                        type="text"
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        onFocus={() => searchQuery.length >= SEARCH_CONFIG.MIN_SEARCH_LENGTH && setShowSuggestions(true)}
-                                        placeholder="Search for movies, TV shows..."
-                                        className="w-full pl-12 pr-12 py-4 text-lg border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none transition-colors shadow-xm"
-                                        autoComplete="off"
-                                    />
-                                    {searchQuery && (
-                                        <button
-                                            type="button"
-                                            onClick={clearSearch}
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
-                                        >
-                                            <X className="h-5 w-5 text-gray-400" />
-                                        </button>
-                                    )}
-                                </div>
-
-
+                            <div className="relative">
+                                <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onFocus={() => searchQuery.length >= SEARCH_CONFIG.MIN_SEARCH_LENGTH && setShowSuggestions(true)}
+                                    placeholder="Search for movies, TV shows..."
+                                    className="w-full pl-10 md:pl-12 pr-10 md:pr-12 py-3 md:py-4 text-base md:text-lg border border-gray-300 rounded-lg md:rounded-md focus:border-blue-500 focus:outline-none transition-colors shadow-sm"
+                                    autoComplete="off"
+                                />
+                                {searchQuery && (
+                                    <button
+                                        type="button"
+                                        onClick={clearSearch}
+                                        className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+                                    >
+                                        <X className="h-5 w-5 text-gray-400" />
+                                    </button>
+                                )}
+                            </div>
 
                             {/* Search Suggestions Dropdown */}
                             <SearchDropdown
@@ -203,29 +201,31 @@ export default function Home() {
 
 
                     {/* Tabs */}
-                    <div className="flex  my-6">
-                        <div className="inline-flex  p-1">
+                    <div className="flex mb-4 md:mb-6 -mx-4 md:mx-0 px-4 md:px-0 overflow-x-auto scrollbar-hide">
+                        <div className="inline-flex md:p-1">
                             <button
                                 onClick={() => handleTabChange('feed')}
-                                className={`flex items-center gap-2 px-6 py-2.5 font-medium hover:bg-gray-200 text-gray-600 ${
+                                className={`flex items-center gap-2 px-4 md:px-6 py-2.5 font-medium text-sm md:text-base transition-colors whitespace-nowrap ${
                                     activeTab === 'feed'
-                                        ? 'border-b-2 border-gray-700 text-gray-800'
-                                        :  ''
+                                        ? 'border-b-2 border-blue-600 text-blue-600'
+                                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 md:hover:bg-gray-200'
                                 }`}
                             >
                                 <Rss className="w-4 h-4" />
-                                Feed
+                                <span className="hidden sm:inline">Feed</span>
+                                <span className="sm:hidden">Feed</span>
                             </button>
                             <button
                                 onClick={() => handleTabChange('trending')}
-                                className={`flex items-center gap-2 px-6 py-2.5 font-medium hover:bg-gray-200 text-gray-600 ${
+                                className={`flex items-center gap-2 px-4 md:px-6 py-2.5 font-medium text-sm md:text-base transition-colors whitespace-nowrap ${
                                     activeTab === 'trending'
-                                        ? 'border-b-2 border-gray-700 text-gray-800'
-                                        :  ''
+                                        ? 'border-b-2 border-blue-600 text-blue-600'
+                                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 md:hover:bg-gray-200'
                                 }`}
                             >
                                 <TrendingUp className="w-4 h-4" />
-                                Trending
+                                <span className="hidden sm:inline">Trending</span>
+                                <span className="sm:hidden">Trending</span>
                             </button>
                         </div>
                     </div>
