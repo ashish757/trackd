@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import {Link, useNavigate} from 'react-router-dom';
+import {Link, useNavigate, useSearchParams} from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, X } from 'lucide-react';
 import {useLoginMutation} from "../redux/auth/authApi.ts";
 import { validateEmail } from "../utils/validation.ts";
+import { getSafeRedirect } from "../utils/redirect.ts";
 import GoogleLoginButton from "../components/GoogleLoginButton.tsx";
 
 function SigninPage() {
@@ -11,6 +12,7 @@ function SigninPage() {
         password: '',
     });
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
 
@@ -51,8 +53,10 @@ function SigninPage() {
             console.log('Attempting login...');
             const result = await login(formData).unwrap();
             console.log('Login successful:', result);
-            // Only navigate on success
-            navigate('/home');
+
+            // Get safe redirect URL from query params, default to /home
+            const redirectTo = getSafeRedirect(searchParams.get('redirect'));
+            navigate(redirectTo);
         } catch (err: unknown) {
             console.error('Login error:', err);
             // Handle RTK Query error object

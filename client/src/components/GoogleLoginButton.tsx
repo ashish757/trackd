@@ -1,9 +1,21 @@
+import { useSearchParams } from "react-router-dom";
 import { API_CONFIG } from "../config/api.config";
 
 const GoogleLoginButton = () => {
+    const [searchParams] = useSearchParams();
+
     const handleLogin = () => {
+        // Get redirect URL from query params if present
+        const redirectTo = searchParams.get('redirect');
+
+        // Build OAuth URL with state parameter for redirect
+        let oauthUrl = `${API_CONFIG.BASE_URL}/auth/google`;
+        if (redirectTo) {
+            oauthUrl += `?state=${encodeURIComponent(redirectTo)}`;
+        }
+
         // Direct link to your NestJS backend Google OAuth endpoint
-        window.location.href = `${API_CONFIG.BASE_URL}/auth/google`;
+        window.location.href = oauthUrl;
     };
 
     return (

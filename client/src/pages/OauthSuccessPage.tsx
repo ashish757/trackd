@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { setUser } from "../redux/auth/authSlice";
 import { tokenManager } from "../utils/tokenManager";
 import { useGetUserQuery } from "../redux/user/userApi";
+import { getSafeRedirect } from "../utils/redirect";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const OAuthSuccess = () => {
@@ -34,10 +35,16 @@ const OAuthSuccess = () => {
         // 1. Store access token in memory
         tokenManager.setAccessToken(accessToken);
 
-        // 2. Clear URL parameters so token isn't visible in history
-        window.history.replaceState({}, document.title, "/");
+        // 2. Get redirect URL from state parameter if provided
+        const redirectTo = searchParams.get("state") || null;
+        if (redirectTo) {
+            sessionStorage.setItem('oauth_redirect', redirectTo);
+        }
 
-        // 3. Trigger user data fetch via RTK Query
+        // 3. Clear URL parameters so token isn't visible in history
+        window.history.replaceState({}, document.title, "/oauth/success");
+
+        // 4. Trigger user data fetch via RTK Query
         setShouldFetchUser(true);
     }, [navigate, searchParams]);
 
@@ -47,8 +54,13 @@ const OAuthSuccess = () => {
             // Update Redux state with user data
             dispatch(setUser(userData));
 
-            // Redirect to home
-            navigate("/");
+            // Get safe redirect URL from sessionStorage or default to home
+            const savedRedirect = sessionStorage.getItem('oauth_redirect');
+            const redirectTo = getSafeRedirect(savedRedirect);
+            sessionStorage.removeItem('oauth_redirect');
+
+            // Redirect to intended destination
+            navigate(redirectTo);
         }
 
         if (isError) {

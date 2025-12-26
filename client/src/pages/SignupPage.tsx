@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
-import {Link, useNavigate} from 'react-router-dom';
+import {Link, useNavigate, useSearchParams} from 'react-router-dom';
 import { Mail, Lock, User, X, Loader, Eye, EyeOff, Clock } from 'lucide-react';
 import { useRequestOtpMutation, useVerifyOtpMutation, useRegisterMutation } from "../redux/auth/authApi.ts";
 import { validateEmail, validatePassword, validateName } from "../utils/validation.ts";
 import { storage } from "../utils/config.ts";
+import { getSafeRedirect } from "../utils/redirect.ts";
 import GoogleLoginButton from "../components/GoogleLoginButton.tsx";
 
 function SignupPage() {
 
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
     const [formData, setFormData] = useState({ name: '', email: '', password: '', });
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -190,8 +192,10 @@ function SignupPage() {
             if(registerRes.status === 'success' || registerRes.statusCode === 201) {
                 // Clear OTP token from storage
                 storage.removeItem("otpToken");
-                // Redirect to home page
-                navigate('/');
+
+                // Get safe redirect URL from query params, default to /home
+                const redirectTo = getSafeRedirect(searchParams.get('redirect'));
+                navigate(redirectTo);
             } else {
                 setError(registerRes.message || 'Registration failed. Please try again.');
             }

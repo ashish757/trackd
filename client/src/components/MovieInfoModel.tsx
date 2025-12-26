@@ -6,16 +6,15 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useGetMovieByIdQuery } from '../redux/movie/movieApi';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../redux/store';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import StarRating from './StarRating';
 
 interface props {
     movie: Movie | null,
     onClose: () => void
-}
-
-const MovieInfoModel = ({onClose, movie}: props) => {
+}const MovieInfoModel = ({onClose, movie}: props) => {
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+    const location = useLocation();
 
     const [markMovie, { isLoading: isMarking }] = useMarkMovieMutation();
     const [removeMovie, { isLoading: isRemoving }] = useRemoveMovieMutation();
@@ -465,13 +464,13 @@ const MovieInfoModel = ({onClose, movie}: props) => {
                                     </p>
                                     <div className="flex gap-3 justify-center">
                                         <Link
-                                            to="/signin"
+                                            to={`/signin?redirect=${encodeURIComponent(location.pathname + location.search)}`}
                                             className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
                                         >
                                             Sign In
                                         </Link>
                                         <Link
-                                            to="/signup"
+                                            to={`/signup?redirect=${encodeURIComponent(location.pathname + location.search)}`}
                                             className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100 font-semibold rounded-lg transition-colors"
                                         >
                                             Sign Up
