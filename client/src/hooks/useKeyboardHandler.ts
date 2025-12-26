@@ -25,7 +25,7 @@ export const useKeyboardHandler = (inputRefs: RefObject<HTMLElement | null>[]) =
         const windowHeight = window.innerHeight;
 
         // Calculate if input is in lower half of screen
-        const isInLowerHalf = rect.top > windowHeight / 2;
+        const isInLowerHalf = rect.top > (windowHeight / 2) - 100;
 
         if (isInLowerHalf) {
           // Scroll the input into view with some padding
@@ -35,7 +35,7 @@ export const useKeyboardHandler = (inputRefs: RefObject<HTMLElement | null>[]) =
             inline: 'nearest'
           });
         }
-      }, 300); // 300ms delay matches typical keyboard animation
+      }, 250); // 250ms delay matches typical keyboard animation
     };
 
     const listeners: Array<{ element: HTMLElement; handler: () => void }> = [];

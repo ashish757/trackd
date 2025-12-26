@@ -19,7 +19,7 @@ import ForgetPassword from "./pages/ForgetPassword.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import ChangeEmail from "./components/ChangeEmail.tsx";
 import OauthSuccessPage from "./pages/OauthSuccessPage.tsx";
-import {useDetectCountry} from "./hooks/useDetectCountry.tsx";
+import {useDetectCountry} from "./hooks/useDetectCountry.ts";
 import LandingPage from "./pages/LandingPage.tsx";
 import BottomNav from "./components/BottomNav.tsx";
 
