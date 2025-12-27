@@ -1,4 +1,4 @@
-import { useGetNotificationsQuery, useGetUnreadCountQuery, useMarkAsReadMutation, useMarkAllAsReadMutation, useDeleteNotificationMutation } from '../redux/notification/notificationApi';
+import { useGetNotificationsQuery, useGetUnreadCountQuery, useMarkAllAsReadMutation, useDeleteNotificationMutation } from '../redux/notification/notificationApi';
 import type { Notification } from '../redux/notification/notificationApi';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useCallback, useEffect, useState, useMemo } from "react";
@@ -11,7 +11,6 @@ import { X, Check, UserX } from 'lucide-react';
 const Notifications = () => {
     const { data: notifications = [], refetch: refetchNotifications } = useGetNotificationsQuery({ includeRead: true });
     const { data: unreadCount = 0, refetch: refetchUnreadCount } = useGetUnreadCountQuery();
-    const [markAsRead] = useMarkAsReadMutation();
     const [markAllAsRead] = useMarkAllAsReadMutation();
     const [deleteNotification] = useDeleteNotificationMutation();
     const [acceptFollowRequest] = useAcceptFollowRequestMutation();
@@ -21,7 +20,6 @@ const Notifications = () => {
     const {
         recentNotifications,
         clearNotification,
-        markNotificationAsRead,
         markAllNotificationsAsRead
     } = useWebSocket();
 
@@ -57,6 +55,43 @@ const Notifications = () => {
             refetchUnreadCount();
         }
     }, [recentNotifications.length, refetchUnreadCount]);
+
+    // Auto mark as read after 500ms of opening notification panel
+    useEffect(() => {
+        if (!showNotifications) {
+            return; // Panel is closed, do nothing
+        }
+
+        // Get all unread notifications
+        const unreadNotifications = allNotifications.filter(n => !n.isRead);
+
+        if (unreadNotifications.length === 0) {
+            return; // No unread notifications
+        }
+
+        // Set timeout to mark as read after 500ms
+        const timer = setTimeout(async () => {
+            try {
+                // Mark all as read optimistically
+                markAllNotificationsAsRead();
+
+                // Then update server
+                await markAllAsRead(undefined).unwrap();
+
+                // Only refetch count to sync
+                refetchUnreadCount();
+            } catch (error) {
+                console.error('Failed to auto-mark as read:', error);
+                // On error, refetch to restore correct state
+                refetchNotifications();
+            }
+        }, 500);
+
+        // Cleanup: if panel closes before 500ms, cancel the timer
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [showNotifications, allNotifications, markAllNotificationsAsRead, markAllAsRead, refetchUnreadCount, refetchNotifications]);
 
     function timeAgo(date: string) {
         const now = new Date();
@@ -103,23 +138,6 @@ const Notifications = () => {
             refetchNotifications();
         }
     }, [markAllAsRead, markAllNotificationsAsRead, refetchUnreadCount, refetchNotifications]);
-
-    const handleNotificationClick = useCallback(async (notificationId: string) => {
-        try {
-            // Optimistic update - instant UI feedback
-            markNotificationAsRead(notificationId);
-
-            // Then update server
-            await markAsRead(notificationId).unwrap();
-
-            // Only refetch count to sync
-            refetchUnreadCount();
-        } catch (error) {
-            console.error('Failed to mark as read:', error);
-            // On error, refetch to get correct state
-            refetchNotifications();
-        }
-    }, [markAsRead, markNotificationAsRead, refetchUnreadCount, refetchNotifications]);
 
     const handleDeleteNotification = useCallback(async (notificationId: string, e: React.MouseEvent) => {
         e.stopPropagation(); // Prevent marking as read when deleting
@@ -337,8 +355,7 @@ const Notifications = () => {
                             {otherNotifications.map((notif: Notification) => (
                                 <div
                                     key={notif.id}
-                                    onClick={() => handleNotificationClick(notif.id)}
-                                    className={`flex items-start gap-3 px-4 py-4 hover:bg-neutral-50 transition cursor-pointer relative group ${
+                                    className={`flex items-start gap-3 px-4 py-4 hover:bg-neutral-50 transition relative group ${
                                         !notif.isRead ? 'bg-blue-50' : ''
                                     }`}>
 
