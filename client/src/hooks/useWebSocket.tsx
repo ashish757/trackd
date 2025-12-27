@@ -111,11 +111,24 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
                 return updated.slice(0, MAX_RECENT_NOTIFICATIONS);
             });
 
-            // Show browser notification
+            // Show browser notification with logo and enhanced options
             if ('Notification' in window && Notification.permission === 'granted') {
+                // Use sender's avatar if available, otherwise use app logo
+                const notificationIcon = notification.sender?.avatar || '/logo.svg';
+
                 new Notification('Trackd', {
                     body: notification.message,
-                    icon: '/logo.svg',
+                    icon: notificationIcon,
+                    badge: '/logo.svg', // Small badge icon shown in notification tray
+                    tag: notification.id, // Prevent duplicate notifications
+                    requireInteraction: false, // Auto-dismiss after a few seconds
+                    silent: false, // Play notification sound
+                    data: {
+                        notificationId: notification.id,
+                        type: notification.type,
+                        senderId: notification.senderId,
+                        createdAt: notification.createdAt,
+                    },
                 });
             }
         });

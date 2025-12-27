@@ -34,10 +34,14 @@ export default function SettingsPage() {
             setNotificationPermission(permission);
 
             if (permission === 'granted') {
-                // Show a test notification
+                // Show a test notification with enhanced options
                 new Notification('Trackd', {
                     body: 'Notifications enabled! You will now receive real-time updates.',
                     icon: '/logo.svg',
+                    badge: '/logo.svg', // Small badge in notification tray
+                    tag: 'test-notification',
+                    requireInteraction: false,
+                    silent: false,
                 });
             }
         } catch (error) {
