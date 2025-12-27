@@ -1,13 +1,66 @@
-import {Lock, Eye, Globe} from 'lucide-react';
+import {Lock, Eye, Globe, Bell} from 'lucide-react';
 import Navbar from '../components/Navbar';
 import ChangePassword from "../components/ChangePassword.tsx";
 import {useGetUserQuery} from "../redux/user/userApi.ts";
 import RequestChangeEmail from "../components/RequestChangeEmail.tsx";
-import {useState} from "react";
+import {useState, useEffect} from "react";
 
 export default function SettingsPage() {
     const {data: user} = useGetUserQuery();
     const [accountV, setAccountV] = useState<string>();
+    const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
+    const [isRequestingPermission, setIsRequestingPermission] = useState(false);
+
+    // Check notification permission on mount
+    useEffect(() => {
+        if ('Notification' in window) {
+            setNotificationPermission(Notification.permission);
+        }
+    }, []);
+
+    const handleRequestNotificationPermission = async () => {
+        if (!('Notification' in window)) {
+            alert('Your browser does not support notifications');
+            return;
+        }
+
+        if (Notification.permission === 'granted') {
+            return; // Already granted
+        }
+
+        setIsRequestingPermission(true);
+        try {
+            const permission = await Notification.requestPermission();
+            setNotificationPermission(permission);
+
+            if (permission === 'granted') {
+                // Show a test notification
+                new Notification('Trackd', {
+                    body: 'Notifications enabled! You will now receive real-time updates.',
+                    icon: '/logo.svg',
+                });
+            }
+        } catch (error) {
+            console.error('Error requesting notification permission:', error);
+        } finally {
+            setIsRequestingPermission(false);
+        }
+    };
+
+    const getNotificationStatus = () => {
+        if (!('Notification' in window)) {
+            return { text: 'Not supported', color: 'text-gray-500' };
+        }
+
+        switch (notificationPermission) {
+            case 'granted':
+                return { text: 'Enabled', color: 'text-green-600' };
+            case 'denied':
+                return { text: 'Blocked', color: 'text-red-600' };
+            default:
+                return { text: 'Not enabled', color: 'text-yellow-600' };
+        }
+    };
 
 
     return (
@@ -19,6 +72,66 @@ export default function SettingsPage() {
                         <h1 className="text-4xl font-bold text-gray-900 mb-8">Settings</h1>
 
                         <div className="space-y-6">
+
+                            {/* Notifications */}
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <Bell className="h-6 w-6 text-gray-700" />
+                                    <h2 className="text-xl font-semibold text-gray-900">Notifications</h2>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <h3 className="text-gray-700 font-medium">Browser Notifications</h3>
+                                            <p className="text-sm text-gray-500">
+                                                Get real-time notifications for friend requests and updates
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <span className={`text-sm font-medium ${getNotificationStatus().color}`}>
+                                                {getNotificationStatus().text}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {notificationPermission !== 'granted' && (
+                                        <button
+                                            onClick={handleRequestNotificationPermission}
+                                            disabled={isRequestingPermission || notificationPermission === 'denied'}
+                                            className="w-full md:w-auto px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                        >
+                                            {isRequestingPermission
+                                                ? 'Requesting...'
+                                                : notificationPermission === 'denied'
+                                                    ? 'Blocked (Enable in browser settings)'
+                                                    : 'Enable Notifications'}
+                                        </button>
+                                    )}
+
+                                    {notificationPermission === 'granted' && (
+                                        <div className="flex items-center gap-2 text-sm text-green-600">
+                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                            </svg>
+                                            Notifications are enabled
+                                        </div>
+                                    )}
+
+                                    {notificationPermission === 'denied' && (
+                                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                            <p className="text-sm text-red-700">
+                                                Notifications are blocked. To enable them:
+                                            </p>
+                                            <ol className="mt-2 ml-4 text-sm text-red-600 list-decimal space-y-1">
+                                                <li>Click the lock icon in your browser's address bar</li>
+                                                <li>Find "Notifications" in the permissions list</li>
+                                                <li>Change the setting to "Allow"</li>
+                                                <li>Refresh this page</li>
+                                            </ol>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
 
                             {/* Privacy */}
                             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
