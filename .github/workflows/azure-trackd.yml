@@ -3,7 +3,7 @@ name: Deploy Backend to Azure
 on:
   push:
     branches:
-      - main
+      - v1-maintenance
     paths:
       - 'server/**' # Only trigger if files in the server directory change
   workflow_dispatch:
