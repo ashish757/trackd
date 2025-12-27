@@ -9,7 +9,7 @@ import { JwtService } from '../auth/jwt.service';
     imports: [PrismaModule],
     controllers: [NotificationController],
     providers: [NotificationService, NotificationGateway, JwtService],
-    exports: [NotificationService], // Export to use in other modules
+    exports: [NotificationService, NotificationGateway], // Export to use in other modules
 })
 export class NotificationModule {}
 
