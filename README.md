@@ -2,6 +2,8 @@
 
 A full-stack movie tracking application built with React, NestJS, and PostgreSQL.
 
+This version (v1.0.0) is the stable monolithic version of Trackd.
+
 ## Features
 
 -  **Secure Authentication**
