@@ -402,11 +402,6 @@ const Notifications = () => {
                                             {timeAgo(notif.createdAt)}
                                         </p>
                                     </div>
-
-                                    {/* Unread indicator */}
-                                    {!notif.isRead && (
-                                        <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 shrink-0"></div>
-                                    )}
                                 </div>
                             ))}
                         </>
