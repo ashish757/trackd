@@ -1,26 +1,54 @@
-import { useGetFriendRequestsQuery } from '../redux/friend/friendApi';
-import { useGetNotificationsQuery, useGetUnreadCountQuery, useMarkAsReadMutation, useMarkAllAsReadMutation } from '../redux/notification/notificationApi';
+import { useGetNotificationsQuery, useGetUnreadCountQuery, useMarkAsReadMutation, useMarkAllAsReadMutation, useDeleteNotificationMutation } from '../redux/notification/notificationApi';
 import type { Notification } from '../redux/notification/notificationApi';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import Portal from "./Portal.tsx";
+import { useAcceptFollowRequestMutation, useRejectFollowRequestMutation } from '../redux/user/userApi';
+import { useWebSocket } from '../hooks/useWebSocket';
+import { X, Check, UserX } from 'lucide-react';
 
 
 const Notifications = () => {
-    const { data: friendRequests } = useGetFriendRequestsQuery();
-    const { data: notifications = [], refetch: refetchNotifications } = useGetNotificationsQuery({ includeRead: false });
+    const { data: notifications = [], refetch: refetchNotifications } = useGetNotificationsQuery({ includeRead: true });
     const { data: unreadCount = 0, refetch: refetchUnreadCount } = useGetUnreadCountQuery();
     const [markAsRead] = useMarkAsReadMutation();
     const [markAllAsRead] = useMarkAllAsReadMutation();
+    const [deleteNotification] = useDeleteNotificationMutation();
+    const [acceptFollowRequest] = useAcceptFollowRequestMutation();
+    const [rejectFollowRequest] = useRejectFollowRequestMutation();
     const [searchParams, setSearchParams] = useSearchParams();
+
+    const { recentNotifications, clearNotification } = useWebSocket();
+
+    // Track loading states for individual actions
+    const [loadingActions, setLoadingActions] = useState<Record<string, boolean>>({});
 
     // Get notifications state from URL
     const showNotifications = searchParams.get('notifications') === 'open';
 
+    // Combine API notifications with recent WebSocket notifications
+    const allNotifications = useMemo(() => [
+        ...recentNotifications,
+        ...notifications.filter(n => !recentNotifications.find(rn => rn.id === n.id))
+    ], [recentNotifications, notifications]);
+
+    // Filter friend requests from all notifications (type: FRIEND_REQUEST)
+    const friendRequests = useMemo(() =>
+        allNotifications.filter(n => n.type === 'FRIEND_REQUEST' && !n.isRead),
+        [allNotifications]
+    );
+
+    // Filter other notifications (not friend requests)
+    const otherNotifications = useMemo(() =>
+        allNotifications.filter(n => n.type !== 'FRIEND_REQUEST'),
+        [allNotifications]
+    );
+
     // Listen for new notifications via custom event from WebSocket
     useEffect(() => {
         const handleNewNotification = () => {
-            // Refetch both notifications and unread count when new notification arrives
+            // Refetch notifications and unread count when new notification arrives
+            // Friend requests are automatically included as they're FRIEND_REQUEST type notifications
             refetchNotifications();
             refetchUnreadCount();
         };
@@ -82,8 +110,62 @@ const Notifications = () => {
         }
     }, [markAsRead, refetchNotifications, refetchUnreadCount]);
 
-    // Calculate total unread from API data only (single source of truth)
-    const totalUnread = (friendRequests?.length || 0) + unreadCount;
+    const handleDeleteNotification = useCallback(async (notificationId: string, e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent marking as read when deleting
+        try {
+            setLoadingActions(prev => ({ ...prev, [`delete-${notificationId}`]: true }));
+
+            // Delete from API if it exists there
+            await deleteNotification(notificationId).unwrap();
+
+            // Also clear from WebSocket state
+            clearNotification(notificationId);
+
+            refetchNotifications();
+            refetchUnreadCount();
+        } catch (error) {
+            console.error('Failed to delete notification:', error);
+        } finally {
+            setLoadingActions(prev => ({ ...prev, [`delete-${notificationId}`]: false }));
+        }
+    }, [deleteNotification, clearNotification, refetchNotifications, refetchUnreadCount]);
+
+    const handleAcceptFriendRequest = useCallback(async (requesterId: string, notificationId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            setLoadingActions(prev => ({ ...prev, [`accept-${requesterId}`]: true }));
+            await acceptFollowRequest({ requesterId }).unwrap();
+            // Delete the friend request notification after accepting
+            await deleteNotification(notificationId).unwrap();
+            clearNotification(notificationId);
+            refetchNotifications();
+            refetchUnreadCount();
+        } catch (error) {
+            console.error('Failed to accept friend request:', error);
+        } finally {
+            setLoadingActions(prev => ({ ...prev, [`accept-${requesterId}`]: false }));
+        }
+    }, [acceptFollowRequest, deleteNotification, clearNotification, refetchNotifications, refetchUnreadCount]);
+
+    const handleRejectFriendRequest = useCallback(async (requesterId: string, notificationId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            setLoadingActions(prev => ({ ...prev, [`reject-${requesterId}`]: true }));
+            await rejectFollowRequest({ requesterId }).unwrap();
+            // Delete the friend request notification after rejecting
+            await deleteNotification(notificationId).unwrap();
+            clearNotification(notificationId);
+            refetchNotifications();
+            refetchUnreadCount();
+        } catch (error) {
+            console.error('Failed to reject friend request:', error);
+        } finally {
+            setLoadingActions(prev => ({ ...prev, [`reject-${requesterId}`]: false }));
+        }
+    }, [rejectFollowRequest, deleteNotification, clearNotification, refetchNotifications, refetchUnreadCount]);
+
+    // Calculate total unread (friend requests are already counted in unreadCount from API)
+    const totalUnread = unreadCount;
 
     return (
         <>
@@ -147,64 +229,150 @@ const Notifications = () => {
                             <div className="px-4 py-2 bg-gray-50">
                                 <h3 className="text-sm font-semibold text-gray-600">Friend Requests</h3>
                             </div>
-                            {friendRequests.map((req, index) => (
+                            {friendRequests.map((req) => (
                                 <div
-                                    key={`fr-${index}`}
-                                    className="flex items-start gap-3 px-4 py-4 hover:bg-neutral-50 transition">
+                                    key={req.id}
+                                    className="flex items-start gap-3 px-4 py-4 hover:bg-neutral-50 transition relative group">
 
                                     {/* Avatar */}
-                                    <div className="w-10 h-10 shrink-0 rounded-full bg-blue-600 flex items-center justify-center text-white text-lg font-bold">
-                                        {req.sender.name[0].toUpperCase() || 'U'}
-                                    </div>
+                                    {req.sender?.username ? (
+                                        <Link
+                                            to={`/users/${req.sender.username}`}
+                                            onClick={handleClose}
+                                            className="w-10 h-10 shrink-0 rounded-full overflow-hidden bg-blue-600 flex items-center justify-center text-white text-lg font-bold hover:bg-blue-700 transition"
+                                        >
+                                            {req.sender.avatar ? (
+                                                <img src={req.sender.avatar} alt={req.sender.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                req.sender.name?.[0]?.toUpperCase() || 'U'
+                                            )}
+                                        </Link>
+                                    ) : (
+                                        <div className="w-10 h-10 shrink-0 rounded-full bg-blue-600 flex items-center justify-center text-white text-lg font-bold">
+                                            U
+                                        </div>
+                                    )}
 
                                     {/* Content */}
-                                    <div className="flex-1">
+                                    <div className="flex-1 min-w-0">
                                         <p className="text-sm text-gray-700 leading-tight">
-                                            <strong className="text-gray-900 font-semibold">{req.sender.name}</strong> sent you a friend request.
+                                            {req.sender?.username ? (
+                                                <>
+                                                    <Link
+                                                        to={`/users/${req.sender.username}`}
+                                                        onClick={handleClose}
+                                                        className="font-semibold text-gray-900 hover:text-blue-600 hover:underline"
+                                                    >
+                                                        {req.sender.name}
+                                                    </Link>
+                                                    {' sent you a friend request.'}
+                                                </>
+                                            ) : (
+                                                req.message
+                                            )}
                                         </p>
 
                                         <p className="text-xs text-gray-400 mt-1 mb-3">
                                             {timeAgo(req.createdAt)}
                                         </p>
 
-                                        <div className="flex gap-2">
-                                            <Link
-                                                to={`/users/${req.sender.username}`}
-                                                onClick={handleClose} // Close sidebar on click
-                                                className="px-4 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                                            >
-                                                View Profile
-                                            </Link>
-                                        </div>
+                                        {req.sender?.id && (
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={(e) => handleAcceptFriendRequest(req.sender!.id, req.id, e)}
+                                                    disabled={loadingActions[`accept-${req.sender!.id}`]}
+                                                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    <Check size={14} />
+                                                    {loadingActions[`accept-${req.sender!.id}`] ? 'Accepting...' : 'Accept'}
+                                                </button>
+                                                <button
+                                                    onClick={(e) => handleRejectFriendRequest(req.sender!.id, req.id, e)}
+                                                    disabled={loadingActions[`reject-${req.sender!.id}`]}
+                                                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    <UserX size={14} />
+                                                    {loadingActions[`reject-${req.sender!.id}`] ? 'Rejecting...' : 'Reject'}
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))}
                         </>
                     )}
 
-                    {/* Other Notifications Section */}
-                    {notifications.length > 0 && (
+                    {/* Recent Activity Section */}
+                    {otherNotifications.length > 0 && (
                         <>
-                            <div className="px-4 py-2 bg-gray-50">
+                            <div className="px-4 py-2 bg-gray-50 flex items-center justify-between">
                                 <h3 className="text-sm font-semibold text-gray-600">Recent Activity</h3>
+                                <p className="text-xs text-gray-500">{otherNotifications.length} notifications</p>
                             </div>
-                            {notifications.map((notif: Notification) => (
+                            {otherNotifications.map((notif: Notification) => (
                                 <div
                                     key={notif.id}
                                     onClick={() => handleNotificationClick(notif.id)}
-                                    className={`flex items-start gap-3 px-4 py-4 hover:bg-neutral-50 transition cursor-pointer ${
+                                    className={`flex items-start gap-3 px-4 py-4 hover:bg-neutral-50 transition cursor-pointer relative group ${
                                         !notif.isRead ? 'bg-blue-50' : ''
                                     }`}>
 
-                                    {/* Avatar */}
-                                    <div className="w-10 h-10 shrink-0 rounded-full bg-green-600 flex items-center justify-center text-white text-lg font-bold">
-                                        {notif.sender?.name?.[0]?.toUpperCase() || '🔔'}
-                                    </div>
+                                    {/* Delete Button - Top Right Corner */}
+                                    <button
+                                        onClick={(e) => handleDeleteNotification(notif.id, e)}
+                                        disabled={loadingActions[`delete-${notif.id}`]}
+                                        className="absolute top-2 right-2 p-1.5 rounded-full text-gray-400  hover:bg-red-100 hover:text-red-400 transition disabled:opacity-50"
+                                        title="Delete notification"
+                                    >
+                                        <X size={16} />
+                                    </button>
+
+                                    {/* Avatar - Clickable if sender exists */}
+                                    {notif.sender?.username ? (
+                                        <Link
+                                            to={`/users/${notif.sender.username}`}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleClose();
+                                            }}
+                                            className="w-10 h-10 shrink-0 overflow-hidden rounded-full bg-green-600 flex items-center justify-center text-white text-lg font-bold hover:bg-green-700 transition"
+                                        >
+                                            {
+                                                notif.sender.avatar ? (
+                                                    <img src={notif.sender.avatar} alt={notif.sender.name}/>
+                                                ) : (
+                                                    notif.sender.name?.[0]?.toUpperCase() || 'U'
+                                                )
+                                            }
+
+                                        </Link>
+                                    ) : (
+                                        <div className="w-10 h-10 shrink-0 rounded-full bg-gray-400 flex items-center justify-center text-white text-lg">
+                                            🔔
+                                        </div>
+                                    )}
 
                                     {/* Content */}
-                                    <div className="flex-1">
+                                    <div className="flex-1 min-w-0 pr-8">
                                         <p className="text-sm text-gray-700 leading-tight">
-                                            {notif.message}
+                                            {notif.sender?.username ? (
+                                                <>
+                                                    <Link
+                                                        to={`/users/${notif.sender.username}`}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleClose();
+                                                        }}
+                                                        className="font-semibold text-gray-900 hover:text-blue-600 hover:underline"
+                                                    >
+                                                        {notif.sender.name}
+                                                    </Link>
+                                                    {' '}
+                                                    {notif.message.replace(notif.sender.name, '').trim()}
+                                                </>
+                                            ) : (
+                                                notif.message
+                                            )}
                                         </p>
 
                                         <p className="text-xs text-gray-400 mt-1">
@@ -214,7 +382,7 @@ const Notifications = () => {
 
                                     {/* Unread indicator */}
                                     {!notif.isRead && (
-                                        <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
+                                        <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 shrink-0"></div>
                                     )}
                                 </div>
                             ))}
@@ -222,9 +390,15 @@ const Notifications = () => {
                     )}
 
                     {/* Empty state */}
-                    {(!friendRequests || friendRequests.length === 0) && notifications.length === 0 && (
+                    {friendRequests.length === 0 && otherNotifications.length === 0 && (
                         <div className="flex flex-col items-center justify-center h-64 px-4 text-center">
-                            <p className="text-gray-500 text-sm">No new notifications</p>
+                            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                </svg>
+                            </div>
+                            <p className="text-gray-500 text-sm font-medium">No notifications yet</p>
+                            <p className="text-gray-400 text-xs mt-1">You'll see notifications here when someone interacts with you</p>
                         </div>
                     )}
                 </div>
