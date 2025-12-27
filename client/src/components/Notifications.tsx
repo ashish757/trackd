@@ -18,7 +18,12 @@ const Notifications = () => {
     const [rejectFollowRequest] = useRejectFollowRequestMutation();
     const [searchParams, setSearchParams] = useSearchParams();
 
-    const { recentNotifications, clearNotification } = useWebSocket();
+    const {
+        recentNotifications,
+        clearNotification,
+        markNotificationAsRead,
+        markAllNotificationsAsRead
+    } = useWebSocket();
 
     // Track loading states for individual actions
     const [loadingActions, setLoadingActions] = useState<Record<string, boolean>>({});
@@ -44,21 +49,14 @@ const Notifications = () => {
         [allNotifications]
     );
 
-    // Listen for new notifications via custom event from WebSocket
+    // Watch for changes in recentNotifications to update unread count
+    // No need for custom events - just react to state changes
     useEffect(() => {
-        const handleNewNotification = () => {
-            // Refetch notifications and unread count when new notification arrives
-            // Friend requests are automatically included as they're FRIEND_REQUEST type notifications
-            refetchNotifications();
+        if (recentNotifications.length > 0) {
+            // Only refetch count when new notifications arrive
             refetchUnreadCount();
-        };
-
-        window.addEventListener('new-notification', handleNewNotification);
-
-        return () => {
-            window.removeEventListener('new-notification', handleNewNotification);
-        };
-    }, [refetchNotifications, refetchUnreadCount]);
+        }
+    }, [recentNotifications.length, refetchUnreadCount]);
 
     function timeAgo(date: string) {
         const now = new Date();
@@ -91,78 +89,105 @@ const Notifications = () => {
 
     const handleMarkAllAsRead = useCallback(async () => {
         try {
+            // Optimistic update - instant UI feedback
+            markAllNotificationsAsRead();
+
+            // Then update server
             await markAllAsRead(undefined).unwrap();
-            refetchNotifications();
+
+            // Only refetch count to sync
             refetchUnreadCount();
         } catch (error) {
             console.error('Failed to mark all as read:', error);
+            // On error, refetch to get correct state
+            refetchNotifications();
         }
-    }, [markAllAsRead, refetchNotifications, refetchUnreadCount]);
+    }, [markAllAsRead, markAllNotificationsAsRead, refetchUnreadCount, refetchNotifications]);
 
     const handleNotificationClick = useCallback(async (notificationId: string) => {
         try {
+            // Optimistic update - instant UI feedback
+            markNotificationAsRead(notificationId);
+
+            // Then update server
             await markAsRead(notificationId).unwrap();
-            // Refetch after marking as read to update the count
-            refetchNotifications();
+
+            // Only refetch count to sync
             refetchUnreadCount();
         } catch (error) {
             console.error('Failed to mark as read:', error);
+            // On error, refetch to get correct state
+            refetchNotifications();
         }
-    }, [markAsRead, refetchNotifications, refetchUnreadCount]);
+    }, [markAsRead, markNotificationAsRead, refetchUnreadCount, refetchNotifications]);
 
     const handleDeleteNotification = useCallback(async (notificationId: string, e: React.MouseEvent) => {
         e.stopPropagation(); // Prevent marking as read when deleting
         try {
             setLoadingActions(prev => ({ ...prev, [`delete-${notificationId}`]: true }));
 
-            // Delete from API if it exists there
-            await deleteNotification(notificationId).unwrap();
-
-            // Also clear from WebSocket state
+            // Optimistic update - remove from UI immediately
             clearNotification(notificationId);
 
-            refetchNotifications();
+            // Then delete from server
+            await deleteNotification(notificationId).unwrap();
+
+            // Only refetch count to sync
             refetchUnreadCount();
         } catch (error) {
             console.error('Failed to delete notification:', error);
+            // On error, refetch to restore correct state
+            refetchNotifications();
         } finally {
             setLoadingActions(prev => ({ ...prev, [`delete-${notificationId}`]: false }));
         }
-    }, [deleteNotification, clearNotification, refetchNotifications, refetchUnreadCount]);
+    }, [deleteNotification, clearNotification, refetchUnreadCount, refetchNotifications]);
 
     const handleAcceptFriendRequest = useCallback(async (requesterId: string, notificationId: string, e: React.MouseEvent) => {
         e.stopPropagation();
         try {
             setLoadingActions(prev => ({ ...prev, [`accept-${requesterId}`]: true }));
-            await acceptFollowRequest({ requesterId }).unwrap();
-            // Delete the friend request notification after accepting
-            await deleteNotification(notificationId).unwrap();
+
+            // Optimistic update - remove from UI immediately
             clearNotification(notificationId);
-            refetchNotifications();
+
+            // Then send to server
+            await acceptFollowRequest({ requesterId }).unwrap();
+            await deleteNotification(notificationId).unwrap();
+
+            // Only refetch count to sync
             refetchUnreadCount();
         } catch (error) {
             console.error('Failed to accept friend request:', error);
+            // On error, refetch to restore correct state
+            refetchNotifications();
         } finally {
             setLoadingActions(prev => ({ ...prev, [`accept-${requesterId}`]: false }));
         }
-    }, [acceptFollowRequest, deleteNotification, clearNotification, refetchNotifications, refetchUnreadCount]);
+    }, [acceptFollowRequest, deleteNotification, clearNotification, refetchUnreadCount, refetchNotifications]);
 
     const handleRejectFriendRequest = useCallback(async (requesterId: string, notificationId: string, e: React.MouseEvent) => {
         e.stopPropagation();
         try {
             setLoadingActions(prev => ({ ...prev, [`reject-${requesterId}`]: true }));
-            await rejectFollowRequest({ requesterId }).unwrap();
-            // Delete the friend request notification after rejecting
-            await deleteNotification(notificationId).unwrap();
+
+            // Optimistic update - remove from UI immediately
             clearNotification(notificationId);
-            refetchNotifications();
+
+            // Then send to server
+            await rejectFollowRequest({ requesterId }).unwrap();
+            await deleteNotification(notificationId).unwrap();
+
+            // Only refetch count to sync
             refetchUnreadCount();
         } catch (error) {
             console.error('Failed to reject friend request:', error);
+            // On error, refetch to restore correct state
+            refetchNotifications();
         } finally {
             setLoadingActions(prev => ({ ...prev, [`reject-${requesterId}`]: false }));
         }
-    }, [rejectFollowRequest, deleteNotification, clearNotification, refetchNotifications, refetchUnreadCount]);
+    }, [rejectFollowRequest, deleteNotification, clearNotification, refetchUnreadCount, refetchNotifications]);
 
     // Calculate total unread (friend requests are already counted in unreadCount from API)
     const totalUnread = unreadCount;

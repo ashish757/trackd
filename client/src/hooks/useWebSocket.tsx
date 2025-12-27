@@ -27,6 +27,8 @@ interface WebSocketContextType {
     isConnected: boolean;
     recentNotifications: Notification[];
     clearNotification: (notificationId: string) => void;
+    markNotificationAsRead: (notificationId: string) => void;
+    markAllNotificationsAsRead: () => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextType>({
@@ -34,6 +36,8 @@ const WebSocketContext = createContext<WebSocketContextType>({
     isConnected: false,
     recentNotifications: [],
     clearNotification: () => {},
+    markNotificationAsRead: () => {},
+    markAllNotificationsAsRead: () => {},
 });
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -52,6 +56,18 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
 
     const clearNotification = (notificationId: string) => {
         setRecentNotifications(prev => prev.filter(n => n.id !== notificationId));
+    };
+
+    const markNotificationAsRead = (notificationId: string) => {
+        setRecentNotifications(prev =>
+            prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
+        );
+    };
+
+    const markAllNotificationsAsRead = () => {
+        setRecentNotifications(prev =>
+            prev.map(n => ({ ...n, isRead: true }))
+        );
     };
 
     useEffect(() => {
@@ -103,9 +119,6 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
             // Add to recent notifications list
             setRecentNotifications(prev => [notification, ...prev]);
 
-            // Dispatch custom event for components to listen to
-            window.dispatchEvent(new CustomEvent('new-notification', { detail: notification }));
-
             // Show browser notification
             if ('Notification' in window && Notification.permission === 'granted') {
                 new Notification('Trackd', {
@@ -142,6 +155,8 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
                 isConnected,
                 recentNotifications,
                 clearNotification,
+                markNotificationAsRead,
+                markAllNotificationsAsRead,
             }}
         >
             {children}
