@@ -1,4 +1,4 @@
-import { useGetNotificationsQuery, useGetUnreadCountQuery, useMarkAllAsReadMutation, useDeleteNotificationMutation } from '../redux/notification/notificationApi';
+import { useGetNotificationsQuery, useGetUnreadCountQuery, useMarkMultipleAsReadMutation, useDeleteNotificationMutation } from '../redux/notification/notificationApi';
 import type { Notification } from '../redux/notification/notificationApi';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useCallback, useEffect, useState, useMemo } from "react";
@@ -11,7 +11,7 @@ import { X, Check, UserX } from 'lucide-react';
 const Notifications = () => {
     const { data: notifications = [], refetch: refetchNotifications } = useGetNotificationsQuery({ includeRead: true });
     const { data: unreadCount = 0, refetch: refetchUnreadCount } = useGetUnreadCountQuery();
-    const [markAllAsRead] = useMarkAllAsReadMutation();
+    const [markMultipleAsRead] = useMarkMultipleAsReadMutation();
     const [deleteNotification] = useDeleteNotificationMutation();
     const [acceptFollowRequest] = useAcceptFollowRequestMutation();
     const [rejectFollowRequest] = useRejectFollowRequestMutation();
@@ -20,7 +20,6 @@ const Notifications = () => {
     const {
         recentNotifications,
         clearNotification,
-        markAllNotificationsAsRead
     } = useWebSocket();
 
     // Track loading states for individual actions
@@ -36,8 +35,9 @@ const Notifications = () => {
     ], [recentNotifications, notifications]);
 
     // Filter friend requests from all notifications (type: FRIEND_REQUEST)
+    // Keep them visible even if marked as read - they only disappear when actioned
     const friendRequests = useMemo(() =>
-        allNotifications.filter(n => n.type === 'FRIEND_REQUEST' && !n.isRead),
+        allNotifications.filter(n => n.type === 'FRIEND_REQUEST'),
         [allNotifications]
     );
 
@@ -56,38 +56,41 @@ const Notifications = () => {
         }
     }, [recentNotifications.length, refetchUnreadCount]);
 
-    // Auto mark as read after 500ms of opening notification panel
+    // Auto mark as read after 1000ms of opening notification panel
+    // BUT: Don't auto-mark friend requests - they need explicit user action
     useEffect(() => {
         if (!showNotifications) {
             return; // Panel is closed, do nothing
         }
 
-        // Get all unread notifications
-        const unreadNotifications = allNotifications.filter(n => !n.isRead);
+        // Get unread notifications EXCLUDING friend requests
+        // Friend requests should only be marked as read when user accepts/rejects
+        const unreadNotifications = allNotifications.filter(
+            n => !n.isRead && n.type !== 'FRIEND_REQUEST'
+        );
 
         if (unreadNotifications.length === 0) {
-            return; // No unread notifications
+            return; // No unread non-friend-request notifications
         }
 
-        // Set timeout to mark as read after 500ms
+        // Set timeout to mark as read after 1000ms
         const timer = setTimeout(async () => {
             try {
-                // Mark all as read optimistically
-                markAllNotificationsAsRead();
+                // Mark all non-friend-request notifications as read in a single API call
+                const notificationIds = unreadNotifications.map(n => n.id);
+                await markMultipleAsRead(notificationIds).unwrap();
 
-                // Then update server
-                await markAllAsRead(undefined).unwrap();
-
-                // Only refetch count to sync
+                // Refetch to update UI and count
+                refetchNotifications();
                 refetchUnreadCount();
             } catch (error) {
                 console.error('Failed to auto-mark as read:', error);
                 // On error, refetch to restore correct state
                 refetchNotifications();
             }
-        }, 500);
+        }, 1000);
 
-        // Cleanup: if panel closes before 500ms, cancel the timer
+        // Cleanup: if panel closes before 1000ms, cancel the timer
         return () => {
             clearTimeout(timer);
         };

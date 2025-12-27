@@ -54,12 +54,22 @@ export const notificationApi = createApi({
             transformResponse: (response: UnreadCountResponse) => response.data.count,
             providesTags: ['UnreadCount'],
         }),
-
-        // We use markAllAsRead for auto-mark after 500ms
+        // Mark notification as read (currently unused - kept for future use)
+        // We use markMultipleAsRead for auto-mark after 1000ms
         markAsRead: builder.mutation<Notification, string>({
             query: (notificationId: string) => ({
                 url: `/notifications/${notificationId}/read`,
                 method: 'PATCH',
+            }),
+            invalidatesTags: ['Notifications', 'UnreadCount'],
+        }),
+
+        // Mark multiple notifications as read
+        markMultipleAsRead: builder.mutation<{ count: number }, string[]>({
+            query: (notificationIds: string[]) => ({
+                url: '/notifications/mark-multiple',
+                method: 'PATCH',
+                body: { notificationIds },
             }),
             invalidatesTags: ['Notifications', 'UnreadCount'],
         }),
@@ -96,6 +106,8 @@ export const notificationApi = createApi({
 export const {
     useGetNotificationsQuery,
     useGetUnreadCountQuery,
+    useMarkAsReadMutation,
+    useMarkMultipleAsReadMutation,
     useMarkAllAsReadMutation,
     useDeleteNotificationMutation,
     // useDeleteAllReadMutation - Delete all read notifications at once
