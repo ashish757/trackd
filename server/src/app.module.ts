@@ -7,6 +7,7 @@ import { MovieModule } from './modules/movie/movie.module';
 import { UserMovieModule } from './modules/user-movie/user-movie.module';
 import { FriendModule } from "./modules/friend/friend.module";
 import { UserModule } from "./modules/user/user.module";
+import { NotificationModule } from "./modules/notification/notification.module";
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 
@@ -24,7 +25,8 @@ import { APP_GUARD } from '@nestjs/core';
         MovieModule,
         FriendModule,
         UserMovieModule,
-        UserModule
+        UserModule,
+        NotificationModule,
     ],
     controllers: [AppController],
     providers: [
