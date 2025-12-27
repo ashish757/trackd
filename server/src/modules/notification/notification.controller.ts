@@ -5,6 +5,7 @@ import {
     Delete,
     Param,
     Req,
+    Body,
     UseGuards,
     HttpStatus,
     Query,
@@ -82,6 +83,30 @@ export class NotificationController {
             statusCode: HttpStatus.OK,
             message: 'Notification marked as read',
             data: notification,
+        };
+    }
+
+    /**
+     * Mark multiple notifications as read
+     * PATCH /notifications/mark-multiple
+     * Body: { notificationIds: string[] }
+     */
+    @Patch('mark-multiple')
+    async markMultipleAsRead(
+        @Body() body: { notificationIds: string[] },
+        @Req() req: Request & { user?: { sub: string; email: string } },
+    ) {
+        const userId = req.user.sub;
+        const count = await this.notificationService.markMultipleAsRead(
+            body.notificationIds,
+            userId,
+        );
+
+        return {
+            status: 'success',
+            statusCode: HttpStatus.OK,
+            message: `${count} notifications marked as read`,
+            data: { count },
         };
     }
 

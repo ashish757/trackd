@@ -108,6 +108,25 @@ export class NotificationService {
     }
 
     /**
+     * Mark multiple notifications as read
+     */
+    async markMultipleAsRead(notificationIds: string[], userId: string): Promise<number> {
+        // Update only notifications that belong to the user
+        const result = await this.prisma.notification.updateMany({
+            where: {
+                id: { in: notificationIds },
+                userId, // Ensure user owns these notifications
+                isRead: false, // Only update unread ones
+            },
+            data: {
+                isRead: true,
+            },
+        });
+
+        return result.count;
+    }
+
+    /**
      * Mark all notifications as read for a user
      */
     async markAllAsRead(userId: string) {
