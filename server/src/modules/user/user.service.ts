@@ -10,12 +10,19 @@ import {
 import * as bcrypt from 'bcrypt';
 import {JwtService} from "../auth/jwt.service";
 import {PASSWORD_SALT_ROUNDS} from "../../utils/constants";
+import { NotificationService } from '../notification/notification.service';
+import { NotificationGateway } from '../notification/notification.gateway';
 
 @Injectable()
 export class UserService {
     private readonly logger = new Logger(UserService.name);
 
-    constructor(private readonly prisma: PrismaService, private readonly jwtService: JwtService) {
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly jwtService: JwtService,
+        private readonly notificationService: NotificationService,
+        private readonly notificationGateway: NotificationGateway,
+    ) {
     }
 
     async followUser(followDto: FollowUserDTO, id: string) {
@@ -56,6 +63,23 @@ export class UserService {
                 receiverId: followDto.id,
             }
         });
+
+        // Get sender info for notification
+        const sender = await this.prisma.user.findUnique({
+            where: { id },
+            select: { name: true }
+        });
+
+        // Create notification
+        const notification = await this.notificationService.createNotification({
+            userId: followDto.id,
+            senderId: id,
+            type: 'FRIEND_REQUEST',
+            message: `${sender?.name || 'Someone'} sent you a friend request`,
+        });
+
+        // Send real-time notification
+        this.notificationGateway.sendNotificationToUser(followDto.id, notification);
 
         return { message: 'Friend request sent successfully' };
     }
@@ -102,6 +126,23 @@ export class UserService {
 
         });
 
+        // Get accepter info for notification
+        const accepter = await this.prisma.user.findUnique({
+            where: { id: currentUserId },
+            select: { name: true }
+        });
+
+        // Create notification for the original requester
+        const notification = await this.notificationService.createNotification({
+            userId: dto.requesterId,
+            senderId: currentUserId,
+            type: 'FRIEND_REQUEST_ACCEPTED',
+            message: `${accepter?.name || 'Someone'} accepted your friend request`,
+        });
+
+        // Send real-time notification
+        this.notificationGateway.sendNotificationToUser(dto.requesterId, notification);
+
         return { message: 'Friend request accepted successfully' };
     }
 
@@ -129,6 +170,23 @@ export class UserService {
                 }
             }
         });
+
+        // Get rejecter info for notification
+        const rejecter = await this.prisma.user.findUnique({
+            where: { id: currentUserId },
+            select: { name: true }
+        });
+
+        // Create notification for the original requester
+        const notification = await this.notificationService.createNotification({
+            userId: dto.requesterId,
+            senderId: currentUserId,
+            type: 'FRIEND_REQUEST_REJECTED',
+            message: `${rejecter?.name || 'Someone'} rejected your friend request`,
+        });
+
+        // Send real-time notification
+        this.notificationGateway.sendNotificationToUser(dto.requesterId, notification);
 
         return { message: 'Friend request rejected successfully' };
     }
