@@ -122,7 +122,8 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
         return () => {
             newSocket.disconnect();
         };
-    }, [isAuthenticated, socket]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isAuthenticated]);
 
     // Request browser notification permission on mount
     useEffect(() => {
