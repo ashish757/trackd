@@ -113,24 +113,44 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
 
             // Show browser notification with logo and enhanced options
             if ('Notification' in window && Notification.permission === 'granted') {
-                // Use sender's avatar if available, otherwise use app logo
                 const notificationIcon = notification.sender?.avatar || '/logo.svg';
 
-                new Notification('Trackd', {
-                    body: notification.message,
-                    icon: notificationIcon,
-                    badge: '/logo.svg', // Small badge icon shown in notification tray
-                    tag: notification.id, // Prevent duplicate notifications
-                    requireInteraction: false, // Auto-dismiss after a few seconds
-                    silent: false, // Play notification sound
-                    data: {
-                        notificationId: notification.id,
-                        type: notification.type,
-                        senderId: notification.senderId,
-                        createdAt: notification.createdAt,
-                    },
+                // Check for Service Worker registration
+                navigator.serviceWorker.ready.then((registration) => {
+                    registration.showNotification('Trackd', {
+                        body: notification.message,
+                        icon: notificationIcon,
+                        badge: '/logo.svg',
+                        tag: notification.id,
+                        requireInteraction: false,
+                        silent: false,
+                        data: {
+                            notificationId: notification.id,
+                            type: notification.type,
+                            senderId: notification.senderId,
+                            createdAt: notification.createdAt,
+                        },
+                    });
+                }).catch(() => {
+                    // Fallback for Safari/Older browsers if Service Worker fails
+                    new Notification('Trackd', {
+                        body: notification.message,
+                        icon: notificationIcon,
+                        badge: '/logo.svg', // Small badge icon shown in notification tray
+                        tag: notification.id, // Prevent duplicate notifications
+                        requireInteraction: false, // Auto-dismiss after a few seconds
+                        silent: false, // Play notification sound
+                        data: {
+                            notificationId: notification.id,
+                            type: notification.type,
+                            senderId: notification.senderId,
+                            createdAt: notification.createdAt,
+                        },
+                    });
+
                 });
             }
+
         });
 
         newSocket.on('connect_error', (error) => {
