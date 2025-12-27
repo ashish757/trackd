@@ -23,7 +23,8 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     server: Server;
 
     private readonly logger = new Logger(NotificationGateway.name);
-    private userSockets: Map<string, string> = new Map(); // userId -> socketId
+    // Changed to support multiple sockets per user (for multiple tabs)
+    private userSockets: Map<string, Set<string>> = new Map(); // userId -> Set<socketId>
 
     constructor(private readonly jwtService: JwtService) {}
 
@@ -47,33 +48,50 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
                 return;
             }
 
-            // Store user's socket connection
-            this.userSockets.set(result.payload.sub, client.id);
-            client.data.userId = result.payload.sub;
+            // Store user's socket connection (support multiple tabs)
+            const userId = result.payload.sub;
+            if (!this.userSockets.has(userId)) {
+                this.userSockets.set(userId, new Set());
+            }
+            this.userSockets.get(userId).add(client.id);
+            client.data.userId = userId;
 
-            this.logger.log(`User ${result.payload.sub} connected with socket ${client.id}`);
+            const connectionCount = this.userSockets.get(userId).size;
+            this.logger.log(`User ${userId} connected with socket ${client.id} (${connectionCount} active connections)`);
         } catch (error) {
             this.logger.error(`Connection error: ${error.message}`);
+            client.emit('error', { code: 'CONNECTION_ERROR', message: error.message });
             client.disconnect();
         }
     }
 
     handleDisconnect(client: Socket) {
         const userId = client.data.userId;
-        if (userId) {
-            this.userSockets.delete(userId);
-            this.logger.log(`User ${userId} disconnected`);
+        if (userId && this.userSockets.has(userId)) {
+            const userSocketSet = this.userSockets.get(userId);
+            userSocketSet.delete(client.id);
+
+            // Remove user from map if no more connections
+            if (userSocketSet.size === 0) {
+                this.userSockets.delete(userId);
+                this.logger.log(`User ${userId} fully disconnected`);
+            } else {
+                this.logger.log(`User ${userId} disconnected socket ${client.id}. Remaining connections: ${userSocketSet.size}`);
+            }
         }
     }
 
     /**
-     * Send notification to a specific user
+     * Send notification to a specific user (all their active connections/tabs)
      */
     sendNotificationToUser(userId: string, notification: any) {
-        const socketId = this.userSockets.get(userId);
-        if (socketId) {
-            this.server.to(socketId).emit('notification', notification);
-            this.logger.log(`Notification sent to user ${userId}`);
+        const socketIds = this.userSockets.get(userId);
+        if (socketIds && socketIds.size > 0) {
+            // Send to ALL user's sockets (all open tabs)
+            socketIds.forEach(socketId => {
+                this.server.to(socketId).emit('notification', notification);
+            });
+            this.logger.log(`Notification sent to user ${userId} (${socketIds.size} active connections)`);
         } else {
             this.logger.debug(`User ${userId} is not connected`);
         }
