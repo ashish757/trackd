@@ -55,7 +55,7 @@ export const notificationApi = createApi({
             providesTags: ['UnreadCount'],
         }),
 
-        // Mark notification as read
+        // We use markAllAsRead for auto-mark after 500ms
         markAsRead: builder.mutation<Notification, string>({
             query: (notificationId: string) => ({
                 url: `/notifications/${notificationId}/read`,
@@ -96,9 +96,7 @@ export const notificationApi = createApi({
 export const {
     useGetNotificationsQuery,
     useGetUnreadCountQuery,
-    useMarkAsReadMutation,
     useMarkAllAsReadMutation,
     useDeleteNotificationMutation,
-    useDeleteAllReadMutation,
+    // useDeleteAllReadMutation - Delete all read notifications at once
 } = notificationApi;
-

@@ -27,7 +27,6 @@ interface WebSocketContextType {
     isConnected: boolean;
     recentNotifications: Notification[];
     clearNotification: (notificationId: string) => void;
-    markNotificationAsRead: (notificationId: string) => void;
     markAllNotificationsAsRead: () => void;
 }
 
@@ -36,7 +35,6 @@ const WebSocketContext = createContext<WebSocketContextType>({
     isConnected: false,
     recentNotifications: [],
     clearNotification: () => {},
-    markNotificationAsRead: () => {},
     markAllNotificationsAsRead: () => {},
 });
 
@@ -58,11 +56,6 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
         setRecentNotifications(prev => prev.filter(n => n.id !== notificationId));
     };
 
-    const markNotificationAsRead = (notificationId: string) => {
-        setRecentNotifications(prev =>
-            prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
-        );
-    };
 
     const markAllNotificationsAsRead = () => {
         setRecentNotifications(prev =>
@@ -155,7 +148,6 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
                 isConnected,
                 recentNotifications,
                 clearNotification,
-                markNotificationAsRead,
                 markAllNotificationsAsRead,
             }}
         >

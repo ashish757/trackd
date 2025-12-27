@@ -91,7 +91,9 @@ const Notifications = () => {
         return () => {
             clearTimeout(timer);
         };
-    }, [showNotifications, allNotifications, markAllNotificationsAsRead, markAllAsRead, refetchUnreadCount, refetchNotifications]);
+        // Only re-run when panel opens/closes or unread count changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [showNotifications, unreadCount]);
 
     function timeAgo(date: string) {
         const now = new Date();
@@ -122,22 +124,6 @@ const Notifications = () => {
         setSearchParams(newParams);
     }, [searchParams, setSearchParams]);
 
-    const handleMarkAllAsRead = useCallback(async () => {
-        try {
-            // Optimistic update - instant UI feedback
-            markAllNotificationsAsRead();
-
-            // Then update server
-            await markAllAsRead(undefined).unwrap();
-
-            // Only refetch count to sync
-            refetchUnreadCount();
-        } catch (error) {
-            console.error('Failed to mark all as read:', error);
-            // On error, refetch to get correct state
-            refetchNotifications();
-        }
-    }, [markAllAsRead, markAllNotificationsAsRead, refetchUnreadCount, refetchNotifications]);
 
     const handleDeleteNotification = useCallback(async (notificationId: string, e: React.MouseEvent) => {
         e.stopPropagation(); // Prevent marking as read when deleting
@@ -254,14 +240,6 @@ const Notifications = () => {
                 {/* Header */}
                 <div className="flex items-center justify-between px-4 py-4 border-b-gray-200 border-b">
                     <h2 className="text-xl text-gray-700">Notifications</h2>
-                    {totalUnread > 0 && (
-                        <button
-                            onClick={handleMarkAllAsRead}
-                            className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-                        >
-                            Mark all read
-                        </button>
-                    )}
                 </div>
 
                 {/* List Content */}
