@@ -25,15 +25,15 @@ interface Notification {
 interface WebSocketContextType {
     socket: Socket | null;
     isConnected: boolean;
-    notifications: Notification[];
-    unreadCount: number;
+    recentNotifications: Notification[];
+    clearNotification: (notificationId: string) => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextType>({
     socket: null,
     isConnected: false,
-    notifications: [],
-    unreadCount: 0,
+    recentNotifications: [],
+    clearNotification: () => {},
 });
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -46,10 +46,13 @@ interface WebSocketProviderProps {
 export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
     const [socket, setSocket] = useState<Socket | null>(null);
     const [isConnected, setIsConnected] = useState(false);
-    const [notifications, setNotifications] = useState<Notification[]>([]);
-    const [unreadCount, setUnreadCount] = useState(0);
+    const [recentNotifications, setRecentNotifications] = useState<Notification[]>([]);
 
     const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+
+    const clearNotification = (notificationId: string) => {
+        setRecentNotifications(prev => prev.filter(n => n.id !== notificationId));
+    };
 
     useEffect(() => {
         // Only connect if user is authenticated
@@ -95,15 +98,10 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
         newSocket.on('notification', (notification: Notification) => {
             console.log('New notification received:', notification);
 
-            // Add notification to the list
-            setNotifications((prev) => [notification, ...prev]);
+            // Dispatch custom event for components to listen to
+            window.dispatchEvent(new CustomEvent('new-notification', { detail: notification }));
 
-            // Increment unread count
-            if (!notification.isRead) {
-                setUnreadCount((prev) => prev + 1);
-            }
-
-            // Optional: Show browser notification
+            // Show browser notification
             if ('Notification' in window && Notification.permission === 'granted') {
                 new Notification('Trackd', {
                     body: notification.message,
@@ -137,8 +135,6 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
             value={{
                 socket,
                 isConnected,
-                notifications,
-                unreadCount,
             }}
         >
             {children}

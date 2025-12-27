@@ -4,7 +4,6 @@ import type { Notification } from '../redux/notification/notificationApi';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useCallback, useEffect } from "react";
 import Portal from "./Portal.tsx";
-import { useWebSocket } from '../hooks/useWebSocket';
 
 
 const Notifications = () => {
@@ -15,18 +14,23 @@ const Notifications = () => {
     const [markAllAsRead] = useMarkAllAsReadMutation();
     const [searchParams, setSearchParams] = useSearchParams();
 
-    const { notifications: wsNotifications, unreadCount: wsUnreadCount } = useWebSocket();
-
     // Get notifications state from URL
     const showNotifications = searchParams.get('notifications') === 'open';
 
-    // Refetch notifications when WebSocket receives new notifications
+    // Listen for new notifications via custom event from WebSocket
     useEffect(() => {
-        if (wsNotifications.length > 0) {
+        const handleNewNotification = () => {
+            // Refetch both notifications and unread count when new notification arrives
             refetchNotifications();
             refetchUnreadCount();
-        }
-    }, [wsNotifications, refetchNotifications, refetchUnreadCount]);
+        };
+
+        window.addEventListener('new-notification', handleNewNotification);
+
+        return () => {
+            window.removeEventListener('new-notification', handleNewNotification);
+        };
+    }, [refetchNotifications, refetchUnreadCount]);
 
     function timeAgo(date: string) {
         const now = new Date();
@@ -70,12 +74,16 @@ const Notifications = () => {
     const handleNotificationClick = useCallback(async (notificationId: string) => {
         try {
             await markAsRead(notificationId).unwrap();
+            // Refetch after marking as read to update the count
+            refetchNotifications();
+            refetchUnreadCount();
         } catch (error) {
             console.error('Failed to mark as read:', error);
         }
-    }, [markAsRead]);
+    }, [markAsRead, refetchNotifications, refetchUnreadCount]);
 
-    const totalUnread = (friendRequests?.length || 0) + (wsUnreadCount || unreadCount);
+    // Calculate total unread from API data only (single source of truth)
+    const totalUnread = (friendRequests?.length || 0) + unreadCount;
 
     return (
         <>
