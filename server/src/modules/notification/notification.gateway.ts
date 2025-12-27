@@ -35,6 +35,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
 
             if (!token) {
                 this.logger.warn(`Connection rejected: No token provided`);
+                client.emit('error', { code: 'NO_TOKEN', message: 'Authentication required' });
                 client.disconnect();
                 return;
             }
@@ -43,7 +44,18 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
             const result = this.jwtService.verify(token as string, 'access');
 
             if (result.error || !result.payload || !result.payload.sub) {
-                this.logger.warn(`Connection rejected: Invalid token`);
+                this.logger.warn(`Connection rejected: Invalid/expired token - ${result.error}`);
+
+                // Check if error is an object with a name property
+                const isTokenExpired = typeof result.error === 'object' &&
+                                      result.error !== null &&
+                                      'name' in result.error &&
+                                      result.error.name === 'TokenExpiredError';
+
+                client.emit('error', {
+                    code: isTokenExpired ? 'TOKEN_EXPIRED' : 'INVALID_TOKEN',
+                    message: 'Authentication failed'
+                });
                 client.disconnect();
                 return;
             }
