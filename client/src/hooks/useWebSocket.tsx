@@ -87,7 +87,8 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
             transports: ['websocket'],
             reconnection: true,
             reconnectionDelay: 1000,
-            reconnectionAttempts: 5,
+            reconnectionDelayMax: 10000, // Max 10 seconds between attempts
+            reconnectionAttempts: Infinity, // Never give up trying to reconnect
         });
 
         newSocket.on('connect', () => {
