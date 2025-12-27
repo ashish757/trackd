@@ -152,13 +152,6 @@ export const userApi = apiSlice.injectEndpoints({
 
             transformResponse: (response: getUserRes): User => {
                 return response.data;
-            },
-
-            providesTags: (result, _, username) => {
-                return  result ? [
-                    { type: 'User' as const, id: result.id },
-                    { type: 'User' as const, id: username }
-                ] : [];
             }
         }),
 
@@ -171,21 +164,7 @@ export const userApi = apiSlice.injectEndpoints({
             transformResponse: (response: getUserRes): User => {
                 console.log("FETCHED USER")
                 return response.data;
-            },
-
-            providesTags: (result) => {
-                const tags: Array<{ type: 'User'; id: string }> = [
-                    { type: 'User' as const, id: 'CURRENT_USER' }
-                ];
-                if (result) {
-                    tags.push(
-                        { type: 'User' as const, id: result.id },
-                        { type: 'User' as const, id: result.username }
-                    );
-                }
-                return tags;
             }
-
         }),
 
         changeUsername: builder.mutation({
@@ -251,14 +230,7 @@ export const userApi = apiSlice.injectEndpoints({
             }),
             transformResponse: (response: { data: Array<User> }) => {
                 return response.data;
-            },
-            providesTags: (result, _error, userId) =>
-                result
-                    ? [
-                        { type: 'User' as const, id: `${userId}_FRIENDS` },
-                        ...result.map(friend => ({ type: 'User' as const, id: friend.id }))
-                    ]
-                    : [{ type: 'User' as const, id: `${userId}_FRIENDS` }],
+            }
         }),
 
         getUserMovieStats: builder.query<{
@@ -278,10 +250,7 @@ export const userApi = apiSlice.injectEndpoints({
                 }
             }) => {
                 return response.data;
-            },
-            providesTags: (_result, _error, userId) => [
-                { type: 'User' as const, id: `${userId}_MOVIES` }
-            ],
+            }
         })
 
     }),
