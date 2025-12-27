@@ -8,6 +8,7 @@ export type NotificationsT =  Array<{
         id: string;
         name: string;
         username: string;
+        avatar?: string;
     };
 }>;
 
