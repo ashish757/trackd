@@ -1,10 +1,8 @@
 import {
     WebSocketGateway,
     WebSocketServer,
-    SubscribeMessage,
     OnGatewayConnection,
     OnGatewayDisconnect,
-    ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
@@ -79,19 +77,6 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
         } else {
             this.logger.debug(`User ${userId} is not connected`);
         }
-    }
-
-    /**
-     * Client requests to mark notification as read
-     */
-    @SubscribeMessage('markAsRead')
-    handleMarkAsRead(
-        @ConnectedSocket() client: Socket,
-        payload: { notificationId: string }
-    ) {
-        this.logger.log(`Mark notification ${payload.notificationId} as read by user ${client.data.userId}`);
-        // Service will handle the actual marking
-        return { success: true };
     }
 }
 
