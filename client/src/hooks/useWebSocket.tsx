@@ -27,7 +27,6 @@ interface WebSocketContextType {
     isConnected: boolean;
     recentNotifications: Notification[];
     clearNotification: (notificationId: string) => void;
-    markAllNotificationsAsRead: () => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextType>({
@@ -35,7 +34,6 @@ const WebSocketContext = createContext<WebSocketContextType>({
     isConnected: false,
     recentNotifications: [],
     clearNotification: () => {},
-    markAllNotificationsAsRead: () => {},
 });
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -54,13 +52,6 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
 
     const clearNotification = (notificationId: string) => {
         setRecentNotifications(prev => prev.filter(n => n.id !== notificationId));
-    };
-
-
-    const markAllNotificationsAsRead = () => {
-        setRecentNotifications(prev =>
-            prev.map(n => ({ ...n, isRead: true }))
-        );
     };
 
     useEffect(() => {
@@ -148,7 +139,6 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
                 isConnected,
                 recentNotifications,
                 clearNotification,
-                markAllNotificationsAsRead,
             }}
         >
             {children}
