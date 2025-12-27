@@ -63,6 +63,8 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
                 setSocket(null);
                 setIsConnected(false);
             }
+            // Clear notifications on logout
+            setRecentNotifications([]);
             return;
         }
 
@@ -97,6 +99,9 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
 
         newSocket.on('notification', (notification: Notification) => {
             console.log('New notification received:', notification);
+
+            // Add to recent notifications list
+            setRecentNotifications(prev => [notification, ...prev]);
 
             // Dispatch custom event for components to listen to
             window.dispatchEvent(new CustomEvent('new-notification', { detail: notification }));
@@ -135,6 +140,8 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
             value={{
                 socket,
                 isConnected,
+                recentNotifications,
+                clearNotification,
             }}
         >
             {children}
