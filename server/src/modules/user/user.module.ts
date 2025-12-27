@@ -4,9 +4,10 @@ import { UserService } from './user.service';
 import {JwtService} from "../auth/jwt.service";
 import {PrismaModule} from "../prisma/prisma.module";
 import {UserController} from "./user.controller";
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
-    imports: [PrismaModule],
+    imports: [PrismaModule, NotificationModule],
     controllers: [UserController, UsersController],
     providers: [UserService, JwtService],
 })

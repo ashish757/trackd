@@ -37,6 +37,10 @@ model User {
   friendshipsB           Friendship[]    @relation("FriendB")
   PasswordResetToken PasswordResetToken? @relation("UserPasswordResetToken")
 
+  // Notifications
+  sentNotifications     Notification[] @relation("SentNotifications")
+  receivedNotifications Notification[] @relation("ReceivedNotifications")
+
   @@map("users")
 
 }
@@ -149,3 +153,32 @@ model EmailChangeTable {
 
   @@map("email_change_table")
 }
+
+//
+//  NOTIFICATION MODEL
+//
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String           // Receiver of the notification
+  senderId  String?          // Sender (optional, system notifications may not have sender)
+  type      NotificationType
+  message   String
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  // Relations
+  user   User  @relation("ReceivedNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  sender User? @relation("SentNotifications", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  FRIEND_REQUEST
+  FRIEND_REQUEST_ACCEPTED
+  FRIEND_REQUEST_REJECTED
+}
+
