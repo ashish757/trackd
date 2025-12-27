@@ -50,6 +50,9 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
 
     const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
+    // Limit for recent notifications to prevent memory leak
+    const MAX_RECENT_NOTIFICATIONS = 50;
+
     const clearNotification = (notificationId: string) => {
         setRecentNotifications(prev => prev.filter(n => n.id !== notificationId));
     };
@@ -100,8 +103,12 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
         newSocket.on('notification', (notification: Notification) => {
             console.log('New notification received:', notification);
 
-            // Add to recent notifications list
-            setRecentNotifications(prev => [notification, ...prev]);
+            // Add to recent notifications list with limit to prevent memory leak
+            setRecentNotifications(prev => {
+                const updated = [notification, ...prev];
+                // Keep only last 50 notifications
+                return updated.slice(0, MAX_RECENT_NOTIFICATIONS);
+            });
 
             // Show browser notification
             if ('Notification' in window && Notification.permission === 'granted') {
