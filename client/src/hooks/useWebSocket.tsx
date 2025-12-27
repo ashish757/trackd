@@ -132,12 +132,6 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAuthenticated]);
 
-    // Request browser notification permission on mount
-    useEffect(() => {
-        if ('Notification' in window && Notification.permission === 'default') {
-            Notification.requestPermission();
-        }
-    }, []);
 
     return (
         <WebSocketContext.Provider
