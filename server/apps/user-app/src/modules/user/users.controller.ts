@@ -3,7 +3,7 @@ import {UserService} from "./user.service";
 import {Request} from "express";
 import {OptionalAuthGuard} from "@app/common/guards/optionalAuth.guard";
 
-@Controller('users')
+@Controller()
 export class UsersController {
     constructor(private readonly userService: UserService) {}
 

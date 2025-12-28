@@ -25,7 +25,7 @@ const MutualFriends = ({ targetUserId, }: MutualFriendsProps) => {
 
     const handleFriendClick = (username: string) => {
         setShowModal(false);
-        navigate(`/user/${username}`);
+        navigate(`/users/${username}`);
     };
 
     return (
