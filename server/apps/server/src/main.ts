@@ -1,81 +1,49 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
-import * as dotenv from 'dotenv';
-dotenv.config();
-import cookieParser from 'cookie-parser';
+import { createProxyMiddleware } from 'http-proxy-middleware';
+import { PROXY_CONFIG } from './proxy.config';
 import { AppModule } from './app.module';
-import { validateAllEnvVars, AllExceptionsFilter } from '@app/common';
-import { createProxyMiddleware} from "http-proxy-middleware";
 
 async function bootstrap() {
-    // Validate environment variables BEFORE creating the app
-    validateAllEnvVars(true); // Throws error if required vars are missing
-
     const app = await NestFactory.create(AppModule);
-    const logger = new Logger('Bootstrap');
+    const logger = new Logger('API-Gateway');
 
+    // 1. Setup Proxies Dynamically
+    const wsProxies = [];
 
-    // Proxy all /movies requests to movie-app microservice
-    app.use('/movies', createProxyMiddleware({
-        target: 'http://localhost:3001',
-        changeOrigin: true,
+    Object.entries(PROXY_CONFIG).forEach(([path, target]) => {
+        const isWs = path === '/socket.io';
+        const proxy = createProxyMiddleware({
+            target,
+            changeOrigin: true,
+            ws: isWs,
+        });
 
-    }));
-
-    app.use('/user-movies', createProxyMiddleware({
-        target: 'http://localhost:3002',
-        changeOrigin: true,
-
-    }));
-
-    app.use('/auth', createProxyMiddleware({
-        target: 'http://localhost:3003',
-        changeOrigin: true,
-    }))
-
-    app.use('/user', createProxyMiddleware({
-        target: 'http://localhost:3004',
-        changeOrigin: true,
-    }))
-
-    app.use('/notifications', createProxyMiddleware({
-        target: 'http://localhost:3005',
-        changeOrigin: true,
-    }))
-
-    app.use('/friend', createProxyMiddleware({
-        target: 'http://localhost:3006',
-        changeOrigin: true,
-    }))
-
-    // Enable cookie parser for HttpOnly cookies
-    app.use(cookieParser());
-
-    // Enable CORS with credentials
-    app.enableCors({
-        origin: [
-            'https://trackd-ten.vercel.app',
-            'http://localhost:5173',
-        ],
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-        credentials: true, // CRITICAL: Allow cookies to be sent
+        app.use(path, proxy);
+        if (isWs) wsProxies.push(proxy);
     });
 
-    // Global validation pipe - CRITICAL for DTO validation
-    app.useGlobalPipes(
-        new ValidationPipe({
-            whitelist: true, // Strip properties that don't have decorators
-            forbidNonWhitelisted: true, // Throw error if non-whitelisted properties exist
-            transform: true, // Automatically transform payloads to DTO instances
-        }),
-    );
+    // 2. Handle WebSocket Upgrades (Critical for Socket.io)
+    const server = app.getHttpServer();
+    server.on('upgrade', (req, socket, head) => {
+        // Find the proxy handling socket.io and upgrade the connection
+        wsProxies.forEach((proxy) => {
+            if (req.url.startsWith('/socket.io')) {
+                proxy.upgrade(req, socket, head);
+            }
+        });
+    });
 
-    // Global exception filter
-    app.useGlobalFilters(new AllExceptionsFilter());
+    // 3. Middlewares & Global Config
+    app.enableCors({
+        origin: ['https://trackd-ten.vercel.app', 'http://localhost:5173'],
+        credentials: true,
+    });
 
+    app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
 
     const port = process.env.PORT || 3000;
-    await app.listen(port, '0.0.0.0');
-    logger.log(`Application is up and running on port ${port}`);
+    await app.listen(port);
+    logger.log(`Gateway is routing traffic on port ${port}`);
 }
 bootstrap();

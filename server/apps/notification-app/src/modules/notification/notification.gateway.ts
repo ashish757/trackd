@@ -10,13 +10,15 @@ import { JwtService } from '@app/common';
 
 @WebSocketGateway({
     cors: {
+        path: '/socket.io/',
         origin: [
             'https://trackd-ten.vercel.app',
             'http://localhost:5173',
+            'http://localhost:3000', // Allow main server to proxy
         ],
         credentials: true,
     },
-    namespace: '/notifications',
+    // Remove namespace since we're handling routing via proxy
 })
 export class NotificationGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
@@ -34,9 +36,12 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
             const token = client.handshake.auth.token || client.handshake.query.token;
 
             if (!token) {
-                this.logger.warn(`Connection rejected: No token provided`);
-                client.emit('error', { code: 'NO_TOKEN', message: 'Authentication required' });
-                client.disconnect();
+                this.logger.warn(`Connection rejected from ${client.id}: No token provided`);
+                client.emit('error', {
+                    code: 'NO_TOKEN',
+                    message: 'Authentication required'
+                });
+                client.disconnect(true); // Force disconnect without reconnection
                 return;
             }
 
@@ -44,19 +49,20 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
             const result = this.jwtService.verify(token as string, 'access');
 
             if (result.error || !result.payload || !result.payload.sub) {
-                this.logger.warn(`Connection rejected: Invalid/expired token - ${result.error}`);
+                const errorType = typeof result.error === 'object' &&
+                                 result.error !== null &&
+                                 'name' in result.error &&
+                                 result.error.name === 'TokenExpiredError'
+                                 ? 'TOKEN_EXPIRED'
+                                 : 'INVALID_TOKEN';
 
-                // Check if error is an object with a name property
-                const isTokenExpired = typeof result.error === 'object' &&
-                                      result.error !== null &&
-                                      'name' in result.error &&
-                                      result.error.name === 'TokenExpiredError';
+                this.logger.warn(`Connection rejected from ${client.id}: ${errorType}`);
 
                 client.emit('error', {
-                    code: isTokenExpired ? 'TOKEN_EXPIRED' : 'INVALID_TOKEN',
+                    code: errorType,
                     message: 'Authentication failed'
                 });
-                client.disconnect();
+                client.disconnect(true); // Force disconnect without reconnection
                 return;
             }
 
@@ -69,11 +75,20 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
             client.data.userId = userId;
 
             const connectionCount = this.userSockets.get(userId).size;
-            this.logger.log(`User ${userId} connected with socket ${client.id} (${connectionCount} active connections)`);
+            this.logger.log(`User ${userId} CONNECTED with socket ${client.id} (${connectionCount} active connections)`);
+
+            // Send confirmation to client
+            client.emit('connected', {
+                message: 'Successfully CONNECTED to notification service',
+                userId
+            });
         } catch (error) {
-            this.logger.error(`Connection error: ${error.message}`);
-            client.emit('error', { code: 'CONNECTION_ERROR', message: error.message });
-            client.disconnect();
+            this.logger.error(`Connection error for ${client.id}: ${error.message}`);
+            client.emit('error', {
+                code: 'CONNECTION_ERROR',
+                message: 'Internal server error'
+            });
+            client.disconnect(true);
         }
     }
 
@@ -86,10 +101,12 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
             // Remove user from map if no more connections
             if (userSocketSet.size === 0) {
                 this.userSockets.delete(userId);
-                this.logger.log(`User ${userId} fully disconnected`);
+                this.logger.log(`User ${userId}  DISCONNECTED (socket ${client.id})`);
             } else {
-                this.logger.log(`User ${userId} disconnected socket ${client.id}. Remaining connections: ${userSocketSet.size}`);
+                this.logger.log(`User ${userId} DISCONNECTED socket ${client.id}. Remaining connections: ${userSocketSet.size}`);
             }
+        } else {
+            this.logger.debug(`Socket ${client.id} DISCONNECTED (no user associated)`);
         }
     }
 
