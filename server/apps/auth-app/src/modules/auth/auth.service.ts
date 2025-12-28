@@ -14,14 +14,20 @@ import {
 import { PrismaService } from '@app/common/prisma/prisma.service';
 import { LoginDto } from './DTO/login.dto';
 import { JwtService } from '@app/common/jwt/jwt.service';
+import { EmailService } from '@app/common';
+import { generateOTP } from '@app/common';
+import { PASSWORD_SALT_ROUNDS } from '@app/common';
+import {
+    otpTemplate,
+    passwordResetTemplate,
+    verifyChangeEmailTemplate,
+    changeEmailRequestTemplate,
+    emailChangedSuccessTemplate
+} from '@app/common';
 import * as bcrypt from 'bcrypt';
-import {generateOTP} from "../../../../server/src/utils/otp";
-import {sendEmail} from "../../../../server/src/utils/email";
-import {PASSWORD_SALT_ROUNDS} from "../../../../server/src/utils/constants";
-import {randomBytes} from "node:crypto";
+import { randomBytes } from 'node:crypto';
 import crypto from 'crypto';
-import {changeEmailRequestTemplate, emailChangedSuccessTemplate, otpTemplate, passwordResetTemplate, verifyChangeEmailTemplate} from "../../../../server/src/utils/emailTemplates";
-import type {User} from '@prisma/client'
+import type { User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -30,6 +36,7 @@ export class AuthService {
     constructor(
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
+        private readonly emailService: EmailService,
     ) { }
 
     async forgetPassword(dto: ForgetPasswordDto) {
@@ -51,8 +58,8 @@ export class AuthService {
                 : process.env.FRONTEND_URL_DEV || 'http://localhost:5173';
             const resetLink = `${frontendUrl}/forget-password?token=${token}`;
 
-            // await sendEmail(user.email, 'Trackd - Password Reset', `Hello <strong> ${user.name} </strong>, <br/> <br/> Click <a href="${resetLink}">here</a> to reset your password. This link is valid for 15 minutes.`);
-            await sendEmail(user.email, "Password Reset - Trackd", passwordResetTemplate(user.name, resetLink));
+            // await this.emailService.sendEmail(user.email, 'Trackd - Password Reset', `Hello <strong> ${user.name} </strong>, <br/> <br/> Click <a href="${resetLink}">here</a> to reset your password. This link is valid for 15 minutes.`);
+            await this.emailService.sendEmail(user.email, "Password Reset - Trackd", passwordResetTemplate(user.name, resetLink));
 
 
             const res = await this.prisma.passwordResetToken.create({
@@ -167,8 +174,8 @@ export class AuthService {
         const otp = generateOTP();
 
         this.logger.log(`Sending OTP to: ${otpDto.email}`);
-        // await sendEmail(otpDto.email, 'Trackd - Email Verification Code', `Hello <strong> ${otpDto.name} </strong>, <br/> <br/> Your One Time Verification code is: <strong>${otp} </strong>. <br/> It is valid for 03 minutes.`);
-        await sendEmail(
+        // await this.emailService.sendEmail(otpDto.email, 'Trackd - Email Verification Code', `Hello <strong> ${otpDto.name} </strong>, <br/> <br/> Your One Time Verification code is: <strong>${otp} </strong>. <br/> It is valid for 03 minutes.`);
+        await this.emailService.sendEmail(
             otpDto.email,
             'Trackd - Email Verification Code',
             otpTemplate(otpDto.name, otp)
@@ -383,10 +390,10 @@ export class AuthService {
         const changeLink = `${frontendUrl}/change/email?token=${token}`;
 
         // Send notification to old email
-        await sendEmail(currentUser.email, 'Trackd - Email Change Request', changeEmailRequestTemplate(currentUser.name, dto.newEmail));
+        await this.emailService.sendEmail(currentUser.email, 'Trackd - Email Change Request', changeEmailRequestTemplate(currentUser.name, dto.newEmail));
 
         // Send verification link to new email
-        await sendEmail(dto.newEmail, "Email Verification - Trackd", verifyChangeEmailTemplate(currentUser.name, changeLink));
+        await this.emailService.sendEmail(dto.newEmail, "Email Verification - Trackd", verifyChangeEmailTemplate(currentUser.name, changeLink));
 
         // create or update email change request per user
         const res = await this.prisma.emailChangeTable.upsert({
@@ -466,7 +473,7 @@ export class AuthService {
             });
 
             // Send success confirmation email to the new email address
-            await sendEmail(
+            await this.emailService.sendEmail(
                 res.user.email,
                 'Email Successfully Updated - Trackd',
                 emailChangedSuccessTemplate(res.user.name, res.user.email)

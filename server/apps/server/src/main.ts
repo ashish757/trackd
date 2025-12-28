@@ -5,12 +5,12 @@ dotenv.config();
 import cookieParser from 'cookie-parser';
 import { AllExceptionsFilter } from './common/filters/AllExceptionsFilter';
 import { AppModule } from './app.module';
-import { validateEnvironmentVariables } from './utils/env-validator';
+import { validateAllEnvVars } from '@app/common';
 import { createProxyMiddleware} from "http-proxy-middleware";
 
 async function bootstrap() {
     // Validate environment variables BEFORE creating the app
-    validateEnvironmentVariables(true); // Throws error if required vars are missing
+    validateAllEnvVars(true); // Throws error if required vars are missing
 
     const app = await NestFactory.create(AppModule);
     const logger = new Logger('Bootstrap');

@@ -7,7 +7,7 @@ import {
 import {AuthGuard} from "@app/common/guards/auth.guard";
 import {UserService} from "./user.service";
 import type {Request, Response} from "express";
-import { CookieConfig } from '../../../../server/src/utils/cookie';
+import { CookieConfig } from '@app/common';
 
 interface AuthenticatedRequest extends Request {
     user?: {
