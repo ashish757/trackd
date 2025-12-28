@@ -19,13 +19,13 @@
         "tsConfigPath": "libs/common/tsconfig.lib.json"
       }
     },
-    "movie-service": {
+    "movie-app": {
       "type": "application",
-      "root": "apps/movie-service",
+      "root": "apps/movie-app",
       "entryFile": "main",
-      "sourceRoot": "apps/movie-service/src",
+      "sourceRoot": "apps/movie-app/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/movie-service/tsconfig.app.json"
+        "tsConfigPath": "apps/movie-app/tsconfig.app.json"
       }
     },
     "server": {

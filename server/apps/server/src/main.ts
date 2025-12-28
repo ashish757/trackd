@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import { AllExceptionsFilter } from './common/filters/AllExceptionsFilter';
 import { AppModule } from './app.module';
 import { validateEnvironmentVariables } from './utils/env-validator';
+import { createProxyMiddleware} from "http-proxy-middleware";
 
 async function bootstrap() {
     // Validate environment variables BEFORE creating the app
@@ -13,6 +14,14 @@ async function bootstrap() {
 
     const app = await NestFactory.create(AppModule);
     const logger = new Logger('Bootstrap');
+
+
+    // Proxy all /movies requests to movie-app microservice
+    app.use('/movies', createProxyMiddleware({
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+
+    }));
 
     // Enable cookie parser for HttpOnly cookies
     app.use(cookieParser());

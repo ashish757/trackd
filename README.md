@@ -2,7 +2,15 @@
 
 A full-stack movie tracking application built with React, NestJS, and PostgreSQL.
 
-This version (v1.0.0) is the stable monolithic version of Trackd.
+**Current Version:** 2.0.0-alpha (Monorepo Migration in Progress)
+
+## 📚 Documentation
+
+- **[Project Status Report](./docs/PROJECT_STATUS.md)** - Current state, architecture, features
+- **[Immediate Next Steps](./docs/IMMEDIATE_NEXT_STEPS.md)** - Critical decisions and action items
+- **[Future Roadmap](./docs/FUTURE_ROADMAP.md)** - Long-term vision and feature plans
+- **[Project Structure](./PROJECT_STRUCTURE.md)** - Directory structure overview
+- **[Google OAuth Setup](./docs/GOOGLE_OAUTH_SETUP.md)** - OAuth configuration guide
 
 ## Features
 

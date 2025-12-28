@@ -1,7 +1,7 @@
 import { Controller, Get, Query, Param, HttpStatus, ParseIntPipe } from '@nestjs/common';
 import MovieService from './movie.services';
 
-@Controller('movies')
+@Controller()
 export class MovieController {
     constructor(private readonly movieService: MovieService) {}
 
