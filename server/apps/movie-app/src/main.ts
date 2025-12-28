@@ -30,7 +30,5 @@ async function bootstrap() {
   const port = process.env.MOVIE_SERVICE_PORT || 3001;
   await app.listen(port, '0.0.0.0');
   logger.log(`Movie Service is running on port ${port}`);
-  logger.log(`Environment: ${process.env.ENV}`);
-  logger.log(`CORS enabled for: ${frontendUrl}`);
 }
 bootstrap();

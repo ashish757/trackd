@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import {HttpStatus, Injectable} from '@nestjs/common';
 
 @Injectable()
 export class MovieAppService {
@@ -6,8 +6,8 @@ export class MovieAppService {
     return {
       name: 'Movie Service!',
       status: "ok",
-      statusCode: 200,
-      message: "Service is Up and running"
+      statusCode: HttpStatus.OK,
+      message: "Movie Service is  running"
     }
   }
 }
