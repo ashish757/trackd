@@ -6,12 +6,12 @@ import {PrismaService} from "@app/common/prisma/prisma.service";
 import {
     AcceptFollowRequestDTO, CancelFollowRequestDTO, ChangeBioDTO, ChangeNameDTO,
     ChangePasswordDTO, ChangeUsernameDTO, FollowUserDTO, RejectFollowRequestDTO, UnfollowUserDTO
-} from "./user.dto";
+} from "./DTO/user.dto";
 import * as bcrypt from 'bcrypt';
 import {JwtService} from "@app/common/jwt/jwt.service";
-import {PASSWORD_SALT_ROUNDS} from "../../utils/constants";
-import { NotificationService } from '../notification/notification.service';
-import { NotificationGateway } from '../notification/notification.gateway';
+import {PASSWORD_SALT_ROUNDS} from "../../../../server/src/utils/constants";
+import { NotificationService } from '../../../../server/src/modules/notification/notification.service';
+import { NotificationGateway } from '../../../../server/src/modules/notification/notification.gateway';
 
 @Injectable()
 export class UserService {

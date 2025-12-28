@@ -46,6 +46,15 @@
         "tsConfigPath": "apps/server/tsconfig.app.json"
       }
     },
+    "user-app": {
+      "type": "application",
+      "root": "apps/user-app",
+      "entryFile": "main",
+      "sourceRoot": "apps/user-app/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/user-app/tsconfig.app.json"
+      }
+    },
     "user-movie": {
       "type": "application",
       "root": "apps/user-movie",

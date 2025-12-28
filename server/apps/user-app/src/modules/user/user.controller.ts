@@ -3,11 +3,11 @@ import { Throttle } from '@nestjs/throttler';
 import {
     AcceptFollowRequestDTO, CancelFollowRequestDTO, ChangeBioDTO, ChangeNameDTO,
     ChangePasswordDTO, ChangeUsernameDTO, FollowUserDTO, RejectFollowRequestDTO, UnfollowUserDTO
-} from "./user.dto";
+} from "./DTO/user.dto";
 import {AuthGuard} from "@app/common/guards/auth.guard";
 import {UserService} from "./user.service";
 import type {Request, Response} from "express";
-import { CookieConfig } from '../../utils/cookie';
+import { CookieConfig } from '../../../../server/src/utils/cookie';
 
 interface AuthenticatedRequest extends Request {
     user?: {
