@@ -15,12 +15,12 @@ import { PrismaService } from '@app/common/prisma/prisma.service';
 import { LoginDto } from './DTO/login.dto';
 import { JwtService } from '@app/common/jwt/jwt.service';
 import * as bcrypt from 'bcrypt';
-import {generateOTP} from "../../utils/otp";
-import {sendEmail} from "../../utils/email";
-import {PASSWORD_SALT_ROUNDS} from "../../utils/constants";
+import {generateOTP} from "../../../../server/src/utils/otp";
+import {sendEmail} from "../../../../server/src/utils/email";
+import {PASSWORD_SALT_ROUNDS} from "../../../../server/src/utils/constants";
 import {randomBytes} from "node:crypto";
 import crypto from 'crypto';
-import {changeEmailRequestTemplate, emailChangedSuccessTemplate, otpTemplate, passwordResetTemplate, verifyChangeEmailTemplate} from "../../utils/emailTemplates";
+import {changeEmailRequestTemplate, emailChangedSuccessTemplate, otpTemplate, passwordResetTemplate, verifyChangeEmailTemplate} from "../../../../server/src/utils/emailTemplates";
 import type {User} from '@prisma/client'
 
 @Injectable()

@@ -10,6 +10,15 @@
   "monorepo": true,
   "root": "apps/server",
   "projects": {
+    "auth-app": {
+      "type": "application",
+      "root": "apps/auth-app",
+      "entryFile": "main",
+      "sourceRoot": "apps/auth-app/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/auth-app/tsconfig.app.json"
+      }
+    },
     "common": {
       "type": "library",
       "root": "libs/common",

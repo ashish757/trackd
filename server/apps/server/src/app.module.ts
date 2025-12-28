@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { FriendModule } from "./modules/friend/friend.module";
 import { UserModule } from "./modules/user/user.module";
@@ -19,7 +18,6 @@ import { APP_GUARD } from '@nestjs/core';
                 limit: 20,  // Maximum requests per window
             },
         ]),
-        AuthModule,
         FriendModule,
         UserModule,
         NotificationModule,

@@ -1,7 +1,7 @@
 import {Controller, Get, Post, Body, Req, InternalServerErrorException, Logger} from '@nestjs/common';
 import { AppService } from './app.service';
 import { sendEmail } from './utils/email';
-import {OtpTestDto} from "./modules/auth/DTO/register.dto";
+import {OtpTestDto} from "../../auth-app/src/modules/auth/DTO/register.dto";
 import { otpTemplate } from './utils/emailTemplates';
 
 @Controller()

@@ -26,7 +26,7 @@ import {
 import { LoginDto } from './DTO/login.dto';
 import { AuthGuard } from '@app/common/guards/auth.guard';
 import {OptionalAuthGuard} from "@app/common/guards/optionalAuth.guard";
-import { CookieConfig } from '../../utils/cookie';
+import { CookieConfig } from '../../../../server/src/utils/cookie';
 
 interface AuthorizedRequest extends Request {
     user?: {
