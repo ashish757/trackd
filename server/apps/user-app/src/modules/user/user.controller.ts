@@ -16,7 +16,7 @@ interface AuthenticatedRequest extends Request {
     };
 }
 
-@Controller('user')
+@Controller()
 @UseGuards(AuthGuard)
 export class UserController {
     constructor(private  readonly userService: UserService) {

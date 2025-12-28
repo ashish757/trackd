@@ -29,6 +29,26 @@ async function bootstrap() {
 
     }));
 
+    app.use('/auth', createProxyMiddleware({
+        target: 'http://localhost:3003',
+        changeOrigin: true,
+    }))
+
+    app.use('/user', createProxyMiddleware({
+        target: 'http://localhost:3004',
+        changeOrigin: true,
+    }))
+
+    app.use('/notifications', createProxyMiddleware({
+        target: 'http://localhost:3005',
+        changeOrigin: true,
+    }))
+
+    app.use('/friend', createProxyMiddleware({
+        target: 'http://localhost:3006',
+        changeOrigin: true,
+    }))
+
     // Enable cookie parser for HttpOnly cookies
     app.use(cookieParser());
 

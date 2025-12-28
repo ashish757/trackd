@@ -36,7 +36,7 @@ interface AuthorizedRequest extends Request {
     isAuthenticated: boolean;
 }
 
-@Controller('auth')
+@Controller()
 export class AuthController {
     private readonly logger = new Logger(AuthController.name);
 

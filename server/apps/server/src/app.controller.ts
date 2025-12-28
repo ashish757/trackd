@@ -16,20 +16,6 @@ export class AppController {
         return { status: 'ok' };
     }
 
-    @Post('/test-email-otp')
-    async testEmail(@Body() body: OtpTestDto) {
-        this.logger.log(`Testing email for: ${body.email}`);
-        const result = await sendEmail(
-            body.email,
-            "Test: OTP Verification - Trackd",
-            otpTemplate("Test User", "123456")
-        );
-        if(!result) {
-            throw new InternalServerErrorException('Failed to send test email');
-        }
-        return { success: true, message: 'Test email sent successfully' };
-    }
-
     @Get('/geo/detect')
     async detectCountry(@Req() req: Request) {
         const country = await this.appService.detectCountry(req);

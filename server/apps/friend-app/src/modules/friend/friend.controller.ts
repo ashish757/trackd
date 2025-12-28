@@ -4,7 +4,7 @@ import FriendService from "./friend.service";
 import {AuthGuard} from "@app/common/guards/auth.guard";
 import {Request} from "express";
 
-@Controller('friend')
+@Controller()
 @UseGuards(AuthGuard)
 export default class FriendController {
 

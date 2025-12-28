@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
-import { FriendModule } from "./modules/friend/friend.module";
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 
@@ -15,13 +14,11 @@ import { APP_GUARD } from '@nestjs/core';
                 ttl: 60000, // Time window in milliseconds (60 seconds)
                 limit: 20,  // Maximum requests per window
             },
-        ]),
-        FriendModule,
+        ])
     ],
     controllers: [AppController],
     providers: [
         AppService,
-        // Apply throttler guard globally to all routes
         {
             provide: APP_GUARD,
             useClass: ThrottlerGuard,
