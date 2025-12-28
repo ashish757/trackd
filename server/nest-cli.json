@@ -37,6 +37,15 @@
         "tsConfigPath": "apps/movie-app/tsconfig.app.json"
       }
     },
+    "notification-app": {
+      "type": "application",
+      "root": "apps/notification-app",
+      "entryFile": "main",
+      "sourceRoot": "apps/notification-app/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/notification-app/tsconfig.app.json"
+      }
+    },
     "server": {
       "type": "application",
       "root": "apps/server",

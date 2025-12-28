@@ -10,8 +10,8 @@ import {
 import * as bcrypt from 'bcrypt';
 import {JwtService} from "@app/common/jwt/jwt.service";
 import {PASSWORD_SALT_ROUNDS} from "../../../../server/src/utils/constants";
-import { NotificationService } from '../../../../server/src/modules/notification/notification.service';
-import { NotificationGateway } from '../../../../server/src/modules/notification/notification.gateway';
+import { NotificationService } from '../../../../notification-app/src/modules/notification/notification.service';
+import { NotificationGateway } from '../../../../notification-app/src/modules/notification/notification.gateway';
 
 @Injectable()
 export class UserService {

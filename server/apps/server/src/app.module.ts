@@ -3,7 +3,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { FriendModule } from "./modules/friend/friend.module";
-import { NotificationModule } from "./modules/notification/notification.module";
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 
@@ -18,7 +17,6 @@ import { APP_GUARD } from '@nestjs/core';
             },
         ]),
         FriendModule,
-        NotificationModule,
     ],
     controllers: [AppController],
     providers: [
