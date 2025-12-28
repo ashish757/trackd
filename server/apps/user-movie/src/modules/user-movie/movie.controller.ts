@@ -13,13 +13,13 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { Throttle } from '@nestjs/throttler';
-import { UserMovieService } from './user-movie.service';
+import { UserMovieService } from './movie.service';
 import { AuthGuard } from '@app/common/guards/auth.guard';
 import { MarkMovieDto, MovieStatus, RateMovieDto } from './DTO/user-movie.dto';
 
-@Controller('user-movies')
+@Controller()
 @UseGuards(AuthGuard)
-export class UserMovieController {
+export class MovieController {
     constructor(private readonly userMovieService: UserMovieService) {}
 
     /**

@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { UserMovieController } from './user-movie.controller';
-import { UserMovieService } from './user-movie.service';
+import { MovieController } from './movie.controller';
+import { UserMovieService } from './movie.service';
 import { PrismaModule } from '@app/common/prisma/prisma.module';
 import { JwtService } from '../../../../server/src/modules/auth/jwt.service';
 
 @Module({
     imports: [PrismaModule],
-    controllers: [UserMovieController],
+    controllers: [MovieController],
     providers: [UserMovieService, JwtService],
 })
-export class UserMovieModule {}
+export class MovieModule {}
 
