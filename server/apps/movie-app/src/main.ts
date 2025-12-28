@@ -2,12 +2,14 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { MovieAppModule } from './movie-app.module';
 import cookieParser from 'cookie-parser';
-import * as dotenv from 'dotenv';
-import * as path from 'path';
+
+// import * as dotenv from 'dotenv';
+// import * as path from 'path';
 // Load movie-app specific .env file
 // When running from dist/apps/movie-app/main.js, we need to go to apps/movie-app/.env
 // __dirname will be dist/apps/movie-app, so we go ../../../apps/movie-app/.env
-dotenv.config({ path: path.join(__dirname, '../../../apps/movie-app/.env') });
+// dotenv.config({ path: path.join(__dirname, '../../../apps/movie-app/.env') });
+
 async function bootstrap() {
   const app = await NestFactory.create(MovieAppModule);
   const logger = new Logger('MovieService');
