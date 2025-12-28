@@ -31,3 +31,6 @@ export * from './templates/email.templates';
 // Config
 export * from './config/env-validator.config';
 
+// Exceptions Filters
+export * from './filters/AllExceptionsFilter';
+
