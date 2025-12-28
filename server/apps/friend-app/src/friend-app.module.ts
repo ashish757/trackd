@@ -2,12 +2,12 @@ import { Module } from '@nestjs/common';
 import { FriendAppController } from './friend-app.controller';
 import { FriendAppService } from './friend-app.service';
 import {ConfigModule} from "@nestjs/config";
-import {PrismaModule} from "@app/common";
+import {FriendModule} from "./modules/friend/friend.module";
 
 @Module({
   imports: [
       ConfigModule.forRoot({isGlobal: true}),
-      PrismaModule
+      FriendModule
   ],
   controllers: [FriendAppController],
   providers: [FriendAppService],

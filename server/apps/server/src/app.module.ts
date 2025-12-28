@@ -4,12 +4,10 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-import { EmailModule } from '@app/common';
 
 @Module({
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
-        EmailModule,
         // Global rate limiting: 20 requests per 60 seconds (1 minute)
         ThrottlerModule.forRoot([
             {
