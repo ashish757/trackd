@@ -2,12 +2,13 @@ import {HttpStatus, Injectable} from '@nestjs/common';
 
 @Injectable()
 export class MovieAppService {
-  health() {
+  healthCheck() {
     return {
-      name: 'Movie Service!',
-      status: "ok",
+      name: 'Movie Service',
+      status: 'ok',
       statusCode: HttpStatus.OK,
-      message: "Movie Service is  running"
-    }
+      timestamp: new Date().toISOString(),
+      message: 'Movie Service is running',
+    };
   }
 }

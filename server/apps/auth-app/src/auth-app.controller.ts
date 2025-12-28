@@ -6,7 +6,7 @@ export class AuthAppController {
   constructor(private readonly authAppService: AuthAppService) {}
 
   @Get('health')
-  getHello() {
+  healthCheck() {
     return this.authAppService.healthCheck();
   }
 }

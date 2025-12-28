@@ -6,7 +6,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
-import { JwtService } from '@app/common/jwt/jwt.service';
+import { JwtService } from '@app/common';
 
 @WebSocketGateway({
     cors: {

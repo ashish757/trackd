@@ -1,7 +1,5 @@
-import {Controller, Get, Post, Body, Req, InternalServerErrorException, Logger} from '@nestjs/common';
+import {Controller, Get, Post, Body, Req, InternalServerErrorException, Logger, HttpStatus} from '@nestjs/common';
 import { AppService } from './app.service';
-import { EmailService, otpTemplate } from '@app/common';
-import {OtpTestDto} from "../../auth-app/src/modules/auth/DTO/register.dto";
 
 @Controller()
 export class AppController {
@@ -12,7 +10,13 @@ export class AppController {
 
     @Get('health')
     health() {
-        return { status: 'ok' };
+        return {
+            name: 'Main Server',
+            status: 'ok',
+            statusCode: HttpStatus.OK,
+            timestamp: new Date().toISOString(),
+            message: 'Main Server is running',
+        };
     }
 
     @Get('/geo/detect')

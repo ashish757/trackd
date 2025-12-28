@@ -3,9 +3,8 @@ import { ValidationPipe, Logger } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 dotenv.config();
 import cookieParser from 'cookie-parser';
-import { AllExceptionsFilter } from './common/filters/AllExceptionsFilter';
 import { AppModule } from './app.module';
-import { validateAllEnvVars } from '@app/common';
+import { validateAllEnvVars, AllExceptionsFilter } from '@app/common';
 import { createProxyMiddleware} from "http-proxy-middleware";
 
 async function bootstrap() {

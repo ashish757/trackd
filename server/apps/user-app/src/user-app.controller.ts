@@ -4,9 +4,8 @@ import { UserAppService } from './user-app.service';
 @Controller()
 export class UserAppController {
   constructor(private readonly userAppService: UserAppService) {}
-
-  @Get()
-  getHello(): string {
-    return this.userAppService.getHello();
+  @Get('health')
+  healthCheck() {
+    return this.userAppService.healthCheck();
   }
 }

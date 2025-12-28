@@ -4,10 +4,11 @@ import {HttpStatus, Injectable} from '@nestjs/common';
 export class AuthAppService {
   healthCheck() {
     return {
-      name: 'Auth Service!',
+      name: 'Auth Service',
       status: 'ok',
       statusCode: HttpStatus.OK,
-      message: 'Service is Healthy',
+      timestamp: new Date().toISOString(),
+      message: 'Auth Service is running',
     };
   }
 }

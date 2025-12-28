@@ -5,8 +5,8 @@ import { FriendAppService } from './friend-app.service';
 export class FriendAppController {
   constructor(private readonly friendAppService: FriendAppService) {}
 
-  @Get()
-  getHello(): string {
-    return this.friendAppService.getHello();
+  @Get('health')
+  healthCheck() {
+    return this.friendAppService.healthCheck();
   }
 }

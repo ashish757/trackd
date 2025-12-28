@@ -5,8 +5,8 @@ import { MovieAppService } from './movie-app.service';
 export class MovieAppController {
   constructor(private readonly movieServiceService: MovieAppService) {}
 
-  @Get("/health")
-  getHello() {
-    return this.movieServiceService.health();
+  @Get('health')
+  healthCheck() {
+    return this.movieServiceService.healthCheck();
   }
 }
