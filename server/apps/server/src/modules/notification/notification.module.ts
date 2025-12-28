@@ -3,7 +3,7 @@ import { NotificationService } from './notification.service';
 import { NotificationGateway } from './notification.gateway';
 import { NotificationController } from './notification.controller';
 import { PrismaModule } from '@app/common/prisma/prisma.module';
-import { JwtService } from '../auth/jwt.service';
+import { JwtService } from '@app/common/jwt/jwt.service';
 
 @Module({
     imports: [PrismaModule],

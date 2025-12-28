@@ -13,7 +13,7 @@ import {
 } from './DTO/register.dto';
 import { PrismaService } from '@app/common/prisma/prisma.service';
 import { LoginDto } from './DTO/login.dto';
-import { JwtService } from './jwt.service';
+import { JwtService } from '@app/common/jwt/jwt.service';
 import * as bcrypt from 'bcrypt';
 import {generateOTP} from "../../utils/otp";
 import {sendEmail} from "../../utils/email";

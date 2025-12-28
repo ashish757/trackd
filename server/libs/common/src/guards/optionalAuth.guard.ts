@@ -4,7 +4,7 @@ import {
     ExecutionContext,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { JwtService } from '../../../../apps/server/src/modules/auth/jwt.service';
+import { JwtService } from '../jwt/jwt.service';
 
 @Injectable()
 export class OptionalAuthGuard implements CanActivate {

@@ -8,7 +8,7 @@ import {
     ChangePasswordDTO, ChangeUsernameDTO, FollowUserDTO, RejectFollowRequestDTO, UnfollowUserDTO
 } from "./user.dto";
 import * as bcrypt from 'bcrypt';
-import {JwtService} from "../auth/jwt.service";
+import {JwtService} from "@app/common/jwt/jwt.service";
 import {PASSWORD_SALT_ROUNDS} from "../../utils/constants";
 import { NotificationService } from '../notification/notification.service';
 import { NotificationGateway } from '../notification/notification.gateway';
