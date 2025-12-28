@@ -16,6 +16,7 @@
     "seed": "ts-node prisma/seed.ts",
     "start:a": "concurrently \"npm run start:dev\" \"npm run start:dev movie-app\"",
     "start:m": "nest start movie-app --watch",
+    "start:um": "nest start user-movie --watch",
     "start:s": "nest start trackd-server --watch"
   },
   "engines": {

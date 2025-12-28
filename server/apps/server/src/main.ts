@@ -23,6 +23,12 @@ async function bootstrap() {
 
     }));
 
+    app.use('/user-movies', createProxyMiddleware({
+        target: 'http://localhost:3002',
+        changeOrigin: true,
+
+    }));
+
     // Enable cookie parser for HttpOnly cookies
     app.use(cookieParser());
 
