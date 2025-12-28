@@ -35,7 +35,7 @@ export const userApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         searchUsers: builder.query<Array<UserSearchItem>, string>({
             query: (query) => ({
-                url: 'users/search?query=' + query,
+                url: `${API_CONFIG.ENDPOINTS.USER.SEARCH_USERS}?query=${query}`,
                 method: 'GET',
             }),
 
@@ -47,7 +47,7 @@ export const userApi = apiSlice.injectEndpoints({
 
         followUser: builder.mutation<void, { id: string; username?: string }>({
             query: ({ id }) => ({
-                url: 'user/follow',
+                url: API_CONFIG.ENDPOINTS.USER.FOLLOW,
                 method: "POST",
                 body: {
                     id: id
@@ -67,7 +67,7 @@ export const userApi = apiSlice.injectEndpoints({
 
         unfollowUser: builder.mutation<void, { userId: string; username?: string }>({
             query: ({ userId }) => ({
-                url: 'user/unfollow',
+                url: API_CONFIG.ENDPOINTS.USER.UNFOLLOW,
                 method: "POST",
                 body: {
                     userId: userId
@@ -86,7 +86,7 @@ export const userApi = apiSlice.injectEndpoints({
 
         cancelFollowRequest: builder.mutation<void, { receiverId: string; username?: string }>({
             query: ({ receiverId }) => ({
-                url: 'user/follow/cancel',
+                url: API_CONFIG.ENDPOINTS.USER.CANCEL_FOLLOW_REQUEST,
                 method: "POST",
                 body: {
                     receiverId: receiverId
@@ -105,7 +105,7 @@ export const userApi = apiSlice.injectEndpoints({
 
         acceptFollowRequest: builder.mutation<void, { requesterId: string; username?: string }>({
             query: ({ requesterId }) => ({
-                url: 'user/follow/accept',
+                url: API_CONFIG.ENDPOINTS.USER.ACCEPT_FOLLOW_REQUEST,
                 method: "POST",
                 body: {
                     requesterId: requesterId
@@ -124,7 +124,7 @@ export const userApi = apiSlice.injectEndpoints({
 
         rejectFollowRequest: builder.mutation<void, { requesterId: string; username?: string }>({
             query: ({ requesterId }) => ({
-                url: 'user/follow/reject',
+                url: API_CONFIG.ENDPOINTS.USER.REJECT_FOLLOW_REQUEST,
                 method: "POST",
                 body: {
                     requesterId: requesterId
@@ -145,7 +145,7 @@ export const userApi = apiSlice.injectEndpoints({
         getUserById: builder.query<User, string>({
             query: (username) => {
                 return {
-                    url: `users/${username}`,
+                    url: `${API_CONFIG.ENDPOINTS.USER.GET_USER_BY_ID}/${username}`,
                     method: 'GET',
                 };
             },
@@ -157,7 +157,7 @@ export const userApi = apiSlice.injectEndpoints({
 
         getUser: builder.query<User, void>({
             query: () => ({
-                url: 'user',
+                url: API_CONFIG.ENDPOINTS.USER.GET_USER,
                 method: 'GET',
             }),
 
@@ -225,7 +225,7 @@ export const userApi = apiSlice.injectEndpoints({
 
         getUserFriendList: builder.query<Array<User>, string>({
             query: (userId) => ({
-                url: `friend/list/${userId}`,
+                url: `${API_CONFIG.ENDPOINTS.FRIEND.GET_FRIEND_LIST}/${userId}`,
                 method: 'GET',
             }),
             transformResponse: (response: { data: Array<User> }) => {
@@ -239,7 +239,7 @@ export const userApi = apiSlice.injectEndpoints({
             plannedMovies: Array<{ id: string; movie_id: number; status: string; createdAt: string; movie: { id: number } }>;
         }, string>({
             query: (userId) => ({
-                url: `friend/movies/${userId}`,
+                url: `${API_CONFIG.ENDPOINTS.FRIEND.GET_USER_MOVIES}/${userId}`,
                 method: 'GET',
             }),
             transformResponse: (response: {

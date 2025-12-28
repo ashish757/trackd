@@ -1,4 +1,5 @@
 import { apiSlice } from '../apiSlice';
+import { API_CONFIG } from '../../config/api.config';
 
 export interface Genre {
     id: number;
@@ -59,7 +60,7 @@ export const movieApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         searchMovies: builder.query<MovieSearchResponse, string>({
             query: (searchQuery) => ({
-                url: `/movies/search?query=${encodeURIComponent(searchQuery)}`,
+                url: `${API_CONFIG.ENDPOINTS.MOVIE.SEARCH}?query=${encodeURIComponent(searchQuery)}`,
                 method: 'GET',
             }),
             // Transform the response to match our interface
@@ -72,7 +73,7 @@ export const movieApi = apiSlice.injectEndpoints({
         }),
         getTrendingMovies: builder.query<MovieSearchResponse, void>({
             query: () => ({
-                url: '/movies/trending',
+                url: API_CONFIG.ENDPOINTS.MOVIE.TRENDING,
                 method: 'GET',
             }),
             // Transform the response to match our interface
@@ -85,7 +86,7 @@ export const movieApi = apiSlice.injectEndpoints({
         }),
         getMovieById: builder.query<Movie, number>({
             query: (movieId) => ({
-                url: `/movies/${movieId}`,
+                url: `${API_CONFIG.ENDPOINTS.MOVIE.GET_BY_ID}/${movieId}`,
                 method: 'GET',
             }),
             // Transform the response

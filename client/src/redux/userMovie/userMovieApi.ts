@@ -1,4 +1,5 @@
 import { apiSlice } from '../apiSlice';
+import { API_CONFIG } from '../../config/api.config';
 
 export const MovieStatus = {
     WATCHED: 'WATCHED',
@@ -71,7 +72,7 @@ export const userMovieApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         markMovie: builder.mutation<MarkMovieResponse, { movieId: number; status: MovieStatus }>({
             query: (dto) => ({
-                url: '/user-movies/mark',
+                url: API_CONFIG.ENDPOINTS.USER_MOVIES.MARK,
                 method: 'POST',
                 body: dto,
             }),
@@ -79,42 +80,42 @@ export const userMovieApi = apiSlice.injectEndpoints({
         }),
         removeMovie: builder.mutation<{ status: string; statusCode: number; message: string }, number>({
             query: (movieId) => ({
-                url: `/user-movies/${movieId}`,
+                url: `${API_CONFIG.ENDPOINTS.USER_MOVIES.DELETE}/${movieId}`,
                 method: 'DELETE',
             }),
             invalidatesTags: ['UserMovies'],
         }),
         getUserMovies: builder.query<UserMoviesResponse, void>({
             query: () => ({
-                url: '/user-movies',
+                url: API_CONFIG.ENDPOINTS.USER_MOVIES.GET_ALL,
                 method: 'GET',
             }),
             providesTags: ['UserMovies'],
         }),
         getUserMoviesByStatus: builder.query<UserMoviesResponse, MovieStatus>({
             query: (status) => ({
-                url: `/user-movies/by-status?status=${status}`,
+                url: `${API_CONFIG.ENDPOINTS.USER_MOVIES.GET_BY_STATUS}?status=${status}`,
                 method: 'GET',
             }),
             providesTags: ['UserMovies'],
         }),
         getMovieEntry: builder.query<MarkMovieResponse, number>({
             query: (movieId) => ({
-                url: `/user-movies/movie/${movieId}`,
+                url: `${API_CONFIG.ENDPOINTS.USER_MOVIES.GET_ENTRY}/${movieId}`,
                 method: 'GET',
             }),
             providesTags: ['UserMovies'],
         }),
         getUserStats: builder.query<UserStatsResponse, void>({
             query: () => ({
-                url: '/user-movies/stats',
+                url: API_CONFIG.ENDPOINTS.USER_MOVIES.GET_STATS,
                 method: 'GET',
             }),
             providesTags: ['UserMovies'],
         }),
         rateMovie: builder.mutation<RateMovieResponse, { movieId: number; rating: number; description?: string }>({
             query: (dto) => ({
-                url: '/user-movies/rate',
+                url: API_CONFIG.ENDPOINTS.USER_MOVIES.RATE,
                 method: 'POST',
                 body: dto,
             }),
@@ -122,14 +123,14 @@ export const userMovieApi = apiSlice.injectEndpoints({
         }),
         getUserMovieRating: builder.query<GetRatingResponse, number>({
             query: (movieId) => ({
-                url: `/user-movies/rating/${movieId}`,
+                url: `${API_CONFIG.ENDPOINTS.USER_MOVIES.GET_RATING}/${movieId}`,
                 method: 'GET',
             }),
             providesTags: ['MovieRating'],
         }),
         removeRating: builder.mutation<{ status: string; statusCode: number; message: string }, number>({
             query: (movieId) => ({
-                url: `/user-movies/rating/${movieId}`,
+                url: `${API_CONFIG.ENDPOINTS.USER_MOVIES.DELETE_RATING}/${movieId}`,
                 method: 'DELETE',
             }),
             invalidatesTags: ['UserMovies', 'MovieRating'],

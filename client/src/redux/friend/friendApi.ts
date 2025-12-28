@@ -1,4 +1,5 @@
 import {apiSlice} from "../apiSlice.ts";
+import { API_CONFIG } from "../../config/api.config.ts";
 
 export type NotificationsT =  Array<{
     createdAt: string;
@@ -46,7 +47,7 @@ export const friendApi = apiSlice.injectEndpoints({
 
         getFriendRequests: builder.query<NotificationsT, void>({
             query: () => ({
-                url: '/friend/requests',
+                url: API_CONFIG.ENDPOINTS.FRIEND.GET_REQUESTS,
                 method: 'GET',
             }),
 
@@ -58,7 +59,7 @@ export const friendApi = apiSlice.injectEndpoints({
 
         getMyFriends: builder.query<FriendT[], void>({
             query: () => ({
-                url: '/friend/my-friends',
+                url: API_CONFIG.ENDPOINTS.FRIEND.GET_MY_FRIENDS,
                 method: 'GET',
             }),
 
@@ -70,7 +71,7 @@ export const friendApi = apiSlice.injectEndpoints({
 
         getMutualFriends: builder.query<FriendT[], string>({
             query: (userId: string) => ({
-                url: `/friend/mutual/${userId}`,
+                url: `${API_CONFIG.ENDPOINTS.FRIEND.GET_MUTUAL}/${userId}`,
                 method: 'GET',
             }),
 

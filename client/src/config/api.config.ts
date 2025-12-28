@@ -7,7 +7,6 @@
 // Base URL logic: use localhost for development, env variable for production
 const getBaseUrl = (): string => {
         return import.meta.env.VITE_ENV == "development" ? "http://localhost:3000" : import.meta.env.VITE_API_BASE_URL;
-            // || 'http://localhost:3000';
 };
 
 export const API_CONFIG = {
@@ -28,17 +27,52 @@ export const API_CONFIG = {
             RESET_PASSWORD: '/auth/reset-password',
             REQUEST_CHANGE_EMAIL: '/auth/change/email/request',
             CHANGE_EMAIL: '/auth/change/email',
-
         },
         USER: {
             CHANGE_NAME: '/user/change/name',
             CHANGE_BIO: '/user/change/bio',
             CHANGE_USERNAME: '/user/change/username',
-            CHANGE_PASSWORD: 'user/change/password',
-
+            CHANGE_PASSWORD: '/user/change/password',
+            GET_USER: '/user',
+            SEARCH_USERS: '/users/search',
+            GET_USER_BY_ID: '/users',
+            FOLLOW: '/user/follow',
+            UNFOLLOW: '/user/unfollow',
+            CANCEL_FOLLOW_REQUEST: '/user/follow/cancel',
+            ACCEPT_FOLLOW_REQUEST: '/user/follow/accept',
+            REJECT_FOLLOW_REQUEST: '/user/follow/reject',
         },
         MOVIE: {
             SEARCH: '/movies/search',
+            TRENDING: '/movies/trending',
+            GET_BY_ID: '/movies',
+        },
+        USER_MOVIES: {
+            MARK: '/user-movies/mark',
+            DELETE: '/user-movies',
+            GET_ALL: '/user-movies',
+            GET_BY_STATUS: '/user-movies/by-status',
+            GET_ENTRY: '/user-movies/movie',
+            GET_STATS: '/user-movies/stats',
+            RATE: '/user-movies/rate',
+            GET_RATING: '/user-movies/rating',
+            DELETE_RATING: '/user-movies/rating',
+        },
+        FRIEND: {
+            GET_REQUESTS: '/friend/requests',
+            GET_MY_FRIENDS: '/friend/my-friends',
+            GET_MUTUAL: '/friend/mutual',
+            GET_FRIEND_LIST: '/friend/list',
+            GET_USER_MOVIES: '/friend/movies',
+        },
+        NOTIFICATIONS: {
+            GET_ALL: '/notifications',
+            GET_UNREAD_COUNT: '/notifications/unread-count',
+            MARK_AS_READ: '/notifications',
+            MARK_MULTIPLE_AS_READ: '/notifications/mark-multiple',
+            MARK_ALL_AS_READ: '/notifications/read-all',
+            DELETE: '/notifications',
+            DELETE_ALL_READ: '/notifications/read/all',
         },
     },
 

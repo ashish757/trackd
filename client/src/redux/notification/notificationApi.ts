@@ -1,5 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryWithReauth } from '../baseQuery';
+import { API_CONFIG } from '../../config/api.config';
 
 export interface Notification {
     id: string;
@@ -41,7 +42,7 @@ export const notificationApi = createApi({
         // Get all notifications
         getNotifications: builder.query<Notification[], { includeRead?: boolean }>({
             query: ({ includeRead = false }) => ({
-                url: '/notifications',
+                url: API_CONFIG.ENDPOINTS.NOTIFICATIONS.GET_ALL,
                 params: { includeRead: includeRead.toString() },
             }),
             transformResponse: (response: NotificationResponse) => response.data,
@@ -50,7 +51,7 @@ export const notificationApi = createApi({
 
         // Get unread count
         getUnreadCount: builder.query<number, void>({
-            query: () => '/notifications/unread-count',
+            query: () => API_CONFIG.ENDPOINTS.NOTIFICATIONS.GET_UNREAD_COUNT,
             transformResponse: (response: UnreadCountResponse) => response.data.count,
             providesTags: ['UnreadCount'],
         }),
@@ -58,7 +59,7 @@ export const notificationApi = createApi({
         // We use markMultipleAsRead for auto-mark after 1000ms
         markAsRead: builder.mutation<Notification, string>({
             query: (notificationId: string) => ({
-                url: `/notifications/${notificationId}/read`,
+                url: `${API_CONFIG.ENDPOINTS.NOTIFICATIONS.MARK_AS_READ}/${notificationId}/read`,
                 method: 'PATCH',
             }),
             invalidatesTags: ['Notifications', 'UnreadCount'],
@@ -67,7 +68,7 @@ export const notificationApi = createApi({
         // Mark multiple notifications as read
         markMultipleAsRead: builder.mutation<{ count: number }, string[]>({
             query: (notificationIds: string[]) => ({
-                url: '/notifications/mark-multiple',
+                url: API_CONFIG.ENDPOINTS.NOTIFICATIONS.MARK_MULTIPLE_AS_READ,
                 method: 'PATCH',
                 body: { notificationIds },
             }),
@@ -77,7 +78,7 @@ export const notificationApi = createApi({
         // Mark all as read
         markAllAsRead: builder.mutation<void, void>({
             query: () => ({
-                url: '/notifications/read-all',
+                url: API_CONFIG.ENDPOINTS.NOTIFICATIONS.MARK_ALL_AS_READ,
                 method: 'PATCH',
             }),
             invalidatesTags: ['Notifications', 'UnreadCount'],
@@ -86,7 +87,7 @@ export const notificationApi = createApi({
         // Delete notification
         deleteNotification: builder.mutation<void, string>({
             query: (notificationId: string) => ({
-                url: `/notifications/${notificationId}`,
+                url: `${API_CONFIG.ENDPOINTS.NOTIFICATIONS.DELETE}/${notificationId}`,
                 method: 'DELETE',
             }),
             invalidatesTags: ['Notifications', 'UnreadCount'],
@@ -95,7 +96,7 @@ export const notificationApi = createApi({
         // Delete all read notifications
         deleteAllRead: builder.mutation<void, void>({
             query: () => ({
-                url: '/notifications/read/all',
+                url: API_CONFIG.ENDPOINTS.NOTIFICATIONS.DELETE_ALL_READ,
                 method: 'DELETE',
             }),
             invalidatesTags: ['Notifications', 'UnreadCount'],
