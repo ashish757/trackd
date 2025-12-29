@@ -28,6 +28,7 @@ import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'node:crypto';
 import crypto from 'crypto';
 import type { User } from '@prisma/client';
+import { RedisService } from '@app/redis';
 
 @Injectable()
 export class AuthService {
@@ -37,6 +38,7 @@ export class AuthService {
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
         private readonly emailService: EmailService,
+        private readonly redisService: RedisService,
     ) { }
 
     async forgetPassword(dto: ForgetPasswordDto) {
@@ -239,13 +241,23 @@ export class AuthService {
         };
     }
 
-    async logout(userId: string, refreshToken: string): Promise<void> {
+    async logout(userId: string, refreshToken: string, accessToken?: string): Promise<void> {
         const user = await this.prisma.user.findUnique({
             where: {id: userId},
             select: {refreshTokens: true},
         });
 
         if (!user) return;
+
+        // Blacklist the access token if provided
+        if (accessToken) {
+            try {
+                await this.redisService.blacklistToken(accessToken);
+                this.logger.debug(`Access token blacklisted for user ${userId}`);
+            } catch (error) {
+                this.logger.error('Failed to blacklist access token:', error);
+            }
+        }
 
         // Remove the specific refresh token
         const updatedTokens: string[] = [];

@@ -206,8 +206,12 @@ export class AuthController {
         const refreshToken = req.cookies?.refreshToken;
         const user = (req as any).user; // Set by AuthGuard
 
+        // Extract access token from Authorization header
+        const authHeader = req.headers['authorization'];
+        const accessToken = authHeader ? authHeader.split(' ')[1] : undefined;
+
         if (refreshToken && user) {
-            await this.authService.logout(user.sub, refreshToken);
+            await this.authService.logout(user.sub, refreshToken, accessToken);
         }
 
         // Clear refresh token cookie
