@@ -1,6 +1,6 @@
 import {User, Mail, Calendar, Settings, Users, X, UserPlus, LogOut} from 'lucide-react';
 import Navbar from '../components/Navbar';
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import EditUserProfileModel from "../components/EditUserProfileModel.tsx";
 import {useGetUserQuery} from "../redux/user/userApi.ts";
 import {Link, useNavigate} from "react-router-dom";
@@ -25,6 +25,34 @@ export default function ProfilePage() {
     const { data: friendList, isLoading: isFriendListLoading } = useGetMyFriendsQuery(undefined, {
         skip: !showFriendsModal
     });
+
+    // Request notification permission when user visits profile page
+    useEffect(() => {
+        const requestNotificationPermission = async () => {
+            if ('Notification' in window && Notification.permission === 'default') {
+                try {
+                    const permission = await Notification.requestPermission();
+                    console.log('Notification permission:', permission);
+
+                    if (permission === 'granted') {
+                        // Show a welcome notification
+                        new Notification('Trackd', {
+                            body: 'Notifications enabled! You will now receive real-time updates.',
+                            icon: '/logo.svg',
+                            badge: '/logo.svg',
+                            tag: 'welcome-notification',
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error requesting notification permission:', error);
+                }
+            }
+        };
+
+        // Small delay to let the page render first
+        const timer = setTimeout(requestNotificationPermission, 500);
+        return () => clearTimeout(timer);
+    }, []);
 
     const handleLogout = async () => {
         try {

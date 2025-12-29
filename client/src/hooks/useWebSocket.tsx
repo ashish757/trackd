@@ -147,13 +147,13 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
                 return updated.slice(0, MAX_RECENT_NOTIFICATIONS);
             });
 
-            // Show browser notification with logo and enhanced options
-            if ('Notification' in window && Notification.permission === 'granted') {
-                const notificationIcon = notification.sender?.avatar || '/logo.svg';
+            // Show browser notification
+            if ('Notification' in window) {
+                console.log('Notification permission:', Notification.permission);
 
-                // Check for Service Worker registration
-                navigator.serviceWorker.ready.then((registration) => {
-                    registration.showNotification('Trackd', {
+                if (Notification.permission === 'granted') {
+                    const notificationIcon = notification.sender?.avatar || '/logo.svg';
+                    const notificationOptions = {
                         body: notification.message,
                         icon: notificationIcon,
                         badge: '/logo.svg',
@@ -166,24 +166,51 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
                             senderId: notification.senderId,
                             createdAt: notification.createdAt,
                         },
+                    };
+
+                    // Try using Service Worker first
+                    if ('serviceWorker' in navigator) {
+                        navigator.serviceWorker.ready
+                            .then((registration) => {
+                                console.log('Showing notification via Service Worker');
+                                return registration.showNotification('Trackd', notificationOptions);
+                            })
+                            .catch((error) => {
+                                console.warn('Service Worker notification failed, using fallback:', error);
+                                // Fallback to regular notification
+                                try {
+                                    new Notification('Trackd', notificationOptions);
+                                    console.log('Notification shown via fallback');
+                                } catch (err) {
+                                    console.error('Fallback notification failed:', err);
+                                }
+                            });
+                    } else {
+                        // No service worker support, use regular notification
+                        try {
+                            new Notification('Trackd', notificationOptions);
+                            console.log('Notification shown (no service worker)');
+                        } catch (err) {
+                            console.error('Notification failed:', err);
+                        }
+                    }
+                } else if (Notification.permission === 'default') {
+                    console.log('Requesting notification permission...');
+                    Notification.requestPermission().then((permission) => {
+                        console.log('Permission result:', permission);
+                        if (permission === 'granted') {
+                            // Show the notification after permission granted
+                            new Notification('Trackd', {
+                                body: notification.message,
+                                icon: notification.sender?.avatar || '/logo.svg',
+                            });
+                        }
                     });
-                }).catch(() => {
-                    // Fallback for Safari/Older browsers if Service Worker fails
-                    new Notification('Trackd', {
-                        body: notification.message,
-                        icon: notificationIcon,
-                        badge: '/logo.svg',
-                        tag: notification.id,
-                        requireInteraction: false,
-                        silent: false,
-                        data: {
-                            notificationId: notification.id,
-                            type: notification.type,
-                            senderId: notification.senderId,
-                            createdAt: notification.createdAt,
-                        },
-                    });
-                });
+                } else {
+                    console.log('Notification permission denied');
+                }
+            } else {
+                console.warn('Browser does not support notifications');
             }
         });
 
