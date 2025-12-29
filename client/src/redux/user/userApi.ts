@@ -111,6 +111,28 @@ export const userApi = apiSlice.injectEndpoints({
                     requesterId: requesterId
                 }
             }),
+            // Optimistic update
+            async onQueryStarted({ username }, { dispatch, queryFulfilled }) {
+                // Optimistically update the cache
+                const patchResult = username ? dispatch(
+                    userApi.util.updateQueryData('getUserById', username, (draft) => {
+                        draft.relationshipStatus = 'FOLLOWING';
+                        // Increment friend count
+                        if (draft.friendCount !== undefined) {
+                            draft.friendCount += 1;
+                        } else {
+                            draft.friendCount = 1;
+                        }
+                    })
+                ) : null;
+
+                try {
+                    await queryFulfilled;
+                } catch {
+                    // Undo optimistic update on error
+                    patchResult?.undo();
+                }
+            },
             invalidatesTags: (_result, _error, { requesterId, username }) => {
                 const tags: Array<{ type: 'User'; id: string }> = [
                     { type: 'User' as const, id: requesterId },
@@ -130,6 +152,22 @@ export const userApi = apiSlice.injectEndpoints({
                     requesterId: requesterId
                 }
             }),
+            // Optimistic update
+            async onQueryStarted({ username }, { dispatch, queryFulfilled }) {
+                // Optimistically update the cache
+                const patchResult = username ? dispatch(
+                    userApi.util.updateQueryData('getUserById', username, (draft) => {
+                        draft.relationshipStatus = 'NONE';
+                    })
+                ) : null;
+
+                try {
+                    await queryFulfilled;
+                } catch {
+                    // Undo optimistic update on error
+                    patchResult?.undo();
+                }
+            },
             invalidatesTags: (_result, _error, { requesterId, username }) => {
                 const tags: Array<{ type: 'User'; id: string }> = [
                     { type: 'User' as const, id: requesterId },
