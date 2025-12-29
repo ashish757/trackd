@@ -1,26 +1,32 @@
-import {Injectable, ForbiddenException} from "@nestjs/common";
+import {Injectable, ForbiddenException, Logger} from "@nestjs/common";
 import {FriendRequestDto} from "./DTO/friend.dto";
 import {PrismaService} from "@app/common/prisma/prisma.service";
 
 @Injectable()
 export default class FriendService {
+    private readonly logger = new Logger(FriendService.name);
+
     constructor(private  readonly prisma: PrismaService) {}
 
-    createFriendReq(requestBody: FriendRequestDto) {
+    async createFriendReq(requestBody: FriendRequestDto) {
+        this.logger.log(`Friend request: ${requestBody.senderId} → ${requestBody.receiverId}`);
+
         // Logic to create a friend request
-        const res = this.prisma.friendRequest.create({
+        const res = await this.prisma.friendRequest.create({
             data: {
                 senderId: requestBody.senderId,
                 receiverId: requestBody.receiverId,
             },
         });
 
+        this.logger.log(`Friend request created successfully: ID ${res.id}`);
         return {message: `Friend request sent from ${requestBody.senderId} to ${requestBody.receiverId}`};
     }
 
     async getFriendRequests(id: string) {
+        this.logger.debug(`Fetching friend requests for user: ${id}`);
 
-        return this.prisma.friendRequest.findMany({
+        const requests = await this.prisma.friendRequest.findMany({
             where: { receiverId: id },
             include: {
                 sender: {
@@ -33,17 +39,22 @@ export default class FriendService {
                 },
 
             }
-        })
+        });
 
+        this.logger.debug(`Found ${requests.length} friend requests for user: ${id}`);
+        return requests;
     }
 
     /**
      * Get friend list of a user (only accessible if requester is a friend)
      */
     async getUserFriendList(targetUserId: string, requesterId: string) {
+        this.logger.log(`User ${requesterId} requesting friend list of ${targetUserId}`);
+
         const areFriends = await this.checkIfFriends(requesterId, targetUserId);
 
         if (!areFriends) {
+            this.logger.warn(`Access denied: User ${requesterId} is not friends with ${targetUserId}`);
             throw new ForbiddenException('You must be friends to view this user\'s friend list');
         }
 

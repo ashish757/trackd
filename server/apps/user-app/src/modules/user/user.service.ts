@@ -26,6 +26,8 @@ export class UserService {
     }
 
     async followUser(followDto: FollowUserDTO, id: string) {
+        this.logger.log(`Follow request: User ${id} wants to follow ${followDto.id}`);
+
         // check if a request already exists
         const existingRequest = await this.prisma.friendRequest.findUnique({
             where: {
@@ -37,6 +39,7 @@ export class UserService {
         });
 
         if (existingRequest) {
+            this.logger.debug(`Friend request already exists: ${id} → ${followDto.id}`);
             // Request already exists, just return success
             return { message: 'Friend request already sent' };
         }
@@ -52,7 +55,7 @@ export class UserService {
         });
 
         if (existingFriendship) {
-            // Already friends
+            this.logger.debug(`Users are already friends: ${id} ↔ ${followDto.id}`);
             return { message: 'Already friends' };
         }
 
