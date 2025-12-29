@@ -1,6 +1,7 @@
-import { Logger } from '@nestjs/common';
+import { CustomLoggerService } from '../logger/custom-logger.service';
 
-const logger = new Logger('EnvValidator');
+const logger = new CustomLoggerService();
+logger.setContext('EnvValidator');
 
 export enum EnvVarSeverity {
     REQUIRED = 'REQUIRED',

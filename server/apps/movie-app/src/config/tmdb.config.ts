@@ -1,6 +1,7 @@
-import { Logger } from "@nestjs/common";
+import { CustomLoggerService } from "@app/common";
 
-const logger = new Logger('TmdbConfig');
+const logger = new CustomLoggerService();
+logger.setContext('TmdbConfig');
 
 export const baseUrl = 'https://api.themoviedb.org/3/';
 

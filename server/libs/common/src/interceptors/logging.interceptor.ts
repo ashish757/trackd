@@ -3,15 +3,20 @@ import {
     NestInterceptor,
     ExecutionContext,
     CallHandler,
-    Logger,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Request, Response } from 'express';
+import { CustomLoggerService } from '../logger/custom-logger.service';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-    private readonly logger = new Logger('HTTP');
+    private readonly logger: CustomLoggerService;
+
+    constructor() {
+        this.logger = new CustomLoggerService();
+        this.logger.setContext('HTTP');
+    }
 
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
         const ctx = context.switchToHttp();

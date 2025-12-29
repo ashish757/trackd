@@ -1,13 +1,14 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { PROXY_CONFIG } from './proxy.config';
 import { AppModule } from './app.module';
-import { LoggingInterceptor } from '@app/common';
+import { LoggingInterceptor, CustomLoggerService } from '@app/common';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
-    const logger = new Logger('API-Gateway');
+    const logger = new CustomLoggerService();
+    logger.setContext('API-Gateway');
 
     // Enable global logging interceptor
     app.useGlobalInterceptors(new LoggingInterceptor());

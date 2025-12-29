@@ -1,13 +1,14 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { UserAppModule } from './user-app.module';
 import cookieParser from 'cookie-parser';
-import { LoggingInterceptor } from '@app/common';
+import { LoggingInterceptor, CustomLoggerService } from '@app/common';
 
 
 async function bootstrap() {
   const app = await NestFactory.create(UserAppModule);
-  const logger = new Logger('UserService');
+  const logger = new CustomLoggerService();
+  logger.setContext('UserService');
 
   app.use(cookieParser());
 

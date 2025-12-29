@@ -1,15 +1,19 @@
-import { Injectable, OnModuleDestroy, Logger } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { CustomLoggerService } from '@app/common';
 import Redis from 'ioredis';
 import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class RedisService implements OnModuleDestroy {
     private readonly client: Redis;
-    private readonly logger = new Logger(RedisService.name);
+    private readonly logger: CustomLoggerService;
     private isConnected = false;
     private hasLoggedError = false;
 
     constructor() {
+        this.logger = new CustomLoggerService();
+        this.logger.setContext(RedisService.name);
+
         this.client = new Redis({
             host: process.env.REDIS_HOST || 'localhost',
             port: Number(process.env.REDIS_PORT) || 6379,

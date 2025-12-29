@@ -1,8 +1,14 @@
-import {HttpException, Injectable, InternalServerErrorException, Logger} from '@nestjs/common';
+import {Injectable, InternalServerErrorException, HttpException} from '@nestjs/common';
+import {CustomLoggerService} from '@app/common';
 
 @Injectable()
-export class TmdbService {
-    private readonly logger = new Logger(TmdbService.name);
+export default class TmdbService {
+    private readonly logger: CustomLoggerService;
+
+    constructor() {
+        this.logger = new CustomLoggerService();
+        this.logger.setContext(TmdbService.name);
+    }
     private readonly baseUrl = 'https://api.themoviedb.org/3';
     private readonly apiKey = process.env.TMDB_API_KEY;
 

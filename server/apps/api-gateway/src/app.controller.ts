@@ -1,11 +1,15 @@
-import {Controller, Get, Post, Body, Req, InternalServerErrorException, Logger, HttpStatus} from '@nestjs/common';
+import {Controller, Get, Post, Body, Req, InternalServerErrorException, HttpStatus} from '@nestjs/common';
 import { AppService } from './app.service';
+import { CustomLoggerService } from '@app/common';
 
 @Controller()
 export class AppController {
-    private readonly logger = new Logger(AppController.name);
+    private readonly logger: CustomLoggerService;
 
-    constructor(private readonly appService: AppService) {}
+    constructor(private readonly appService: AppService) {
+        this.logger = new CustomLoggerService();
+        this.logger.setContext(AppController.name);
+    }
 
 
     @Get('health')

@@ -3,21 +3,24 @@ import {
     CanActivate,
     ExecutionContext,
     UnauthorizedException,
-    Logger,
     Inject,
     Optional,
 } from '@nestjs/common';
 import { JwtService } from '../jwt/jwt.service';
+import { CustomLoggerService } from '../logger/custom-logger.service';
 import type {IRedisService} from "../interfaces/redis.interface";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-    private readonly logger = new Logger(AuthGuard.name);
+    private readonly logger: CustomLoggerService;
 
     constructor(
         private readonly jwtService: JwtService,
         @Optional() @Inject('RedisService') private readonly redisService?: IRedisService,
-    ) {}
+    ) {
+        this.logger = new CustomLoggerService();
+        this.logger.setContext(AuthGuard.name);
+    }
 
     async canActivate(
         context: ExecutionContext,

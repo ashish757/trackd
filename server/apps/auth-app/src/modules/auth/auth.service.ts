@@ -1,7 +1,7 @@
 import {
     Injectable,
     UnauthorizedException,
-    ConflictException, InternalServerErrorException, BadRequestException, Logger,
+    ConflictException, InternalServerErrorException, BadRequestException,
 } from '@nestjs/common';
 import {
     VerifyOtpDto,
@@ -16,7 +16,7 @@ import { LoginDto } from './DTO/login.dto';
 import { JwtService } from '@app/common/jwt/jwt.service';
 import { EmailService } from '@app/common';
 import { generateOTP } from '@app/common';
-import { PASSWORD_SALT_ROUNDS } from '@app/common';
+import { PASSWORD_SALT_ROUNDS, CustomLoggerService } from '@app/common';
 import {
     otpTemplate,
     passwordResetTemplate,
@@ -32,14 +32,17 @@ import { RedisService } from '@app/redis';
 
 @Injectable()
 export class AuthService {
-    private readonly logger = new Logger(AuthService.name);
+    private readonly logger: CustomLoggerService;
 
     constructor(
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
         private readonly emailService: EmailService,
         private readonly redisService: RedisService,
-    ) { }
+    ) {
+        this.logger = new CustomLoggerService();
+        this.logger.setContext(AuthService.name);
+    }
 
     async forgetPassword(dto: ForgetPasswordDto) {
         this.logger.log(`Password reset requested for email: ${dto.email}`);

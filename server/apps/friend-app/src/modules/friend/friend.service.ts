@@ -1,12 +1,16 @@
-import {Injectable, ForbiddenException, Logger} from "@nestjs/common";
+import {Injectable, ForbiddenException} from "@nestjs/common";
 import {FriendRequestDto} from "./DTO/friend.dto";
 import {PrismaService} from "@app/common/prisma/prisma.service";
+import { CustomLoggerService } from '@app/common';
 
 @Injectable()
 export default class FriendService {
-    private readonly logger = new Logger(FriendService.name);
+    private readonly logger: CustomLoggerService;
 
-    constructor(private  readonly prisma: PrismaService) {}
+    constructor(private readonly prisma: PrismaService) {
+        this.logger = new CustomLoggerService();
+        this.logger.setContext(FriendService.name);
+    }
 
     async createFriendReq(requestBody: FriendRequestDto) {
         this.logger.log(`Friend request: ${requestBody.senderId} → ${requestBody.receiverId}`);

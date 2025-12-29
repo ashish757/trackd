@@ -1,6 +1,6 @@
 import {
     BadRequestException,
-    ConflictException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException, Logger
+    ConflictException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException,
 } from "@nestjs/common";
 import {PrismaService} from "@app/common/prisma/prisma.service";
 import {
@@ -9,13 +9,13 @@ import {
 } from "./DTO/user.dto";
 import * as bcrypt from 'bcrypt';
 import {JwtService} from "@app/common/jwt/jwt.service";
-import { PASSWORD_SALT_ROUNDS } from '@app/common';
+import { PASSWORD_SALT_ROUNDS, CustomLoggerService } from '@app/common';
 import { NotificationService } from '../../../../notification-app/src/modules/notification/notification.service';
 import { NotificationGateway } from '../../../../notification-app/src/modules/notification/notification.gateway';
 
 @Injectable()
 export class UserService {
-    private readonly logger = new Logger(UserService.name);
+    private readonly logger: CustomLoggerService;
 
     constructor(
         private readonly prisma: PrismaService,
@@ -23,6 +23,8 @@ export class UserService {
         private readonly notificationService: NotificationService,
         private readonly notificationGateway: NotificationGateway,
     ) {
+        this.logger = new CustomLoggerService();
+        this.logger.setContext(UserService.name);
     }
 
     async followUser(followDto: FollowUserDTO, id: string) {

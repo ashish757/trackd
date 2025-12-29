@@ -1,5 +1,6 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@app/common/prisma/prisma.service';
+import { CustomLoggerService } from '@app/common';
 
 export interface CreateNotificationDto {
     userId: string;
@@ -10,9 +11,12 @@ export interface CreateNotificationDto {
 
 @Injectable()
 export class NotificationService {
-    private readonly logger = new Logger(NotificationService.name);
+    private readonly logger: CustomLoggerService;
 
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(private readonly prisma: PrismaService) {
+        this.logger = new CustomLoggerService();
+        this.logger.setContext(NotificationService.name);
+    }
 
     /**
      * Create a new notification

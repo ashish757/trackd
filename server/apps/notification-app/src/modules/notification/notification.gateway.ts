@@ -5,8 +5,7 @@ import {
     OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger } from '@nestjs/common';
-import { JwtService } from '@app/common';
+import { JwtService, CustomLoggerService } from '@app/common';
 
 @WebSocketGateway({
     cors: {
@@ -24,11 +23,14 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     @WebSocketServer()
     server: Server;
 
-    private readonly logger = new Logger(NotificationGateway.name);
+    private readonly logger: CustomLoggerService;
     // Changed to support multiple sockets per user (for multiple tabs)
     private userSockets: Map<string, Set<string>> = new Map(); // userId -> Set<socketId>
 
-    constructor(private readonly jwtService: JwtService) {}
+    constructor(private readonly jwtService: JwtService) {
+        this.logger = new CustomLoggerService();
+        this.logger.setContext(NotificationGateway.name);
+    }
 
     async handleConnection(client: Socket) {
         try {

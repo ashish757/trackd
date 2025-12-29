@@ -1,13 +1,14 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { NotificationAppModule } from './notification-app.module';
 import cookieParser from 'cookie-parser';
-import { LoggingInterceptor } from '@app/common';
+import { LoggingInterceptor, CustomLoggerService } from '@app/common';
 
 
 async function bootstrap() {
   const app = await NestFactory.create(NotificationAppModule);
-  const logger = new Logger('NotificationService');
+  const logger = new CustomLoggerService();
+  logger.setContext('NotificationService');
 
   app.use(cookieParser());
 
