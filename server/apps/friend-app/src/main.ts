@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { FriendAppModule } from './friend-app.module';
 import cookieParser from 'cookie-parser';
+import { LoggingInterceptor } from '@app/common';
 
 
 async function bootstrap() {
@@ -9,6 +10,9 @@ async function bootstrap() {
   const logger = new Logger('FriendService');
 
   app.use(cookieParser());
+
+  // Enable global logging interceptor
+  app.useGlobalInterceptors(new LoggingInterceptor());
 
   const frontendUrl = process.env.ENV === 'production' ? process.env.FRONTEND_URL : process.env.FRONTEND_URL_DEV;
 

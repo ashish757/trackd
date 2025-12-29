@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { MovieAppModule } from './movie-app.module';
 import cookieParser from 'cookie-parser';
+import { LoggingInterceptor } from '@app/common';
 
 // import * as dotenv from 'dotenv';
 // import * as path from 'path';
@@ -14,6 +15,10 @@ async function bootstrap() {
   const app = await NestFactory.create(MovieAppModule);
   const logger = new Logger('MovieService');
   app.use(cookieParser());
+
+  // Enable global logging interceptor
+  app.useGlobalInterceptors(new LoggingInterceptor());
+
   const frontendUrl = process.env.ENV === 'production'
     ? process.env.FRONTEND_URL
     : process.env.FRONTEND_URL_DEV;

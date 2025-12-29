@@ -3,10 +3,14 @@ import { ValidationPipe, Logger } from '@nestjs/common';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { PROXY_CONFIG } from './proxy.config';
 import { AppModule } from './app.module';
+import { LoggingInterceptor } from '@app/common';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
     const logger = new Logger('API-Gateway');
+
+    // Enable global logging interceptor
+    app.useGlobalInterceptors(new LoggingInterceptor());
 
     // 1. Setup Proxies Dynamically
     const wsProxies = [];
