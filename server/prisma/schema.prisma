@@ -12,37 +12,36 @@ datasource db {
 //
 
 model User {
-  id            String   @id @default(cuid())
-  username      String   @unique() @default(cuid())
-  email         String   @unique()
-  password      String?  // optional for OAuth users
-  name          String?
-  bio           String?
-  createdAt     DateTime @default(now())
-  refreshTokens String[] @default([])
-  friendCount   Int      @default(0)
+  id                String    @id @default(cuid())
+  username          String    @unique() @default(cuid())
+  email             String    @unique()
+  password          String? // optional for OAuth users
+  name              String?
+  bio               String?
+  createdAt         DateTime  @default(now())
+  refreshTokens     String[]  @default([])
+  friendCount       Int       @default(0)
   passwordChangedAt DateTime?
 
   // Google Specific Fields
-  googleId      String?   @unique
-  avatar        String?
+  googleId String? @unique
+  avatar   String?
 
   UserMovieData  UserMovieData[]
   UserMovieEntry UserMovieEntry[]
 
   // NEW RELATIONS (Friend System)
-  sentFriendRequests     FriendRequest[] @relation("SentRequests")
-  receivedFriendRequests FriendRequest[] @relation("ReceivedRequests")
-  friendshipsA           Friendship[]    @relation("FriendA")
-  friendshipsB           Friendship[]    @relation("FriendB")
-  PasswordResetToken PasswordResetToken? @relation("UserPasswordResetToken")
+  sentFriendRequests     FriendRequest[]     @relation("SentRequests")
+  receivedFriendRequests FriendRequest[]     @relation("ReceivedRequests")
+  friendshipsA           Friendship[]        @relation("FriendA")
+  friendshipsB           Friendship[]        @relation("FriendB")
+  PasswordResetToken     PasswordResetToken? @relation("UserPasswordResetToken")
 
   // Notifications
   sentNotifications     Notification[] @relation("SentNotifications")
   receivedNotifications Notification[] @relation("ReceivedNotifications")
 
   @@map("users")
-
 }
 
 //
@@ -133,7 +132,7 @@ model Friendship {
 
 model PasswordResetToken {
   id        String   @id @default(cuid())
-  userId    String  @unique()
+  userId    String   @unique()
   token     String   @unique()
   createdAt DateTime @default(now())
   expiresAt DateTime
@@ -144,12 +143,12 @@ model PasswordResetToken {
 }
 
 model EmailChangeTable {
-  id          String   @id @default(cuid())
-  userId      String   @unique()
-  newEmail    String
-  token       String    @unique()
-  createdAt   DateTime @default(now())
-  expiresAt   DateTime
+  id        String   @id @default(cuid())
+  userId    String   @unique()
+  newEmail  String
+  token     String   @unique()
+  createdAt DateTime @default(now())
+  expiresAt DateTime
 
   @@map("email_change_table")
 }
@@ -160,8 +159,8 @@ model EmailChangeTable {
 
 model Notification {
   id        String           @id @default(cuid())
-  userId    String           // Receiver of the notification
-  senderId  String?          // Sender (optional, system notifications may not have sender)
+  userId    String // Receiver of the notification
+  senderId  String? // Sender (optional, system notifications may not have sender)
   type      NotificationType
   message   String
   isRead    Boolean          @default(false)
@@ -181,4 +180,3 @@ enum NotificationType {
   FRIEND_REQUEST_ACCEPTED
   FRIEND_REQUEST_REJECTED
 }
-
