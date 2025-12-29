@@ -10,8 +10,7 @@ import {
 import * as bcrypt from 'bcrypt';
 import {JwtService} from "@app/common/jwt/jwt.service";
 import { PASSWORD_SALT_ROUNDS, CustomLoggerService } from '@app/common';
-import { NotificationService } from '../../../../notification-app/src/modules/notification/notification.service';
-import { NotificationGateway } from '../../../../notification-app/src/modules/notification/notification.gateway';
+import { RedisPubSubService } from '@app/redis';
 
 @Injectable()
 export class UserService {
@@ -20,8 +19,7 @@ export class UserService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly jwtService: JwtService,
-        private readonly notificationService: NotificationService,
-        private readonly notificationGateway: NotificationGateway,
+        private readonly redisPubSub: RedisPubSubService,
     ) {
         this.logger = new CustomLoggerService();
         this.logger.setContext(UserService.name);
@@ -75,16 +73,14 @@ export class UserService {
             select: { name: true }
         });
 
-        // Create notification
-        const notification = await this.notificationService.createNotification({
+        // Publish notification event via Redis
+        await this.redisPubSub.publishNotification({
             userId: followDto.id,
             senderId: id,
             type: 'FRIEND_REQUEST',
             message: `${sender?.name || 'Someone'} sent you a friend request`,
         });
 
-        // Send real-time notification
-        this.notificationGateway.sendNotificationToUser(followDto.id, notification);
 
         return { message: 'Friend request sent successfully' };
     }
@@ -137,16 +133,14 @@ export class UserService {
             select: { name: true }
         });
 
-        // Create notification for the original requester
-        const notification = await this.notificationService.createNotification({
+        // Publish notification event via Redis
+        await this.redisPubSub.publishNotification({
             userId: dto.requesterId,
             senderId: currentUserId,
             type: 'FRIEND_REQUEST_ACCEPTED',
             message: `${accepter?.name || 'Someone'} accepted your friend request`,
         });
 
-        // Send real-time notification
-        this.notificationGateway.sendNotificationToUser(dto.requesterId, notification);
 
         return { message: 'Friend request accepted successfully' };
     }
@@ -182,16 +176,14 @@ export class UserService {
             select: { name: true }
         });
 
-        // Create notification for the original requester
-        const notification = await this.notificationService.createNotification({
+        // Publish notification event via Redis
+        await this.redisPubSub.publishNotification({
             userId: dto.requesterId,
             senderId: currentUserId,
             type: 'FRIEND_REQUEST_REJECTED',
             message: `${rejecter?.name || 'Someone'} rejected your friend request`,
         });
 
-        // Send real-time notification
-        this.notificationGateway.sendNotificationToUser(dto.requesterId, notification);
 
         return { message: 'Friend request rejected successfully' };
     }

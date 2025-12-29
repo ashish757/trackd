@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '@app/common/prisma/prisma.service';
 import { CustomLoggerService } from '@app/common';
+import { RedisPubSubService, NotificationEvent } from '@app/redis';
+import { NotificationGateway } from './notification.gateway';
 
 export interface CreateNotificationDto {
     userId: string;
@@ -10,12 +12,48 @@ export interface CreateNotificationDto {
 }
 
 @Injectable()
-export class NotificationService {
+export class NotificationService implements OnModuleInit {
     private readonly logger: CustomLoggerService;
 
-    constructor(private readonly prisma: PrismaService) {
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly redisPubSub: RedisPubSubService,
+        private readonly notificationGateway: NotificationGateway,
+    ) {
         this.logger = new CustomLoggerService();
         this.logger.setContext(NotificationService.name);
+    }
+
+    /**
+     * Subscribe to Redis notification events when module initializes
+     */
+    async onModuleInit() {
+        this.logger.log('Setting up Redis PubSub subscription for notifications');
+
+        await this.redisPubSub.subscribeToNotifications(async (event: NotificationEvent) => {
+            this.logger.debug('Received notification event from Redis', {
+                type: event.type,
+                userId: event.userId,
+            });
+
+            // Create notification in database
+            const notification = await this.createNotification({
+                userId: event.userId,
+                senderId: event.senderId,
+                type: event.type,
+                message: event.message,
+            });
+
+            // Send real-time notification via WebSocket
+            if (notification) {
+                this.notificationGateway.sendNotificationToUser(
+                    event.userId,
+                    notification
+                );
+            }
+        });
+
+        this.logger.log('Redis PubSub subscription for notifications established');
     }
 
     /**
