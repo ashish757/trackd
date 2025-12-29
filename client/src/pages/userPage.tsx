@@ -32,7 +32,11 @@ const UserPage = () => {
     // where the query fires before refresh token rotation finishes
     const shouldSkipQuery = !username || !isInitialized;
 
-    const {data: user, isLoading, isError, error} = useGetUserByIdQuery(username as string, { skip: shouldSkipQuery });
+    const {data: user, isLoading, isError, error} = useGetUserByIdQuery(username as string, {
+        skip: shouldSkipQuery,
+        refetchOnMountOrArgChange: true, // Always fetch fresh data when component mounts
+    });
+
     const [followUser, { isLoading: isFollowLoading }] = useFollowUserMutation();
     const [unfollowUser, { isLoading: isUnfollowLoading }] = useUnfollowUserMutation();
     const [cancelFollowRequest, { isLoading: isCancelLoading }] = useCancelFollowRequestMutation();

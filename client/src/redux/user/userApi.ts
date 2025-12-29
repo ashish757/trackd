@@ -152,7 +152,14 @@ export const userApi = apiSlice.injectEndpoints({
 
             transformResponse: (response: getUserRes): User => {
                 return response.data;
-            }
+            },
+
+            providesTags: (_result, _error, username) => [
+                { type: 'User' as const, id: username }
+            ],
+
+            // Always refetch when component mounts or args change
+            keepUnusedDataFor: 0, // Don't cache unused data
         }),
 
         getUser: builder.query<User, void>({
@@ -164,7 +171,8 @@ export const userApi = apiSlice.injectEndpoints({
             transformResponse: (response: getUserRes): User => {
                 console.log("FETCHED USER")
                 return response.data;
-            }
+            },
+            providesTags: [{ type: 'User' as const, id: 'CURRENT_USER' }],
         }),
 
         changeUsername: builder.mutation({

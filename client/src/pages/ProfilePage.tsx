@@ -12,7 +12,9 @@ import { logout as logoutAction } from '../redux/auth/authSlice';
 import Notifications from '../components/Notifications';
 
 export default function ProfilePage() {
-    const {data: user, isLoading, isError} = useGetUserQuery();
+    const {data: user, isLoading, isError} = useGetUserQuery(undefined, {
+        refetchOnMountOrArgChange: true, // Always fetch fresh data
+    });
     const [showModal, setShowModal] = useState(false);
     const [showFriendsModal, setShowFriendsModal] = useState(false);
     const navigate = useNavigate();
