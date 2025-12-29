@@ -3,10 +3,12 @@ import {
     CanActivate,
     ExecutionContext,
     UnauthorizedException,
-    Optional,
     Logger,
+    Inject,
+    Optional,
 } from '@nestjs/common';
-import { JwtService, type IRedisService } from '@app/common';
+import { JwtService } from '../jwt/jwt.service';
+import type {IRedisService} from "../interfaces/redis.interface";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -14,7 +16,7 @@ export class AuthGuard implements CanActivate {
 
     constructor(
         private readonly jwtService: JwtService,
-        @Optional() private readonly redisService?: IRedisService,
+        @Optional() @Inject('RedisService') private readonly redisService?: IRedisService,
     ) {}
 
     async canActivate(
@@ -30,16 +32,16 @@ export class AuthGuard implements CanActivate {
         const token = authHeader.split(' ')[1];
 
         // Check if token is blacklisted (if Redis service is available)
-        if (this.redisService) {
+        if (this.redisService && typeof this.redisService.isTokenBlacklisted === 'function') {
             try {
                 const isBlacklisted = await this.redisService.isTokenBlacklisted(token);
                 if (isBlacklisted) {
                     this.logger.warn('Attempted use of blacklisted token');
-                    throw new UnauthorizedException();
+                    throw new UnauthorizedException('Token has been revoked');
                 }
             } catch (error) {
                 if (error instanceof UnauthorizedException) {
-                    throw new UnauthorizedException('Token has been revoked');;
+                    throw error;
                 }
                 this.logger.error('Error checking token blacklist:', error);
                 // Continue with verification if Redis check fails

@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
+import { PrismaModule } from '@app/common';
+import { NotificationModule } from '../../../../notification-app/src/modules/notification/notification.module';
+import { UserController } from './user.controller';
 import { UsersController } from './users.controller';
 import { UserService } from './user.service';
-import {JwtService, PrismaModule} from "@app/common";
-import {UserController} from "./user.controller";
-import { NotificationModule } from '../../../../notification-app/src/modules/notification/notification.module';
 
 @Module({
-    imports: [PrismaModule, NotificationModule],
-    controllers: [UserController, UsersController],
-    providers: [UserService, JwtService],
+  imports: [PrismaModule, NotificationModule],
+  controllers: [UserController, UsersController],
+  providers: [UserService],
 })
 
 export class UserModule {}

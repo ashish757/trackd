@@ -12,9 +12,9 @@ export default class FriendController {
     }
 
     @Post("/send-request")
-    followUser(@Body() requestBody: FriendRequestDto) {
+    async followUser(@Body() requestBody: FriendRequestDto) {
         // Logic to follow a user
-        const res = this.friendService.createFriendReq(requestBody);
+        const res = await this.friendService.createFriendReq(requestBody);
         if(!res) throw new InternalServerErrorException(HttpStatus.NOT_FOUND);
 
         return {

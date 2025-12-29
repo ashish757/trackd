@@ -4,9 +4,11 @@ import {
     ExecutionContext,
     UnauthorizedException,
     Optional,
-    Logger,
+    Logger, Inject,
 } from '@nestjs/common';
-import { JwtService, type IRedisService } from '@app/common';
+import { JwtService, } from '../jwt/jwt.service';
+import type {IRedisService} from "../interfaces/redis.interface";
+
 
 @Injectable()
 export class OptionalAuthGuard implements CanActivate {
@@ -14,7 +16,7 @@ export class OptionalAuthGuard implements CanActivate {
 
     constructor(
         private readonly jwtService: JwtService,
-        @Optional() private readonly redisService?: IRedisService,
+        @Optional() @Inject('RedisService') private readonly redisService?: IRedisService,
     ) {}
 
     async canActivate(

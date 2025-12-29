@@ -1,12 +1,12 @@
-import {Module} from '@nestjs/common';
-import FriendService from './friend.service';
+import { Module } from '@nestjs/common';
+import { PrismaModule } from '@app/common';
 import FriendController from './friend.controller';
-import {PrismaModule, JwtService} from "@app/common";
+import FriendService from './friend.service';
 
 @Module({
-    imports: [PrismaModule],
-    controllers: [FriendController],
-    providers: [FriendService, JwtService],
+  imports: [PrismaModule],
+  controllers: [FriendController],
+  providers: [FriendService],
 })
 
 export class FriendModule {}

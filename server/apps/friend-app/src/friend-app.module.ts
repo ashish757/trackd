@@ -1,15 +1,17 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@app/common';
+import { RedisModule } from '@app/redis';
 import { FriendAppController } from './friend-app.controller';
 import { FriendAppService } from './friend-app.service';
-import {ConfigModule} from "@nestjs/config";
-import {FriendModule} from "./modules/friend/friend.module";
-import { RedisModule } from '@app/redis';
+import { FriendModule } from './modules/friend/friend.module';
 
 @Module({
   imports: [
-      ConfigModule.forRoot({isGlobal: true}),
-      RedisModule,
-      FriendModule
+    ConfigModule.forRoot({ isGlobal: true }),
+    JwtModule,
+    RedisModule,
+    FriendModule,
   ],
   controllers: [FriendAppController],
   providers: [FriendAppService],
