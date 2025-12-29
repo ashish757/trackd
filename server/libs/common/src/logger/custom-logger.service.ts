@@ -110,7 +110,7 @@ export class CustomLoggerService implements NestLoggerService {
         const resetColor = '\x1b[0m';
 
         // Format: [Timestamp] [Level] [Context] Message {metadata}
-        let logLine = `[${timestamp}] ${levelColor}[${level}]${resetColor} ${contextColor}[${this.context}]${resetColor} ${message}`;
+        let logLine = `\x1b[35m[${timestamp}]\x1b[35m ${levelColor}[${level}] [${this.context}] ${message}${resetColor}`;
 
         // Add metadata if present
         if (metadata && Object.keys(metadata).length > 0) {
