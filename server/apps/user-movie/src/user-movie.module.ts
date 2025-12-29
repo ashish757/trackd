@@ -3,10 +3,12 @@ import { UserMovieController } from './user-movie.controller';
 import { UserMovieService } from './user-movie.service';
 import {ConfigModule} from "@nestjs/config";
 import {MovieModule} from "./modules/user-movie/movie.module";
+import { RedisModule } from '@app/redis';
 
 @Module({
   imports: [
       ConfigModule.forRoot({ isGlobal: true }),
+      RedisModule,
       MovieModule,
   ],
   controllers: [UserMovieController],
