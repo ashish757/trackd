@@ -2,21 +2,27 @@ import {
     Injectable,
     CanActivate,
     ExecutionContext,
+    UnauthorizedException,
+    Optional,
+    Logger,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { JwtService } from '../jwt/jwt.service';
+import { JwtService, type IRedisService } from '@app/common';
 
 @Injectable()
 export class OptionalAuthGuard implements CanActivate {
-    constructor(private readonly jwtService: JwtService) {}
+    private readonly logger = new Logger(OptionalAuthGuard.name);
 
-    canActivate(
+    constructor(
+        private readonly jwtService: JwtService,
+        @Optional() private readonly redisService?: IRedisService,
+    ) {}
+
+    async canActivate(
         context: ExecutionContext,
-    ): boolean | Promise<boolean> | Observable<boolean> {
+    ): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
         const authHeader = request.headers['authorization'];
 
-        // No auth header - allow request but mark as unauthenticated
         if (!authHeader) {
             request.isAuthenticated = false;
             request.user = {};
@@ -25,11 +31,20 @@ export class OptionalAuthGuard implements CanActivate {
 
         const token = authHeader.split(' ')[1];
 
-        // No token after 'Bearer ' - allow request but mark as unauthenticated
-        if (!token) {
-            request.isAuthenticated = false;
-            request.user = {};
-            return true;
+        // Check if token is blacklisted (if Redis service is available)
+        if (this.redisService) {
+            try {
+                const isBlacklisted = await this.redisService.isTokenBlacklisted(token);
+                if (isBlacklisted) {
+                    this.logger.warn('Attempted use of blacklisted token');
+                    request.isAuthenticated = false;
+                    request.user = {};
+                    return true;
+                }
+            } catch (error) {
+                this.logger.error('Error checking token blacklist:', error);
+                // Continue with verification if Redis check fails
+            }
         }
 
         const { payload, error } = this.jwtService.verify(token, 'access');

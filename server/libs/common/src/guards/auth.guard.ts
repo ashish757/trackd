@@ -6,13 +6,7 @@ import {
     Optional,
     Logger,
 } from '@nestjs/common';
-import { JwtService } from '../jwt/jwt.service';
-
-// We can't directly import RedisService here to avoid circular dependencies
-// So we define a minimal interface
-interface IRedisService {
-    isTokenBlacklisted(token: string): Promise<boolean>;
-}
+import { JwtService, type IRedisService } from '@app/common';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -41,11 +35,11 @@ export class AuthGuard implements CanActivate {
                 const isBlacklisted = await this.redisService.isTokenBlacklisted(token);
                 if (isBlacklisted) {
                     this.logger.warn('Attempted use of blacklisted token');
-                    throw new UnauthorizedException('Token has been revoked');
+                    throw new UnauthorizedException();
                 }
             } catch (error) {
                 if (error instanceof UnauthorizedException) {
-                    throw error;
+                    throw new UnauthorizedException('Token has been revoked');;
                 }
                 this.logger.error('Error checking token blacklist:', error);
                 // Continue with verification if Redis check fails
