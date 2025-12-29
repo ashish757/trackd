@@ -11,7 +11,6 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/apps/trackd-server/main",
-
     "seed": "ts-node prisma/seed.ts",
     "start:app": "nest start server --watch",
     "start:auth": "nest start auth-app --watch",
@@ -21,8 +20,6 @@
     "start:user": "nest start user-app --watch",
     "start:userMovie": "nest start user-movie --watch",
     "start:all": "concurrently \"npm run start:app\" \"npm run start:auth \" \"npm run start:friend \" \"npm run start:movie \" \"npm run start:notification \" \"npm run start:user \" \"npm run start:userMovie \"",
-
-
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\""
   },
@@ -46,6 +43,7 @@
     "class-validator": "^0.14.2",
     "cookie-parser": "^1.4.7",
     "http-proxy-middleware": "^3.0.5",
+    "ioredis": "^5.8.2",
     "jsonwebtoken": "^9.0.2",
     "reflect-metadata": "^0.2.2",
     "resend": "^6.4.2",
@@ -102,7 +100,8 @@
       "<rootDir>/libs/"
     ],
     "moduleNameMapper": {
-      "^@app/common(|/.*)$": "<rootDir>/libs/common/src/$1"
+      "^@app/common(|/.*)$": "<rootDir>/libs/common/src/$1",
+      "^@app/redis(|/.*)$": "<rootDir>/libs/redis/src/$1"
     }
   },
   "pnpm": {
