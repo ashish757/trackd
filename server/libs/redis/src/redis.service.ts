@@ -113,6 +113,37 @@ export class RedisService implements OnModuleDestroy {
         }
     }
 
+    /**
+     * Generic set method for caching objects
+     * @param key Redis key
+     * @param value Data to store (will be stringified)
+     * @param ttl Time to live in seconds
+     */
+    async set(key: string, value: any, ttl: number): Promise<void> {
+        if (!this.isConnected) return;
+        try {
+            const stringValue = JSON.stringify(value);
+            await this.client.set(key, stringValue, 'EX', ttl);
+        } catch (error) {
+            this.logger.error(`Error setting cache for ${key}:`, error.message);
+        }
+    }
+
+    /**
+     * Generic get method for cached objects
+     */
+    async get<T>(key: string): Promise<T | null> {
+        if (!this.isConnected) return null;
+        try {
+            const data = await this.client.get(key);
+            return data ? JSON.parse(data) : null;
+        } catch (error) {
+            this.logger.error(`Error getting cache for ${key}:`, error.message);
+            return null;
+        }
+    }
+
+
     onModuleDestroy() {
         this.logger.log('Closing Redis connection');
         this.client.quit();
