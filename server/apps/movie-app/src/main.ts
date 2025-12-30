@@ -18,8 +18,8 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.useGlobalFilters(
-    new ThrottlerExceptionFilter(),
-    new AllExceptionsFilter()
+    new AllExceptionsFilter(),
+    new ThrottlerExceptionFilter()
   );
 
   // Enable global logging interceptor

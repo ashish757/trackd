@@ -14,8 +14,8 @@ async function bootstrap() {
 
   // Enable global exception filters (specific first, then general)
   app.useGlobalFilters(
-    new ThrottlerExceptionFilter(),
-    new AllExceptionsFilter()
+    new AllExceptionsFilter(),
+    new ThrottlerExceptionFilter()
   );
 
   // Enable global logging interceptor

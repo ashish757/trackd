@@ -13,10 +13,9 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // Enable global exception filters
-  // Order matters: Specific filters first, then general ones
   app.useGlobalFilters(
-    new ThrottlerExceptionFilter(), // Handle rate limiting errors with custom response
-    new AllExceptionsFilter()        // Handle all other exceptions
+    new AllExceptionsFilter(),
+    new ThrottlerExceptionFilter()
   );
 
   // Enable global logging interceptor
