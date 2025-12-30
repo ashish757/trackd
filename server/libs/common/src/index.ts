@@ -17,6 +17,7 @@ export * from './jwt/jwt.service';
 // Utilities
 export * from './utils/cookie.util';
 export * from './utils/otp.util';
+export * from './utils/error-handler.util';
 
 // Constants
 export * from './constants/app.constants';
@@ -39,6 +40,9 @@ export * from './config/env-validator.config';
 
 // Exceptions Filters
 export * from './filters/AllExceptionsFilter';
+
+// Custom Exceptions
+export * from './exceptions/business.exception';
 
 // Interfaces
 export * from './interfaces/redis.interface';
