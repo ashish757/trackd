@@ -5,6 +5,28 @@ import { API_CONFIG } from '../config/api.config';
 import { logout, setUser } from './auth/authSlice';
 import type { User } from './user/userApi';
 
+// Toast notification support
+let toastCallback: ((message: string, type: 'SUCCESS' | 'ERROR' | 'WARNING' | 'ALERT', duration?: number) => void) | null = null;
+
+/**
+ * Register toast callback for showing notifications
+ * This should be called once from the app initialization
+ */
+export const registerToastCallback = (
+    callback: (message: string, type: 'SUCCESS' | 'ERROR' | 'WARNING' | 'ALERT', duration?: number) => void
+) => {
+    toastCallback = callback;
+};
+
+/**
+ * Show a toast notification if callback is registered
+ */
+const showToast = (message: string, type: 'SUCCESS' | 'ERROR' | 'WARNING' | 'ALERT', duration?: number) => {
+    if (toastCallback) {
+        toastCallback(message, type, duration);
+    }
+};
+
 /**
  * Response structure from the refresh token endpoint
  */
@@ -204,6 +226,21 @@ export const baseQueryWithReauth: BaseQueryFn<
         status: result.error?.status,
         data: result.data,
     });
+
+    // Handle rate limit errors (429)
+    if (result?.error?.status === 429) {
+        const errorData = result.error.data as { retryAfter?: string; message?: string };
+        const retryAfter = errorData?.retryAfter || '60 seconds';
+
+        showToast(
+            `Too many requests. Please try again in ${retryAfter}.`,
+            'WARNING',
+            2000 // Show for 2 seconds
+        );
+
+        console.warn('Rate limit exceeded:', errorData);
+        return result;
+    }
 
     // Handle 401 errors (except for authentication endpoints)
     const url = typeof args === 'string' ? args : args.url;

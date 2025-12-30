@@ -20,10 +20,27 @@ import ResetPassword from "./pages/ResetPassword.tsx";
 import ChangeEmail from "./components/ChangeEmail.tsx";
 import OauthSuccessPage from "./pages/OauthSuccessPage.tsx";
 import {useDetectCountry} from "./hooks/useDetectCountry.ts";
-import LandingPage from "./pages/LandingPage.tsx";
 import BottomNav from "./components/BottomNav.tsx";
+import LandingPage from "./pages/LandingPage.tsx";
 import ToastContainer from "./components/Toast/ToastContainer.tsx";
 import { ToastProvider } from "./components/Toast/ToastProvider.tsx";
+import { useEffect } from "react";
+import { registerToastCallback } from "./redux/baseQuery.ts";
+import { useToastContext } from "./hooks/useToast.ts";
+
+// Component to register toast callback
+function ToastInitializer() {
+  const { addToast } = useToastContext();
+
+  useEffect(() => {
+    // Register the toast callback so baseQuery can show toasts
+    registerToastCallback((message, type, duration) => {
+      addToast(message, type, duration);
+    });
+  }, [addToast]);
+
+  return null;
+}
 
 function App() {
   // Automatically refresh access token on page load/reload
@@ -70,6 +87,7 @@ function App() {
 
           {/* Global Toast Container */}
           <ToastContainer />
+          <ToastInitializer />
       </ToastProvider>
 
   )
