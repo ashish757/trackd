@@ -82,7 +82,7 @@ export class UserMovieService {
         });
 
         if (!entry) {
-            this.logger.warn(`Movie entry not found for user ${userId}, movie ${dto.movieId}`);
+            this.logger.debug(`Movie entry not found for user ${userId}, movie ${dto.movieId}`);
             throw new NotFoundException('Movie entry not found');
         }
 
@@ -180,7 +180,7 @@ export class UserMovieService {
 
         // Validate rating is between 1 and 10
         if (dto.rating < 1 || dto.rating > 10) {
-            this.logger.warn(`Invalid rating ${dto.rating} provided by user ${userId}`);
+            this.logger.debug(`Invalid rating ${dto.rating} provided by user ${userId}`);
             throw new BadRequestException('Rating must be between 1 and 10');
         }
 
@@ -246,7 +246,7 @@ export class UserMovieService {
         });
 
         if (!movieData) {
-            this.logger.warn(`Rating not found for user ${userId}, movie ${movieId}`);
+            this.logger.debug(`Rating not found for user ${userId}, movie ${movieId}`);
             throw new NotFoundException('Movie rating not found');
         }
 

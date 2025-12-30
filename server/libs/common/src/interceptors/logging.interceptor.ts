@@ -53,10 +53,20 @@ export class LoggingInterceptor implements NestInterceptor {
                     const statusCode = error.status || 500;
                     const statusColor = this.getStatusColor(statusCode);
 
-                    this.logger.error(
-                        `Failed ${method} ${url} ${statusColor}${statusCode}\x1b[0m - ${duration}ms - RequestID: ${requestId}`,
-                        error.stack
-                    );
+                    // Log at appropriate level based on status code
+                    if (statusCode >= 500) {
+                        // Server errors - log as error with stack trace
+                        this.logger.error(
+                            `Failed ${method} ${url} ${statusColor}${statusCode}\x1b[0m - ${duration}ms - RequestID: ${requestId}`,
+                            error.stack
+                        );
+                    } else if (statusCode >= 400) {
+                        // Client errors (400-499) - log as debug or info, not error
+                        // These are expected behaviors (validation failures, auth failures, etc.)
+                        this.logger.debug(
+                            `Client Error ${method} ${url} ${statusColor}${statusCode}\x1b[0m - ${duration}ms - RequestID: ${requestId}`
+                        );
+                    }
                 },
             })
         );

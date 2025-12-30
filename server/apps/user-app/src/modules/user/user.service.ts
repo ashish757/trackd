@@ -30,7 +30,7 @@ export class UserService {
 
         // Validate user is not trying to follow themselves
         if (id === followDto.id) {
-            this.logger.warn(`User ${id} attempted to follow themselves`);
+            this.logger.debug(`User ${id} attempted to follow themselves`);
             throw new BadRequestException('You cannot follow yourself');
         }
 
@@ -105,7 +105,7 @@ export class UserService {
         });
 
         if (!friendRequest) {
-            this.logger.warn(`Friend request not found: ${dto.requesterId} → ${currentUserId}`);
+            this.logger.debug(`Friend request not found: ${dto.requesterId} → ${currentUserId}`);
             throw new NotFoundException('Friend request not found');
         }
 
@@ -168,7 +168,7 @@ export class UserService {
         });
 
         if (!friendRequest) {
-            this.logger.warn(`Friend request not found: ${dto.requesterId} → ${currentUserId}`);
+            this.logger.debug(`Friend request not found: ${dto.requesterId} → ${currentUserId}`);
             throw new NotFoundException('Friend request not found');
         }
 
@@ -214,7 +214,7 @@ export class UserService {
         });
 
         if (!friendRequest) {
-            this.logger.warn(`Friend request not found: ${currentUserId} → ${dto.receiverId}`);
+            this.logger.debug(`Friend request not found: ${currentUserId} → ${dto.receiverId}`);
             throw new NotFoundException('Friend request not found');
         }
 
@@ -246,7 +246,7 @@ export class UserService {
         });
 
         if (!friendship) {
-            this.logger.warn(`Friendship not found: ${currentUserId} ↔ ${dto.userId}`);
+            this.logger.debug(`Friendship not found: ${currentUserId} ↔ ${dto.userId}`);
             throw new NotFoundException('Friendship not found');
         }
 

@@ -84,6 +84,7 @@ export class AuthService {
 
             this.logger.log(`Password reset email sent successfully to: ${dto.email}`);
         } else {
+            // Keep at WARN - could indicate account enumeration attempts
             this.logger.warn(`Password reset requested for non-existent email: ${dto.email}`);
         }
 
@@ -104,7 +105,7 @@ export class AuthService {
         });
 
         if (!token || token.expiresAt < new Date()) {
-            this.logger.warn('Password reset attempted with invalid or expired token');
+            this.logger.debug('Password reset attempted with invalid or expired token');
             throw new BadRequestException('Invalid or expired password reset token');
         }
 
@@ -144,19 +145,19 @@ export class AuthService {
         });
 
         if (!user) {
-            this.logger.warn(`Login failed: User not found for email: ${dto.email}`);
-            throw new UnauthorizedException('Invalid email');
+            this.logger.debug(`Login failed: User not found for email: ${dto.email}`);
+            throw new UnauthorizedException('Invalid email or password');
         }
 
         if (user.password == null) {
-            this.logger.warn(`Login failed: User ${user.id} has no password (OAuth account)`);
+            this.logger.debug(`Login failed: User ${user.id} has no password (OAuth account)`);
             throw new BadRequestException('Please Login with Google');
         }
 
         const valid = await bcrypt.compare(dto.password, user.password);
         if (!valid) {
-            this.logger.warn(`Login failed: Invalid password for user: ${user.id}`);
-            throw new UnauthorizedException('Invalid password');
+            this.logger.debug(`Login failed: Invalid password for user: ${user.id}`);
+            throw new UnauthorizedException('Invalid email or password');
         }
 
         const payload = {sub: user.id, email: user.email};
@@ -226,7 +227,7 @@ export class AuthService {
         });
 
         if (existing) {
-            this.logger.warn(`Registration failed: Email already in use: ${dto.email}`);
+            this.logger.debug(`Registration failed: Email already in use: ${dto.email}`);
             throw new ConflictException('Email already in use');
         }
 
@@ -482,12 +483,12 @@ export class AuthService {
         });
 
         if (!token) {
-            this.logger.warn(`Invalid email change token attempted`);
+            this.logger.debug(`Invalid email change token attempted`);
             throw new BadRequestException('Invalid or expired token');
         }
 
         if (token.expiresAt < new Date(Date.now())) {
-            this.logger.warn(`Expired email change token attempted`);
+            this.logger.debug(`Expired email change token attempted`);
             throw new BadRequestException('Token has expired');
         }
 

@@ -58,7 +58,7 @@ export default class FriendService {
         const areFriends = await this.checkIfFriends(requesterId, targetUserId);
 
         if (!areFriends) {
-            this.logger.warn(`Access denied: User ${requesterId} is not friends with ${targetUserId}`);
+            this.logger.debug(`Access denied: User ${requesterId} is not friends with ${targetUserId}`);
             throw new ForbiddenException('You must be friends to view this user\'s friend list');
         }
 

@@ -67,9 +67,19 @@ export class AllExceptionsFilter implements ExceptionFilter {
             ...(status >= 500 && { stack: exception.stack }), // Include stack trace for server errors
         };
 
+        // Log at appropriate level based on status code
         if (status >= 500) {
+            // Server errors - always log as error with stack trace
             this.logger.error('Server Error', exception.stack, errorLog);
-        } else if (status >= 400) {
+        } else if (status === 404) {
+            // Not found - log as debug, these are common and expected
+            this.logger.debug('Not Found', errorLog);
+        } else if (status >= 400 && status < 404) {
+            // Client errors (400-403) - validation/auth failures
+            // These are expected behaviors, log at debug level
+            this.logger.debug('Client Error', errorLog);
+        } else if (status >= 404) {
+            // Other 4xx errors - log as warning
             this.logger.warn('Client Error', errorLog);
         }
 
