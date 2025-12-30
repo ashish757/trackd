@@ -4,15 +4,16 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { RateLimitConfig } from '@app/common';
 
 @Module({
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
-        // Global rate limiting: 20 requests per 60 seconds (1 minute)
+        // Global rate limiting for API Gateway
         ThrottlerModule.forRoot([
             {
-                ttl: 60000, // Time window in milliseconds (60 seconds)
-                limit: 20,  // Maximum requests per window
+                ttl: RateLimitConfig.GLOBAL.ttl,
+                limit: RateLimitConfig.GLOBAL.limit,
             },
         ])
     ],

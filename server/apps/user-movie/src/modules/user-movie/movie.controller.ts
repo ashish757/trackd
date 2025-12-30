@@ -15,6 +15,7 @@ import { Request } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { UserMovieService } from './movie.service';
 import { AuthGuard } from '@app/common/guards/auth.guard';
+import { RateLimitConfig } from '@app/common';
 import { MarkMovieDto, MovieStatus, RateMovieDto } from './DTO/user-movie.dto';
 
 @Controller()
@@ -27,7 +28,7 @@ export class MovieController {
      * POST /user-movies/mark
      */
     @Post('mark')
-    @Throttle({ default: { limit: 30, ttl: 60000 } }) // 30 requests per minute
+    @Throttle({ default: RateLimitConfig.MODERATE.ADD_REMOVE_MOVIE })
     async markMovie(
         @Body() dto: MarkMovieDto,
         @Req() req: Request & { user?: { sub: string; email: string } }
@@ -48,7 +49,7 @@ export class MovieController {
      * DELETE /user-movies/:movieId
      */
     @Delete(':movieId')
-    @Throttle({ default: { limit: 30, ttl: 60000 } }) // 30 requests per minute
+    @Throttle({ default: RateLimitConfig.MODERATE.ADD_REMOVE_MOVIE })
     async removeMovie(
         @Param('movieId', ParseIntPipe) movieId: number,
         @Req() req: Request & { user?: { sub: string; email: string } }
@@ -69,6 +70,7 @@ export class MovieController {
      * GET /user-movies
      */
     @Get()
+    @Throttle({ default: RateLimitConfig.RELAXED.GET_MOVIES })
     async getUserMovies(@Req() req: Request & { user?: { sub: string; email: string } }) {
         const userId = req.user?.sub!;
         const data = await this.userMovieService.getUserMovies(userId);
@@ -86,6 +88,7 @@ export class MovieController {
      * GET /user-movies/by-status?status=WATCHED
      */
     @Get('by-status')
+    @Throttle({ default: RateLimitConfig.RELAXED.GET_MOVIES })
     async getUserMoviesByStatus(
         @Query('status') status: MovieStatus,
         @Req() req: Request & { user?: { sub: string; email: string } }
@@ -106,6 +109,7 @@ export class MovieController {
      * GET /user-movies/movie/:movieId
      */
     @Get('movie/:movieId')
+    @Throttle({ default: RateLimitConfig.RELAXED.GET_MOVIES })
     async getMovieEntry(
         @Param('movieId', ParseIntPipe) movieId: number,
         @Req() req: Request & { user?: { sub: string; email: string } }
@@ -126,6 +130,7 @@ export class MovieController {
      * GET /user-movies/stats
      */
     @Get('stats')
+    @Throttle({ default: RateLimitConfig.RELAXED.GET_MOVIES })
     async getUserStats(@Req() req: Request & { user?: { sub: string; email: string } }) {
         const userId = req.user?.sub!;
         const data = await this.userMovieService.getUserStats(userId);
@@ -143,7 +148,7 @@ export class MovieController {
      * POST /user-movies/rate
      */
     @Post('rate')
-    @Throttle({ default: { limit: 30, ttl: 60000 } })
+    @Throttle({ default: RateLimitConfig.MODERATE.RATE_MOVIE })
     async rateMovie(
         @Body() dto: RateMovieDto,
         @Req() req: Request & { user?: { sub: string; email: string } }
@@ -164,6 +169,7 @@ export class MovieController {
      * GET /user-movies/rating/:movieId
      */
     @Get('rating/:movieId')
+    @Throttle({ default: RateLimitConfig.RELAXED.GET_MOVIES })
     async getUserMovieRating(
         @Param('movieId', ParseIntPipe) movieId: number,
         @Req() req: Request & { user?: { sub: string; email: string } }
@@ -184,7 +190,7 @@ export class MovieController {
      * DELETE /user-movies/rating/:movieId
      */
     @Delete('rating/:movieId')
-    @Throttle({ default: { limit: 30, ttl: 60000 } })
+    @Throttle({ default: RateLimitConfig.MODERATE.RATE_MOVIE })
     async removeRating(
         @Param('movieId', ParseIntPipe) movieId: number,
         @Req() req: Request & { user?: { sub: string; email: string } }

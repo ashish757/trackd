@@ -26,7 +26,7 @@ import {
 import { LoginDto } from './DTO/login.dto';
 import { AuthGuard } from '@app/common/guards/auth.guard';
 import {OptionalAuthGuard} from "@app/common/guards/optionalAuth.guard";
-import { CookieConfig } from '@app/common';
+import { CookieConfig, RateLimitConfig } from '@app/common';
 
 interface AuthorizedRequest extends Request {
     user?: {
@@ -43,7 +43,7 @@ export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
     @Post('/login')
-    @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per minute
+    @Throttle({ default: RateLimitConfig.STRICT.AUTH_LOGIN })
     async login(@Body() req: LoginDto, @Res({ passthrough: true }) res: Response) {
         const data = await this.authService.login(req);
 
@@ -63,7 +63,7 @@ export class AuthController {
     }
 
     @Post('/forget-password')
-    @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 requests per minute
+    @Throttle({ default: RateLimitConfig.STRICT.PASSWORD_RESET_REQUEST })
     async forgetPassword(@Body() req: ForgetPasswordDto) {
         const data = await this.authService.forgetPassword(req);
 
@@ -75,7 +75,7 @@ export class AuthController {
     }
 
     @Post('/reset-password')
-    @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per minute
+    @Throttle({ default: RateLimitConfig.STRICT.PASSWORD_RESET_CONFIRM })
     async resetPassword(@Body() req: ResetPasswordDto) {
         const data = await this.authService.resetPassword(req);
 
@@ -87,7 +87,7 @@ export class AuthController {
     }
 
     @Post('/register')
-    @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per minute
+    @Throttle({ default: RateLimitConfig.STRICT.AUTH_REGISTER })
     async register(@Body() req: RegisterDto, @Res({ passthrough: true }) res: Response) {
         const verify = await this.authService.verifyOtp({
             token: req.otpToken,
@@ -119,7 +119,7 @@ export class AuthController {
     }
 
     @Post('/send-otp')
-    @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 requests per minute (strict for OTP)
+    @Throttle({ default: RateLimitConfig.STRICT.SEND_OTP })
     async sendOtp(@Body() req: SendOtpDto) {
         const data = await this.authService.sendOtp(req);
         return {
@@ -131,7 +131,7 @@ export class AuthController {
     }
 
     @Post('/verify-otp')
-    @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per minute
+    @Throttle({ default: RateLimitConfig.STRICT.VERIFY_OTP })
     async verifyOtp(@Body() req: RegisterDto) {
         const data = await this.authService.verifyOtp({token: req.otpToken, email: req.user.email, otp: req.otp});
         return {
@@ -143,6 +143,7 @@ export class AuthController {
     }
 
     @Post('/refresh-token')
+    @Throttle({ default: RateLimitConfig.CUSTOM.REFRESH_TOKEN })
     async refreshToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
         // Read refresh token from HttpOnly cookie
         const refreshToken = req.cookies?.refreshToken;
@@ -168,6 +169,7 @@ export class AuthController {
     }
 
     @Post('/change/email/request')
+    @Throttle({ default: RateLimitConfig.STRICT.EMAIL_CHANGE_REQUEST })
     @UseGuards(AuthGuard)
     async changeEmailRequest(@Body() dto: ChangeEmailRequestDto, @Req() req: AuthorizedRequest) {
         const userId = req.user.sub;

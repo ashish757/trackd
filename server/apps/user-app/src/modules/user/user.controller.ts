@@ -7,7 +7,7 @@ import {
 import {AuthGuard} from "@app/common/guards/auth.guard";
 import {UserService} from "./user.service";
 import type {Request, Response} from "express";
-import { CookieConfig } from '@app/common';
+import { CookieConfig, RateLimitConfig } from '@app/common';
 
 interface AuthenticatedRequest extends Request {
     user?: {
@@ -35,7 +35,7 @@ export class UserController {
     }
 
     @Post('/follow')
-    @Throttle({ default: { limit: 15, ttl: 60000 } }) // 15 requests per minute
+    @Throttle({ default: RateLimitConfig.MODERATE.FRIEND_REQUEST })
     async followUser(@Body() followDto: FollowUserDTO, @Req() req: AuthenticatedRequest) {
 
         const res = await this.userService.followUser(followDto, req.user.sub);
@@ -47,6 +47,7 @@ export class UserController {
     }
 
     @Post('/follow/accept')
+    @Throttle({ default: RateLimitConfig.MODERATE.FRIEND_REQUEST })
     async acceptFollowRequest(@Body() acceptDto: AcceptFollowRequestDTO, @Req() req: AuthenticatedRequest) {
         const res = await this.userService.acceptFollowRequest(acceptDto, req.user.sub);
         return {
@@ -57,6 +58,7 @@ export class UserController {
     }
 
     @Post('/follow/reject')
+    @Throttle({ default: RateLimitConfig.MODERATE.FRIEND_REQUEST })
     async rejectFollowRequest(@Body() rejectDto: RejectFollowRequestDTO, @Req() req: AuthenticatedRequest) {
         const res = await this.userService.rejectFollowRequest(rejectDto, req.user.sub);
         return {
@@ -67,6 +69,7 @@ export class UserController {
     }
 
     @Post('/follow/cancel')
+    @Throttle({ default: RateLimitConfig.MODERATE.FRIEND_REQUEST })
     async cancelFollowRequest(@Body() cancelDto: CancelFollowRequestDTO, @Req() req: AuthenticatedRequest) {
         const res = await this.userService.cancelFollowRequest(cancelDto, req.user.sub);
         return {
@@ -77,7 +80,7 @@ export class UserController {
     }
 
     @Post('/unfollow')
-    @Throttle({ default: { limit: 15, ttl: 60000 } }) // 15 requests per minute
+    @Throttle({ default: RateLimitConfig.MODERATE.FOLLOW_UNFOLLOW })
     async unfollowUser(@Body() unfollowDto: UnfollowUserDTO, @Req() req:AuthenticatedRequest) {
         const res = await this.userService.unfollowUser(unfollowDto, req.user.sub);
         return {
@@ -88,6 +91,7 @@ export class UserController {
     }
 
     @Post('/change/password')
+    @Throttle({ default: RateLimitConfig.MODERATE.UPDATE_PROFILE })
     async changePassword(@Req() req: AuthenticatedRequest, @Body() changePasswordDto: ChangePasswordDTO, @Res({ passthrough: true }) res: Response ) {
         const userId = req.user.sub;
         const data = await this.userService.changePassword(changePasswordDto, userId);
@@ -105,6 +109,7 @@ export class UserController {
     }
 
     @Post("check-username")
+    @Throttle({ default: RateLimitConfig.RELAXED.GET_USER })
     async checkUsername(@Body() body: {username: string}) {
         const data = await this.userService.checkUsername(body.username);
 
@@ -117,6 +122,7 @@ export class UserController {
 
 
     @Post('change/username')
+    @Throttle({ default: RateLimitConfig.MODERATE.UPDATE_PROFILE })
     async searchUserByQuery(@Req() req: Request & { body : ChangeUsernameDTO, user?: { sub: string; email: string }} ) {
         const userId = req.user.sub;
         const data = await this.userService.changeUsername(userId, req.body);
@@ -129,6 +135,7 @@ export class UserController {
     }
 
     @Post('change/name')
+    @Throttle({ default: RateLimitConfig.MODERATE.UPDATE_PROFILE })
     async changeName(@Req() req: AuthenticatedRequest, @Body() dto: ChangeNameDTO ) {
         const userId = req.user.sub;
         const res = await this.userService.changeName(dto, userId);
@@ -143,6 +150,7 @@ export class UserController {
 
 
     @Post('change/bio')
+    @Throttle({ default: RateLimitConfig.MODERATE.UPDATE_PROFILE })
     async changeBio(@Req() req: AuthenticatedRequest, @Body() dto: ChangeBioDTO ) {
         const userId = req.user.sub;
         const res = await this.userService.changeBio(dto, userId);
