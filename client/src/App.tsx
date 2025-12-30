@@ -22,6 +22,8 @@ import OauthSuccessPage from "./pages/OauthSuccessPage.tsx";
 import {useDetectCountry} from "./hooks/useDetectCountry.ts";
 import LandingPage from "./pages/LandingPage.tsx";
 import BottomNav from "./components/BottomNav.tsx";
+import ToastContainer from "./components/Toast/ToastContainer.tsx";
+import { ToastProvider } from "./components/Toast/ToastProvider.tsx";
 
 function App() {
   // Automatically refresh access token on page load/reload
@@ -38,7 +40,7 @@ function App() {
   }
 
   return (
-      <>
+      <ToastProvider>
           <main>
               <Routes>
                   <Route path="/" element={<GuestRoute><LandingPage /></GuestRoute>} />
@@ -65,7 +67,10 @@ function App() {
 
           {/* Bottom Navigation - Mobile Only */}
           <BottomNav />
-      </>
+
+          {/* Global Toast Container */}
+          <ToastContainer />
+      </ToastProvider>
 
   )
 }
