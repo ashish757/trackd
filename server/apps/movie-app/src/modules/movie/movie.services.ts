@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { fetchFromTmdb } from '../../config/tmdb.config';
-import {RedisService} from "@app/redis";
+import {RedisCacheService} from "@app/redis";
 import {CustomLoggerService} from "@app/common";
 
 @Injectable()
 class MovieService {
     private readonly logger : CustomLoggerService
 
-    constructor(private readonly redisService: RedisService) {
+    constructor(private readonly redisService: RedisCacheService) {
         this.logger = new CustomLoggerService();
         this.logger.setContext(MovieService.name);
     }

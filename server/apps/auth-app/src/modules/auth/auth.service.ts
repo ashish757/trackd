@@ -28,7 +28,7 @@ import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'node:crypto';
 import crypto from 'crypto';
 import type { User } from '@prisma/client';
-import { RedisService } from '@app/redis';
+import { RedisCacheService } from '@app/redis';
 
 @Injectable()
 export class AuthService {
@@ -38,7 +38,7 @@ export class AuthService {
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
         private readonly emailService: EmailService,
-        private readonly redisService: RedisService,
+        private readonly redisService: RedisCacheService,
     ) {
         this.logger = new CustomLoggerService();
         this.logger.setContext(AuthService.name);

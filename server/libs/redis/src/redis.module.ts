@@ -1,17 +1,17 @@
 import { Module, Global } from '@nestjs/common';
-import { RedisService } from './redis.service';
+import { RedisCacheService } from './redis-cache.service';
 import { RedisPubSubService } from './redis-pubsub.service';
 
 @Global()
 @Module({
   providers: [
-    RedisService,
+    RedisCacheService,
     RedisPubSubService,
     {
       provide: 'RedisService',
-      useExisting: RedisService,
+      useExisting: RedisCacheService,
     },
   ],
-  exports: [RedisService, RedisPubSubService, 'RedisService'],
+  exports: [RedisCacheService, RedisPubSubService, 'RedisService'],
 })
 export class RedisModule {}

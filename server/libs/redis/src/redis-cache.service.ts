@@ -4,7 +4,7 @@ import Redis from 'ioredis';
 import * as jwt from 'jsonwebtoken';
 
 @Injectable()
-export class RedisService implements OnModuleDestroy {
+export class RedisCacheService implements OnModuleDestroy {
     private readonly client: Redis;
     private readonly logger: CustomLoggerService;
     private isConnected = false;
@@ -12,7 +12,7 @@ export class RedisService implements OnModuleDestroy {
 
     constructor() {
         this.logger = new CustomLoggerService();
-        this.logger.setContext(RedisService.name);
+        this.logger.setContext(RedisCacheService.name);
 
         this.client = new Redis({
             host: process.env.REDIS_HOST || 'localhost',
