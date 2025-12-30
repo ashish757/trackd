@@ -1,4 +1,4 @@
-import {Body, Get, Controller, HttpStatus, InternalServerErrorException, Post, Req, UseGuards, Param} from "@nestjs/common";
+import {Body, Get, Controller, HttpStatus, Post, Req, UseGuards, Param} from "@nestjs/common";
 import {FriendRequestDto} from "./DTO/friend.dto";
 import FriendService from "./friend.service";
 import {AuthGuard} from "@app/common/guards/auth.guard";
@@ -14,13 +14,12 @@ export default class FriendController {
     @Post("/send-request")
     async followUser(@Body() requestBody: FriendRequestDto) {
         // Logic to follow a user
-        const res = await this.friendService.createFriendReq(requestBody);
-        if(!res) throw new InternalServerErrorException(HttpStatus.NOT_FOUND);
+        const data = await this.friendService.createFriendReq(requestBody);
 
         return {
             status: 'success',
             statusCode: HttpStatus.OK,
-            message: res.message,
+            message: data.message,
         }
     }
 

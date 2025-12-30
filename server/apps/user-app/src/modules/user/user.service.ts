@@ -1,6 +1,6 @@
 import {
     BadRequestException,
-    ConflictException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException,
+    ConflictException, Injectable, InternalServerErrorException, NotFoundException,
 } from "@nestjs/common";
 import {PrismaService} from "@app/common/prisma/prisma.service";
 import {
@@ -264,7 +264,7 @@ export class UserService {
 
             });
 
-        if(!res) throw new UnauthorizedException("CRITICAL: User not found");
+        if(!res) throw new NotFoundException('User not found');
 
         return res;
     }
@@ -283,7 +283,7 @@ export class UserService {
             }
         });
 
-        if (!user) throw new UnauthorizedException("invalid username");
+        if (!user) throw new NotFoundException('User not found');
 
         // If authenticated, check relationship status
         let relationshipStatus = null;
@@ -401,8 +401,8 @@ export class UserService {
             return user
 
         } catch (err) {
-            this.logger.error("Raw SQL error:", err);
-            throw err; // or throw new InternalServerErrorException('DB error')
+            this.logger.error("Database query error:", err);
+            throw new InternalServerErrorException('Failed to search users');
         }
     }
 

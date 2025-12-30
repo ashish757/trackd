@@ -1,4 +1,4 @@
-import {Req, Res, Body, Controller, Post, UseGuards, InternalServerErrorException, HttpStatus, Get} from "@nestjs/common";
+import {Req, Res, Body, Controller, Post, UseGuards, HttpStatus, Get} from "@nestjs/common";
 import { Throttle } from '@nestjs/throttler';
 import {
     AcceptFollowRequestDTO, CancelFollowRequestDTO, ChangeBioDTO, ChangeNameDTO,
@@ -92,8 +92,6 @@ export class UserController {
         const userId = req.user.sub;
         const data = await this.userService.changePassword(changePasswordDto, userId);
 
-        if(!res) throw new InternalServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
-
         CookieConfig.setRefreshTokenCookie(res, data.refreshToken);
 
         return {
@@ -108,14 +106,12 @@ export class UserController {
 
     @Post("check-username")
     async checkUsername(@Body() body: {username: string}) {
-        const res = this.userService.checkUsername(body.username);
-
-        if(!res) throw new InternalServerErrorException(HttpStatus.NOT_FOUND);
+        const data = await this.userService.checkUsername(body.username);
 
         return {
             status: 'success',
             statusCode: HttpStatus.OK,
-            ...res
+            ...data
         };
     }
 
@@ -123,14 +119,12 @@ export class UserController {
     @Post('change/username')
     async searchUserByQuery(@Req() req: Request & { body : ChangeUsernameDTO, user?: { sub: string; email: string }} ) {
         const userId = req.user.sub;
-        const res = await this.userService.changeUsername(userId, req.body);
-
-        if(!res) throw new InternalServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
+        const data = await this.userService.changeUsername(userId, req.body);
 
         return {
             status: 'success',
             statusCode: HttpStatus.OK,
-            data: res,
+            data,
         }
     }
 

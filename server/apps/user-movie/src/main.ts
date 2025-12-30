@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { UserMovieModule } from './user-movie.module';
 import cookieParser from 'cookie-parser';
-import { LoggingInterceptor, CustomLoggerService } from '@app/common';
+import { LoggingInterceptor, CustomLoggerService, AllExceptionsFilter } from '@app/common';
 
 
 async function bootstrap() {
@@ -11,6 +11,9 @@ async function bootstrap() {
   logger.setContext('UserMovieService');
 
   app.use(cookieParser());
+
+  // Enable global exception filter
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   // Enable global logging interceptor
   app.useGlobalInterceptors(new LoggingInterceptor());
