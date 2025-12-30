@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { JwtModule, RateLimitConfig } from '@app/common';
 import { RedisModule } from '@app/redis';
 import { NotificationAppController } from './notification-app.controller';
@@ -21,6 +22,12 @@ import { NotificationModule } from './modules/notification/notification.module';
     NotificationModule,
   ],
   controllers: [NotificationAppController],
-  providers: [NotificationAppService],
+  providers: [
+    NotificationAppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class NotificationAppModule {}

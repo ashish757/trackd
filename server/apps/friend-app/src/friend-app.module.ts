@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
+// import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { JwtModule, RateLimitConfig } from '@app/common';
 import { RedisModule } from '@app/redis';
 import { FriendAppController } from './friend-app.controller';
@@ -21,6 +22,8 @@ import { FriendModule } from './modules/friend/friend.module';
     FriendModule,
   ],
   controllers: [FriendAppController],
-  providers: [FriendAppService],
+  providers: [
+    FriendAppService,
+  ],
 })
 export class FriendAppModule {}
