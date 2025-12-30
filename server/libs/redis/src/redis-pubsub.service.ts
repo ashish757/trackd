@@ -131,6 +131,35 @@ export class RedisPubSubService implements OnModuleDestroy {
         this.logger.log('Unsubscribed from all channels');
     }
 
+    /**
+     * Generic Publish to any channel
+     */
+    async publish<T>(channel: string, payload: T): Promise<void> {
+        try {
+            await this.pub.publish(channel, JSON.stringify(payload));
+        } catch (error) {
+            this.logger.error(`Publish failed on ${channel}`, error.message);
+        }
+    }
+
+    /**
+     * Generic Subscribe to any channel
+     */
+    async subscribe<T>(channel: string, callback: (data: T) => void | Promise<void>): Promise<void> {
+        await this.sub.subscribe(channel);
+        this.sub.on('message', async (chan, message) => {
+            if (chan === channel) {
+                try {
+                    const data = JSON.parse(message) as T;
+                    await callback(data);
+                } catch (error) {
+                    this.logger.error(`Subscriber error on ${channel}`, error.message);
+                }
+            }
+        });
+        this.logger.log(`Subscribed to channel: ${channel}`);
+    }
+
     async onModuleDestroy() {
         await this.unsubscribe();
         await this.pub.quit();
