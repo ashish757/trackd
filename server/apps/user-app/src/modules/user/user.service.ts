@@ -28,6 +28,12 @@ export class UserService {
     async followUser(followDto: FollowUserDTO, id: string) {
         this.logger.log(`Follow request: User ${id} wants to follow ${followDto.id}`);
 
+        // Validate user is not trying to follow themselves
+        if (id === followDto.id) {
+            this.logger.warn(`User ${id} attempted to follow themselves`);
+            throw new BadRequestException('You cannot follow yourself');
+        }
+
         // check if a request already exists
         const existingRequest = await this.prisma.friendRequest.findUnique({
             where: {
@@ -86,6 +92,8 @@ export class UserService {
     }
 
     async acceptFollowRequest(dto: AcceptFollowRequestDTO, currentUserId: string) {
+        this.logger.log(`User ${currentUserId} accepting friend request from ${dto.requesterId}`);
+
         // Find the friend request
         const friendRequest = await this.prisma.friendRequest.findUnique({
             where: {
@@ -97,6 +105,7 @@ export class UserService {
         });
 
         if (!friendRequest) {
+            this.logger.warn(`Friend request not found: ${dto.requesterId} → ${currentUserId}`);
             throw new NotFoundException('Friend request not found');
         }
 
@@ -141,11 +150,13 @@ export class UserService {
             message: `${accepter?.name || 'Someone'} accepted your friend request`,
         });
 
-
+        this.logger.log(`Friend request accepted: ${dto.requesterId} ↔ ${currentUserId}`);
         return { message: 'Friend request accepted successfully' };
     }
 
     async rejectFollowRequest(dto: RejectFollowRequestDTO, currentUserId: string) {
+        this.logger.log(`User ${currentUserId} rejecting friend request from ${dto.requesterId}`);
+
         // Find the friend request
         const friendRequest = await this.prisma.friendRequest.findUnique({
             where: {
@@ -157,6 +168,7 @@ export class UserService {
         });
 
         if (!friendRequest) {
+            this.logger.warn(`Friend request not found: ${dto.requesterId} → ${currentUserId}`);
             throw new NotFoundException('Friend request not found');
         }
 
@@ -184,11 +196,13 @@ export class UserService {
             message: `${rejecter?.name || 'Someone'} rejected your friend request`,
         });
 
-
+        this.logger.log(`Friend request rejected: ${dto.requesterId} ✗ ${currentUserId}`);
         return { message: 'Friend request rejected successfully' };
     }
 
     async cancelFollowRequest(dto: CancelFollowRequestDTO, currentUserId: string) {
+        this.logger.log(`User ${currentUserId} cancelling friend request to ${dto.receiverId}`);
+
         // Find the friend request sent by current user
         const friendRequest = await this.prisma.friendRequest.findUnique({
             where: {
@@ -200,6 +214,7 @@ export class UserService {
         });
 
         if (!friendRequest) {
+            this.logger.warn(`Friend request not found: ${currentUserId} → ${dto.receiverId}`);
             throw new NotFoundException('Friend request not found');
         }
 
@@ -213,10 +228,13 @@ export class UserService {
             }
         });
 
+        this.logger.log(`Friend request cancelled: ${currentUserId} → ${dto.receiverId}`);
         return { message: 'Friend request cancelled successfully' };
     }
 
     async unfollowUser(dto: UnfollowUserDTO, currentUserId: string) {
+        this.logger.log(`User ${currentUserId} unfollowing ${dto.userId}`);
+
         // Find the friendship (could be in either direction due to sorted storage)
         const friendship = await this.prisma.friendship.findFirst({
             where: {
@@ -228,6 +246,7 @@ export class UserService {
         });
 
         if (!friendship) {
+            this.logger.warn(`Friendship not found: ${currentUserId} ↔ ${dto.userId}`);
             throw new NotFoundException('Friendship not found');
         }
 
@@ -240,10 +259,9 @@ export class UserService {
 
              await tx.user.update({ where: { id: currentUserId }, data: { friendCount: { decrement: 1 } } });
              await tx.user.update({ where: { id: dto.userId }, data: { friendCount: { decrement: 1 } } });
+        });
 
-        })
-
-
+        this.logger.log(`Friendship removed: ${currentUserId} ✗ ${dto.userId}`);
         return { message: 'Unfollowed successfully' };
     }
 

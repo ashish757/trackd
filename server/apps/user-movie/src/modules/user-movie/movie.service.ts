@@ -1,19 +1,27 @@
 import {
     Injectable,
     NotFoundException,
-    ConflictException,
+    BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '@app/common/prisma/prisma.service';
 import { MarkMovieDto, RemoveMovieDto, MovieStatus, RateMovieDto } from './DTO/user-movie.dto';
+import { CustomLoggerService } from '@app/common';
 
 @Injectable()
 export class UserMovieService {
-    constructor(private readonly prisma: PrismaService) {}
+    private readonly logger: CustomLoggerService;
+
+    constructor(private readonly prisma: PrismaService) {
+        this.logger = new CustomLoggerService();
+        this.logger.setContext(UserMovieService.name);
+    }
 
     /**
      * Mark a movie as WATCHED or PLANNED
      */
     async markMovie(dto: MarkMovieDto, userId: string) {
+        this.logger.log(`User ${userId} marking movie ${dto.movieId} as ${dto.status}`);
+
         // Create movie entry if it doesn't exist (movieId is TMDB ID)
         await this.prisma.movies.upsert({
             where: { id: dto.movieId },
@@ -33,6 +41,7 @@ export class UserMovieService {
 
         if (existingEntry) {
             // Update existing entry
+            this.logger.debug(`Updating existing movie entry for user ${userId}, movie ${dto.movieId}`);
             return this.prisma.userMovieEntry.update({
                 where: {
                     user_id_movie_id: {
@@ -47,7 +56,8 @@ export class UserMovieService {
         }
 
         // Create new entry
-        return await this.prisma.userMovieEntry.create({
+        this.logger.debug(`Creating new movie entry for user ${userId}, movie ${dto.movieId}`);
+        return this.prisma.userMovieEntry.create({
             data: {
                 user_id: userId,
                 movie_id: dto.movieId,
@@ -60,6 +70,8 @@ export class UserMovieService {
      * Remove a movie entry (unmark)
      */
     async removeMovie(dto: RemoveMovieDto, userId: string) {
+        this.logger.log(`User ${userId} removing movie ${dto.movieId}`);
+
         const entry = await this.prisma.userMovieEntry.findUnique({
             where: {
                 user_id_movie_id: {
@@ -70,6 +82,7 @@ export class UserMovieService {
         });
 
         if (!entry) {
+            this.logger.warn(`Movie entry not found for user ${userId}, movie ${dto.movieId}`);
             throw new NotFoundException('Movie entry not found');
         }
 
@@ -82,6 +95,7 @@ export class UserMovieService {
             },
         });
 
+        this.logger.log(`Movie entry removed successfully for user ${userId}, movie ${dto.movieId}`);
         return { message: 'Movie entry removed successfully' };
     }
 
@@ -162,6 +176,14 @@ export class UserMovieService {
      * Rate a movie (1-10 scale)
      */
     async rateMovie(dto: RateMovieDto, userId: string) {
+        this.logger.log(`User ${userId} rating movie ${dto.movieId} with ${dto.rating}/10`);
+
+        // Validate rating is between 1 and 10
+        if (dto.rating < 1 || dto.rating > 10) {
+            this.logger.warn(`Invalid rating ${dto.rating} provided by user ${userId}`);
+            throw new BadRequestException('Rating must be between 1 and 10');
+        }
+
         // Ensure movie exists in movies table
         await this.prisma.movies.upsert({
             where: { id: dto.movieId },
@@ -212,6 +234,8 @@ export class UserMovieService {
      * Remove user's rating for a movie
      */
     async removeRating(movieId: number, userId: string) {
+        this.logger.log(`User ${userId} removing rating for movie ${movieId}`);
+
         const movieData = await this.prisma.userMovieData.findUnique({
             where: {
                 user_id_movie_id: {
@@ -222,6 +246,7 @@ export class UserMovieService {
         });
 
         if (!movieData) {
+            this.logger.warn(`Rating not found for user ${userId}, movie ${movieId}`);
             throw new NotFoundException('Movie rating not found');
         }
 
@@ -234,6 +259,7 @@ export class UserMovieService {
             },
         });
 
+        this.logger.log(`Rating removed successfully for user ${userId}, movie ${movieId}`);
         return { message: 'Rating removed successfully' };
     }
 }

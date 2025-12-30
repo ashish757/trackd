@@ -65,10 +65,13 @@ export class AuthService {
                 : process.env.FRONTEND_URL_DEV || 'http://localhost:5173';
             const resetLink = `${frontendUrl}/forget-password?token=${token}`;
 
-            // await this.emailService.sendEmail(user.email, 'Trackd - Password Reset', `Hello <strong> ${user.name} </strong>, <br/> <br/> Click <a href="${resetLink}">here</a> to reset your password. This link is valid for 15 minutes.`);
-            await this.emailService.sendEmail(user.email, "Password Reset - Trackd", passwordResetTemplate(user.name, resetLink));
+            await this.emailService.sendEmail(
+                user.email,
+                "Password Reset - Trackd",
+                passwordResetTemplate(user.name, resetLink)
+            );
 
-            const res = await this.prisma.passwordResetToken.create({
+            await this.prisma.passwordResetToken.create({
                 data: {
                     user: {
                         connect: {id: user.id},
@@ -78,10 +81,6 @@ export class AuthService {
                 },
             });
 
-            if (!res) {
-                this.logger.error(`Failed to create password reset token for user: ${user.id}`);
-                throw new InternalServerErrorException("Failed to create password reset token");
-            }
 
             this.logger.log(`Password reset email sent successfully to: ${dto.email}`);
         } else {
@@ -198,18 +197,17 @@ export class AuthService {
     }
 
     async sendOtp(otpDto: SendOtpDto) {
-        // Generate random 6-digit OTP
+        this.logger.log(`Sending OTP to: ${otpDto.email}`);
+
         const otp = generateOTP();
 
-        this.logger.log(`Sending OTP to: ${otpDto.email}`);
-        // await this.emailService.sendEmail(otpDto.email, 'Trackd - Email Verification Code', `Hello <strong> ${otpDto.name} </strong>, <br/> <br/> Your One Time Verification code is: <strong>${otp} </strong>. <br/> It is valid for 03 minutes.`);
         await this.emailService.sendEmail(
             otpDto.email,
             'Trackd - Email Verification Code',
             otpTemplate(otpDto.name, otp)
         );
 
-        this.logger.debug(`OTP generated for ${otpDto.email}: ${otp}`);
+        this.logger.debug(`OTP sent successfully to: ${otpDto.email}`);
 
         const payload = {
             email: otpDto.email,
@@ -435,13 +433,21 @@ export class AuthService {
         const changeLink = `${frontendUrl}/change/email?token=${token}`;
 
         // Send notification to old email
-        await this.emailService.sendEmail(currentUser.email, 'Trackd - Email Change Request', changeEmailRequestTemplate(currentUser.name, dto.newEmail));
+        await this.emailService.sendEmail(
+            currentUser.email,
+            'Trackd - Email Change Request',
+            changeEmailRequestTemplate(currentUser.name, dto.newEmail)
+        );
 
         // Send verification link to new email
-        await this.emailService.sendEmail(dto.newEmail, "Email Verification - Trackd", verifyChangeEmailTemplate(currentUser.name, changeLink));
+        await this.emailService.sendEmail(
+            dto.newEmail,
+            "Email Verification - Trackd",
+            verifyChangeEmailTemplate(currentUser.name, changeLink)
+        );
 
         // create or update email change request per user
-        const res = await this.prisma.emailChangeTable.upsert({
+        await this.prisma.emailChangeTable.upsert({
             where: {
                 userId: userId,
             },
@@ -459,25 +465,31 @@ export class AuthService {
             },
         });
 
-
-        if (!res) throw new InternalServerErrorException("Failed to create email change request");
-
+        this.logger.log(`Email change request created for user: ${userId}`);
         return { message: 'Email change request sent successfully' };
     }
 
     async changeEmail(dto: ChangeEmailDto, isAuthenticated: boolean, userId: string) {
+        this.logger.log(`Email change attempt for user: ${userId}`);
+
         const hashedToken = crypto
             .createHash('sha256')
             .update(dto.token)
             .digest('hex');
 
-        // 1. Initial Check
         const token = await this.prisma.emailChangeTable.findUnique({
             where: {token: hashedToken}
         });
 
-        if (!token) throw new BadRequestException('Invalid token');
-        if (token.expiresAt < new Date(Date.now())) throw new BadRequestException("Token expired");
+        if (!token) {
+            this.logger.warn(`Invalid email change token attempted`);
+            throw new BadRequestException('Invalid or expired token');
+        }
+
+        if (token.expiresAt < new Date(Date.now())) {
+            this.logger.warn(`Expired email change token attempted`);
+            throw new BadRequestException('Token has expired');
+        }
 
         let accessToken = null;
         let newRefreshToken = null;
@@ -496,59 +508,50 @@ export class AuthService {
 
         const hash = await bcrypt.hash(newRefreshToken, PASSWORD_SALT_ROUNDS);
 
-        try {
-            // 2. Wrap the Transaction in Try/Catch
-            const res = await this.prisma.$transaction(async (tx) => {
-                // It is safer to re-check existence or update strictly inside transaction,
-                // but catching the delete error is the most direct fix for your issue.
-
-                const user = await tx.user.update({
-                    where: {id: token.userId},
-                    data: {
-                        email: token.newEmail,
-                        refreshTokens: isAuthenticated ? [hash] : [],
-                    }
-                });
-
-                const del = await tx.emailChangeTable.delete({
-                    where: {token: hashedToken}
-                });
-
-                return {user, del};
+        const res = await this.prisma.$transaction(async (tx) => {
+            const user = await tx.user.update({
+                where: {id: token.userId},
+                data: {
+                    email: token.newEmail,
+                    refreshTokens: isAuthenticated ? [hash] : [],
+                }
             });
 
-            // Send success confirmation email to the new email address
-            await this.emailService.sendEmail(
-                res.user.email,
-                'Email Successfully Updated - Trackd',
-                emailChangedSuccessTemplate(res.user.name, res.user.email)
-            );
+            await tx.emailChangeTable.delete({
+                where: {token: hashedToken}
+            }).catch(() => {
+                // Token already deleted - this is fine
+                this.logger.debug('Email change token already consumed');
+            });
 
-            if (isAuthenticated) {
-                usr = {
-                    id: userId,
-                    name: res.user.name,
-                    email: res.user.email,
-                    createdAt: res.user.createdAt,
-                    username: res.user.username
-                };
-            }
+            return {user};
+        });
 
-            return {
-                accessToken: accessToken,
-                refreshToken: newRefreshToken,
-                user: usr,
-                message: "Email changed successfully",
+        // Send success confirmation email to the new email address
+        await this.emailService.sendEmail(
+            res.user.email,
+            'Email Successfully Updated - Trackd',
+            emailChangedSuccessTemplate(res.user.name, res.user.email)
+        );
+
+        if (isAuthenticated) {
+            usr = {
+                id: userId,
+                name: res.user.name,
+                email: res.user.email,
+                createdAt: res.user.createdAt,
+                username: res.user.username
             };
-
-        } catch (error) {
-            // 3. Catch the specific Prisma error for "Record not found" during delete
-            if (error.code === 'P2025') {
-                throw new BadRequestException('Invalid token');
-            }
-            // Re-throw any other actual errors (like DB connection issues, etc.)
-            throw error;
         }
+
+        this.logger.log(`Email changed successfully for user: ${userId}`);
+
+        return {
+            accessToken: accessToken,
+            refreshToken: newRefreshToken,
+            user: usr,
+            message: "Email changed successfully",
+        };
     }
 
     // 1. Generate the URL to send the user to Google
