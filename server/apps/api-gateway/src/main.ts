@@ -3,12 +3,15 @@ import { ValidationPipe } from '@nestjs/common';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { PROXY_CONFIG } from './proxy.config';
 import { AppModule } from './app.module';
-import { LoggingInterceptor, CustomLoggerService } from '@app/common';
+import { LoggingInterceptor, CustomLoggerService, ThrottlerExceptionFilter } from '@app/common';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
     const logger = new CustomLoggerService();
     logger.setContext('API-Gateway');
+
+    // Enable global exception filter for rate limiting
+    app.useGlobalFilters(new ThrottlerExceptionFilter());
 
     // Enable global logging interceptor
     app.useGlobalInterceptors(new LoggingInterceptor());

@@ -41,6 +41,7 @@ export * from './config/rate-limit.config';
 
 // Exceptions Filters
 export * from './filters/AllExceptionsFilter';
+export * from './filters/throttler-exception.filter';
 
 // Custom Exceptions
 export * from './exceptions/business.exception';

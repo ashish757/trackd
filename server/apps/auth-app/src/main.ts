@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AuthAppModule } from './auth-app.module';
 import cookieParser from 'cookie-parser';
-import { LoggingInterceptor, CustomLoggerService, AllExceptionsFilter } from '@app/common';
+import { LoggingInterceptor, CustomLoggerService, AllExceptionsFilter, ThrottlerExceptionFilter } from '@app/common';
 
 
 async function bootstrap() {
@@ -12,8 +12,12 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
-  // Enable global exception filter
-  app.useGlobalFilters(new AllExceptionsFilter());
+  // Enable global exception filters
+  // Order matters: Specific filters first, then general ones
+  app.useGlobalFilters(
+    new ThrottlerExceptionFilter(), // Handle rate limiting errors with custom response
+    new AllExceptionsFilter()        // Handle all other exceptions
+  );
 
   // Enable global logging interceptor
   app.useGlobalInterceptors(new LoggingInterceptor());

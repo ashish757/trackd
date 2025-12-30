@@ -129,11 +129,4 @@ export const RateLimitConfig = {
 } as const;
 
 
-/**
- * Rate limit error messages
- */
-export const RateLimitMessages = {
-  EXCEEDED: 'Too many requests. Please try again later.',
-  BLOCKED: 'Too many failed attempts. Your IP has been temporarily blocked.',
-} as const;
 
