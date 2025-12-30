@@ -22,25 +22,7 @@ import OauthSuccessPage from "./pages/OauthSuccessPage.tsx";
 import {useDetectCountry} from "./hooks/useDetectCountry.ts";
 import BottomNav from "./components/BottomNav.tsx";
 import LandingPage from "./pages/LandingPage.tsx";
-import ToastContainer from "./components/Toast/ToastContainer.tsx";
-import { ToastProvider } from "./components/Toast/ToastProvider.tsx";
-import { useEffect } from "react";
-import { registerToastCallback } from "./redux/baseQuery.ts";
-import { useToastContext } from "./hooks/useToast.ts";
-
-// Component to register toast callback
-function ToastInitializer() {
-  const { addToast } = useToastContext();
-
-  useEffect(() => {
-    // Register the toast callback so baseQuery can show toasts
-    registerToastCallback((message, type, duration) => {
-      addToast(message, type, duration);
-    });
-  }, [addToast]);
-
-  return null;
-}
+import ToastListener from "./components/Toast/ToastListener.tsx";
 
 function App() {
   // Automatically refresh access token on page load/reload
@@ -57,7 +39,7 @@ function App() {
   }
 
   return (
-      <ToastProvider>
+      <>
           <main>
               <Routes>
                   <Route path="/" element={<GuestRoute><LandingPage /></GuestRoute>} />
@@ -85,11 +67,9 @@ function App() {
           {/* Bottom Navigation - Mobile Only */}
           <BottomNav />
 
-          {/* Global Toast Container */}
-          <ToastContainer />
-          <ToastInitializer />
-      </ToastProvider>
-
+          {/* Global Toast Listener - Redux Connected */}
+          <ToastListener />
+      </>
   )
 }
 

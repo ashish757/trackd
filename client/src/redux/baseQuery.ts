@@ -3,29 +3,9 @@ import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolk
 import { tokenManager } from '../utils/tokenManager';
 import { API_CONFIG } from '../config/api.config';
 import { logout, setUser } from './auth/authSlice';
+import { addToast } from './toast/toastSlice';
 import type { User } from './user/userApi';
 
-// Toast notification support
-let toastCallback: ((message: string, type: 'SUCCESS' | 'ERROR' | 'WARNING' | 'ALERT', duration?: number) => void) | null = null;
-
-/**
- * Register toast callback for showing notifications
- * This should be called once from the app initialization
- */
-export const registerToastCallback = (
-    callback: (message: string, type: 'SUCCESS' | 'ERROR' | 'WARNING' | 'ALERT', duration?: number) => void
-) => {
-    toastCallback = callback;
-};
-
-/**
- * Show a toast notification if callback is registered
- */
-const showToast = (message: string, type: 'SUCCESS' | 'ERROR' | 'WARNING' | 'ALERT', duration?: number) => {
-    if (toastCallback) {
-        toastCallback(message, type, duration);
-    }
-};
 
 /**
  * Response structure from the refresh token endpoint
@@ -232,11 +212,12 @@ export const baseQueryWithReauth: BaseQueryFn<
         const errorData = result.error.data as { retryAfter?: string; message?: string };
         const retryAfter = errorData?.retryAfter || '60 seconds';
 
-        showToast(
-            `Too many requests. Please try again in ${retryAfter}.`,
-            'WARNING',
-            2000 // Show for 2 seconds
-        );
+        // Dispatch toast notification via Redux
+        api.dispatch(addToast({
+            message: `Too many requests. Please try again in ${retryAfter}.`,
+            type: 'WARNING',
+            duration: 10000, // Show for 10 seconds since it's important
+        }));
 
         console.warn('Rate limit exceeded:', errorData);
         return result;

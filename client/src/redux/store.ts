@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { apiSlice } from './apiSlice.ts';
 import authReducer from './auth/authSlice.ts';
 import userReducer from "./user/userSlice.ts";
+import toastReducer from './toast/toastSlice.ts';
 import { notificationApi } from './notification/notificationApi.ts';
 
 export const store = configureStore({
@@ -10,6 +11,7 @@ export const store = configureStore({
         [notificationApi.reducerPath]: notificationApi.reducer,
         auth: authReducer,
         user: userReducer,
+        toast: toastReducer,
     },
 
     // Add the API middleware to enable caching, fetching, and listener management
