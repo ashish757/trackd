@@ -15,7 +15,7 @@ model User {
   id                String    @id @default(cuid())
   username          String    @unique() @default(cuid())
   email             String    @unique()
-  password          String? // optional for OAuth users
+  password          String?
   name              String?
   bio               String?
   createdAt         DateTime  @default(now())
@@ -27,10 +27,10 @@ model User {
   googleId String? @unique
   avatar   String?
 
-  UserMovieData  UserMovieData[]
-  UserMovieEntry UserMovieEntry[]
+  // Updated Relation: Unified Movie Tracking
+  userMovies UserMovie[]
 
-  // NEW RELATIONS (Friend System)
+  // Friend System
   sentFriendRequests     FriendRequest[]     @relation("SentRequests")
   receivedFriendRequests FriendRequest[]     @relation("ReceivedRequests")
   friendshipsA           Friendship[]        @relation("FriendA")
@@ -51,49 +51,48 @@ model User {
 model Movies {
   id Int @id
 
-  UserMovieData  UserMovieData[]
-  UserMovieEntry UserMovieEntry[]
+  // Updated Relation
+  userMovies UserMovie[]
 
   @@map("movies")
 }
 
-model UserMovieData {
-  id          String   @id @default(cuid())
-  user_id     String
-  movie_id    Int
-  rating      Int?
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model UserMovie {
+  id      String @id @default(cuid())
+  userId  String @map("user_id")
+  movieId Int    @map("movie_id")
 
-  user  User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  movie Movies @relation(fields: [movie_id], references: [id], onDelete: Cascade)
+  // The Features: Status + Favorites
+  status     MovieStatus
+  isFavorite Boolean     @default(false)
 
-  @@unique([user_id, movie_id])
-  @@map("user_movie_data")
-}
+  // User input
+  rating Int?
+  review String? @db.Text
 
-model UserMovieEntry {
-  id        String      @id @default(cuid())
-  user_id   String
-  movie_id  Int
-  status    MovieStatus
-  createdAt DateTime    @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user  User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  movie Movies @relation(fields: [movie_id], references: [id], onDelete: Cascade)
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie Movies @relation(fields: [movieId], references: [id], onDelete: Cascade)
 
-  @@unique([user_id, movie_id])
-  @@map("user_movie_entries")
+  // Optimization: Prevents duplicates and speeds up specific user lookups
+  @@unique([userId, movieId])
+  @@index([userId, status])
+  @@index([userId, isFavorite])
+  @@map("user_movies")
 }
 
 enum MovieStatus {
   WATCHED
   PLANNED
+  WATCHING
+  DROPPED
+  ON_HOLD
 }
 
 //
-//  FRIEND REQUEST MODEL (Only pending requests stored)
+//  FRIEND & SYSTEM MODELS (Unchanged for logic consistency)
 //
 
 model FriendRequest {
@@ -105,15 +104,9 @@ model FriendRequest {
   sender   User @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
   receiver User @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
 
-  // Prevent duplicate requests
   @@unique([senderId, receiverId])
   @@index([receiverId])
 }
-
-//
-//  FRIENDSHIP MODEL (Accepted friendships)
-//  ALWAYS INSERT SORTED: (A < B) in backend
-//
 
 model Friendship {
   id          String   @id @default(cuid())
@@ -124,7 +117,6 @@ model Friendship {
   friendA User @relation("FriendA", fields: [friend_a_id], references: [id], onDelete: Cascade)
   friendB User @relation("FriendB", fields: [friend_b_id], references: [id], onDelete: Cascade)
 
-  // Prevent duplicates (A,B) != (B,A)
   @@unique([friend_a_id, friend_b_id])
   @@index([friend_a_id])
   @@index([friend_b_id])
@@ -153,20 +145,15 @@ model EmailChangeTable {
   @@map("email_change_table")
 }
 
-//
-//  NOTIFICATION MODEL
-//
-
 model Notification {
   id        String           @id @default(cuid())
-  userId    String // Receiver of the notification
-  senderId  String? // Sender (optional, system notifications may not have sender)
+  userId    String
+  senderId  String?
   type      NotificationType
   message   String
   isRead    Boolean          @default(false)
   createdAt DateTime         @default(now())
 
-  // Relations
   user   User  @relation("ReceivedNotifications", fields: [userId], references: [id], onDelete: Cascade)
   sender User? @relation("SentNotifications", fields: [senderId], references: [id], onDelete: Cascade)
 
