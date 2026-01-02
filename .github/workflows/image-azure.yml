@@ -82,7 +82,7 @@ jobs:
         with:
           login-server: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GHCR_PAT }}
 
       - name: Build and Push Image
         run: |
