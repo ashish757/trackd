@@ -38,6 +38,7 @@ export default function MyListPage() {
 
     // Determine what to show based on active tab
     const getMoviesToShow = () => {
+        // console.log("Movies ", watchedMovies);
         if (activeTab === 'watched') return watchedMovies?.data || [];
         if (activeTab === 'planned') return plannedMovies?.data || [];
         // For 'all', combine both
@@ -161,7 +162,7 @@ export default function MyListPage() {
                                 {moviesToShow.map((entry) => (
                                     <MovieCardWithDetails
                                         key={entry.id}
-                                        movieId={entry.movie_id}
+                                        movieId={entry.movieId}
                                         onClick={(movie) => handleCardClick(movie)}
                                         badge={{
                                             text: entry.status === MovieStatus.WATCHED ? 'Watched' : 'Planned',

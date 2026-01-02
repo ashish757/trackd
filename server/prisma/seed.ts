@@ -13,10 +13,10 @@ async function main() {
     console.log('--- Start Seeding ---');
 
     // --- 1. CLEANUP ---
-    await prisma.userMovieEntry.deleteMany({});
-    await prisma.userMovieData.deleteMany({});
+    await prisma.userMovie.deleteMany({});
     await prisma.friendship.deleteMany({});
     await prisma.friendRequest.deleteMany({});
+    await prisma.notification.deleteMany({});
     await prisma.movies.deleteMany({});
     await prisma.user.deleteMany({});
     console.log('Previous data cleared.');
@@ -172,54 +172,49 @@ async function main() {
     console.log('Updated friendCount for all users.');
 
 
-    // 5. GENERATE MOVIE DATA (Ratings & Entries)
+    // 5. GENERATE MOVIE DATA (Unified UserMovie)
     for (const user of users) {
         const numActions = faker.number.int({ min: 10, max: 30 });
 
         for (let i = 0; i < numActions; i++) {
             const randomMovie = faker.helpers.arrayElement(movies);
 
-            // MOVIE ENTRY (WATCHED/PLANNED)
-            const status = faker.helpers.arrayElement([MovieStatus.WATCHED, MovieStatus.PLANNED]);
+            // UNIFIED USER MOVIE ENTRY
+            const status = faker.helpers.arrayElement([
+                MovieStatus.WATCHED,
+                MovieStatus.PLANNED,
+                MovieStatus.WATCHING,
+                MovieStatus.DROPPED,
+                MovieStatus.ON_HOLD
+            ]);
+
+            // Generate rating and review (higher chance for WATCHED movies)
+            const shouldHaveRating = status === MovieStatus.WATCHED
+                ? faker.datatype.boolean(0.7)
+                : faker.datatype.boolean(0.2);
+
             try {
-                await prisma.userMovieEntry.create({
+                await prisma.userMovie.create({
                     data: {
-                        user_id: user.id,
-                        movie_id: randomMovie.id,
+                        userId: user.id,
+                        movieId: randomMovie.id,
                         status: status,
+                        isFavorite: faker.datatype.boolean(0.15), // 15% chance of being favorite
+                        rating: shouldHaveRating ? faker.number.int({ min: 1, max: 10 }) : null,
+                        review: shouldHaveRating && faker.datatype.boolean(0.5)
+                            ? faker.lorem.sentences(faker.number.int({ min: 1, max: 3 }))
+                            : null,
                     }
                 });
             } catch (e: any) {
                 // Ignore P2002 duplicates (unique constraint violations)
                 if (e.code !== 'P2002') {
-                    console.error('Error creating user movie entry:', e);
-                }
-            }
-
-            // RATING/REVIEW (Only for WATCHED entries, 70% chance)
-            if (status === MovieStatus.WATCHED && faker.datatype.boolean(0.7)) {
-                try {
-                    await prisma.userMovieData.create({
-                        data: {
-                            user_id: user.id,
-                            movie_id: randomMovie.id,
-                            rating: faker.number.int({ min: 1, max: 10 }),
-                            description: faker.datatype.boolean(0.5) ? faker.lorem.sentences(1) : null,
-                        }
-                    });
-                } catch (e: any) {
-                    // Check for P2002 (Unique constraint failed) and skip.
-                    if (e.code === 'P2002') {
-                        // This means the user already rated this movie in a previous loop iteration.
-                    } else {
-                        // Log any other unexpected error
-                        console.error('Error creating user movie data:', e);
-                    }
+                    console.error('Error creating user movie:', e);
                 }
             }
         }
     }
-    console.log('User movie data and entries created.');
+    console.log('User movie data created.');
 
     console.log('--- Seeding finished. ---');
 }

@@ -11,7 +11,7 @@ export type MovieStatus = typeof MovieStatus[keyof typeof MovieStatus];
 export interface UserMovieEntry {
     id: number;
     user_id: number;
-    movie_id: number;
+    movieId: number;
     status: MovieStatus;
     createdAt: string;
     movie: {

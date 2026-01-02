@@ -3,6 +3,9 @@ import { IsEnum, IsNumber, IsOptional, Min, Max, IsInt } from 'class-validator';
 export enum MovieStatus {
     WATCHED = 'WATCHED',
     PLANNED = 'PLANNED',
+    WATCHING = 'WATCHING',
+    DROPPED = 'DROPPED',
+    ON_HOLD = 'ON_HOLD',
 }
 
 export class MarkMovieDto {

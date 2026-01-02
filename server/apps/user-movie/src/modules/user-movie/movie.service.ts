@@ -17,7 +17,7 @@ export class UserMovieService {
     }
 
     /**
-     * Mark a movie as WATCHED or PLANNED
+     * Mark a movie with a specific status (WATCHED, PLANNED, etc.)
      */
     async markMovie(dto: MarkMovieDto, userId: string) {
         this.logger.log(`User ${userId} marking movie ${dto.movieId} as ${dto.status}`);
@@ -29,41 +29,26 @@ export class UserMovieService {
             create: { id: dto.movieId }, // Create with TMDB ID
         });
 
-        // Check if entry already exists
-        const existingEntry = await this.prisma.userMovieEntry.findUnique({
+        // Upsert the user movie entry (unified model)
+        const userMovie = await this.prisma.userMovie.upsert({
             where: {
-                user_id_movie_id: {
-                    user_id: userId,
-                    movie_id: dto.movieId,
+                userId_movieId: {
+                    userId: userId,
+                    movieId: dto.movieId,
                 },
             },
-        });
-
-        if (existingEntry) {
-            // Update existing entry
-            this.logger.debug(`Updating existing movie entry for user ${userId}, movie ${dto.movieId}`);
-            return this.prisma.userMovieEntry.update({
-                where: {
-                    user_id_movie_id: {
-                        user_id: userId,
-                        movie_id: dto.movieId,
-                    },
-                },
-                data: {
-                    status: dto.status,
-                },
-            });
-        }
-
-        // Create new entry
-        this.logger.debug(`Creating new movie entry for user ${userId}, movie ${dto.movieId}`);
-        return this.prisma.userMovieEntry.create({
-            data: {
-                user_id: userId,
-                movie_id: dto.movieId,
+            update: {
+                status: dto.status,
+            },
+            create: {
+                userId: userId,
+                movieId: dto.movieId,
                 status: dto.status,
             },
         });
+
+        this.logger.debug(`User movie entry ${userMovie.id} updated/created for user ${userId}, movie ${dto.movieId}`);
+        return userMovie;
     }
 
     /**
@@ -72,11 +57,11 @@ export class UserMovieService {
     async removeMovie(dto: RemoveMovieDto, userId: string) {
         this.logger.log(`User ${userId} removing movie ${dto.movieId}`);
 
-        const entry = await this.prisma.userMovieEntry.findUnique({
+        const entry = await this.prisma.userMovie.findUnique({
             where: {
-                user_id_movie_id: {
-                    user_id: userId,
-                    movie_id: dto.movieId,
+                userId_movieId: {
+                    userId: userId,
+                    movieId: dto.movieId,
                 },
             },
         });
@@ -86,11 +71,11 @@ export class UserMovieService {
             throw new NotFoundException('Movie entry not found');
         }
 
-        await this.prisma.userMovieEntry.delete({
+        await this.prisma.userMovie.delete({
             where: {
-                user_id_movie_id: {
-                    user_id: userId,
-                    movie_id: dto.movieId,
+                userId_movieId: {
+                    userId: userId,
+                    movieId: dto.movieId,
                 },
             },
         });
@@ -100,11 +85,11 @@ export class UserMovieService {
     }
 
     /**
-     * Get all movies for a user (both WATCHED and PLANNED)
+     * Get all movies for a user
      */
     async getUserMovies(userId: string) {
-        return this.prisma.userMovieEntry.findMany({
-            where: { user_id: userId },
+        return this.prisma.userMovie.findMany({
+            where: { userId: userId },
             include: {
                 movie: true,
             },
@@ -118,9 +103,9 @@ export class UserMovieService {
      * Get movies by status
      */
     async getUserMoviesByStatus(userId: string, status: MovieStatus) {
-        return this.prisma.userMovieEntry.findMany({
+        return this.prisma.userMovie.findMany({
             where: {
-                user_id: userId,
+                userId: userId,
                 status: status,
             },
             include: {
@@ -136,11 +121,11 @@ export class UserMovieService {
      * Get a specific movie entry
      */
     async getMovieEntry(userId: string, movieId: number) {
-        return this.prisma.userMovieEntry.findUnique({
+        return this.prisma.userMovie.findUnique({
             where: {
-                user_id_movie_id: {
-                    user_id: userId,
-                    movie_id: movieId,
+                userId_movieId: {
+                    userId: userId,
+                    movieId: movieId,
                 },
             },
             include: {
@@ -153,21 +138,33 @@ export class UserMovieService {
      * Get stats for user movies
      */
     async getUserStats(userId: string) {
-        const [watchedCount, plannedCount, total] = await Promise.all([
-            this.prisma.userMovieEntry.count({
-                where: { user_id: userId, status: MovieStatus.WATCHED },
+        const [watchedCount, plannedCount, watchingCount, droppedCount, onHoldCount, total] = await Promise.all([
+            this.prisma.userMovie.count({
+                where: { userId: userId, status: MovieStatus.WATCHED },
             }),
-            this.prisma.userMovieEntry.count({
-                where: { user_id: userId, status: MovieStatus.PLANNED },
+            this.prisma.userMovie.count({
+                where: { userId: userId, status: MovieStatus.PLANNED },
             }),
-            this.prisma.userMovieEntry.count({
-                where: { user_id: userId },
+            this.prisma.userMovie.count({
+                where: { userId: userId, status: MovieStatus.WATCHING },
+            }),
+            this.prisma.userMovie.count({
+                where: { userId: userId, status: MovieStatus.DROPPED },
+            }),
+            this.prisma.userMovie.count({
+                where: { userId: userId, status: MovieStatus.ON_HOLD },
+            }),
+            this.prisma.userMovie.count({
+                where: { userId: userId },
             }),
         ]);
 
         return {
             watched: watchedCount,
             planned: plannedCount,
+            watching: watchingCount,
+            dropped: droppedCount,
+            onHold: onHoldCount,
             total,
         };
     }
@@ -191,71 +188,80 @@ export class UserMovieService {
             create: { id: dto.movieId },
         });
 
-        // Upsert UserMovieData for rating
-        const movieData = await this.prisma.userMovieData.upsert({
+        // Upsert UserMovie with rating (unified model)
+        const userMovie = await this.prisma.userMovie.upsert({
             where: {
-                user_id_movie_id: {
-                    user_id: userId,
-                    movie_id: dto.movieId,
+                userId_movieId: {
+                    userId: userId,
+                    movieId: dto.movieId,
                 },
             },
             update: {
                 rating: dto.rating,
-                description: dto.description,
+                review: dto.description,
             },
             create: {
-                user_id: userId,
-                movie_id: dto.movieId,
+                userId: userId,
+                movieId: dto.movieId,
                 rating: dto.rating,
-                description: dto.description,
+                review: dto.description,
+                status: MovieStatus.WATCHED, // Default to WATCHED when rating
             },
         });
 
-        return movieData;
+        return userMovie;
     }
 
     /**
      * Get user's rating for a specific movie
      */
     async getUserMovieRating(userId: string, movieId: number) {
-        const movieData = await this.prisma.userMovieData.findUnique({
+        return await this.prisma.userMovie.findUnique({
             where: {
-                user_id_movie_id: {
-                    user_id: userId,
-                    movie_id: movieId,
+                userId_movieId: {
+                    userId: userId,
+                    movieId: movieId,
                 },
             },
         });
-
-        return movieData;
     }
 
     /**
-     * Remove user's rating for a movie
+     * Remove user's rating for a movie (keeps the movie entry)
      */
     async removeRating(movieId: number, userId: string) {
         this.logger.log(`User ${userId} removing rating for movie ${movieId}`);
 
-        const movieData = await this.prisma.userMovieData.findUnique({
+        const userMovie = await this.prisma.userMovie.findUnique({
             where: {
-                user_id_movie_id: {
-                    user_id: userId,
-                    movie_id: movieId,
+                userId_movieId: {
+                    userId: userId,
+                    movieId: movieId,
                 },
             },
         });
 
-        if (!movieData) {
-            this.logger.debug(`Rating not found for user ${userId}, movie ${movieId}`);
+        if (!userMovie) {
+            this.logger.debug(`Movie entry not found for user ${userId}, movie ${movieId}`);
+            throw new NotFoundException('Movie entry not found');
+        }
+
+        if (!userMovie.rating) {
+            this.logger.debug(`No rating found for user ${userId}, movie ${movieId}`);
             throw new NotFoundException('Movie rating not found');
         }
 
-        await this.prisma.userMovieData.delete({
+        // Update to remove rating and review, but keep the entry
+        await this.prisma.userMovie.update({
             where: {
-                user_id_movie_id: {
-                    user_id: userId,
-                    movie_id: movieId,
+                userId_movieId: {
+                    userId: userId,
+                    movieId: movieId,
                 },
+            },
+            data: {
+                rating: null,
+                review: null,
             },
         });
 
@@ -263,3 +269,4 @@ export class UserMovieService {
         return { message: 'Rating removed successfully' };
     }
 }
+

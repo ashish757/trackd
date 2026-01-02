@@ -117,15 +117,18 @@ export default class FriendService {
 
 
         // Get watched movies with details
-        const watchedMovies = await this.prisma.userMovieEntry.findMany({
+        const watchedMovies = await this.prisma.userMovie.findMany({
             where: {
-                user_id: targetUserId,
+                userId: targetUserId,
                 status: 'WATCHED'
             },
             select: {
                 id: true,
-                movie_id: true,
+                movieId: true,
                 status: true,
+                rating: true,
+                review: true,
+                isFavorite: true,
                 createdAt: true,
                 movie: {
                     select: {
@@ -139,15 +142,18 @@ export default class FriendService {
         });
 
         // Get planned movies with details
-        const plannedMovies = await this.prisma.userMovieEntry.findMany({
+        const plannedMovies = await this.prisma.userMovie.findMany({
             where: {
-                user_id: targetUserId,
+                userId: targetUserId,
                 status: 'PLANNED'
             },
             select: {
                 id: true,
-                movie_id: true,
+                movieId: true,
                 status: true,
+                rating: true,
+                review: true,
+                isFavorite: true,
                 createdAt: true,
                 movie: {
                     select: {
