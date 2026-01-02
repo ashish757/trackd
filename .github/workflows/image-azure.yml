@@ -26,6 +26,9 @@ on:
 jobs:
   changes:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     outputs:
       # We logic-gate the output: If manual, use input; if pushed, use filter.
       services: ${{ steps.set-services.outputs.services }}
