@@ -83,17 +83,13 @@ jobs:
 
       - name: Build and Push Image
         run: |
-
-          echo "Checking for Dockerfile in server directory..."
-          ls -R server/ | grep Dockerfile || echo "Dockerfile NOT found in server/ folder"
-
-
           IMAGE_TAG=ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}:${{ github.sha }}
           
           docker build \
-            -t $IMAGE_TAG \
-            -f server/Dockerfile \
-            ./server/apps/${{ matrix.service }}
+          -t $IMAGE_TAG \
+          -f server/Dockerfile \
+          --build-arg APP_NAME=${{ matrix.service }} \
+          ./server
           
           docker push $IMAGE_TAG
 
