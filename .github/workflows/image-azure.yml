@@ -1,0 +1,100 @@
+name: Build and Deploy Microservices
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'server/apps/**'
+  workflow_dispatch:
+    inputs:
+      manual_service:
+        description: 'Select service to deploy manually (or "all")'
+        required: true
+        default: 'none'
+        type: choice
+        options:
+          - none
+          - all
+          - auth-app
+          - movie-app
+          - user-app
+          - friend-app
+          - notification-app
+          - api-gateway
+          - user-movie
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      # We logic-gate the output: If manual, use input; if pushed, use filter.
+      services: ${{ steps.set-services.outputs.services }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        if: github.event_name == 'push'
+        with:
+          filters: |
+            auth-app: 'server/apps/auth-app/**'
+            movie-app: 'server/apps/movie-app/**'
+            user-app: 'server/apps/user-app/**'
+            friend-app: 'server/apps/friend-app/**'
+            notification-app: 'server/apps/notification-app/**'
+            api-gateway: 'server/apps/api-gateway/**'
+            user-movie: 'server/apps/user-movie/**'
+
+      - name: Set Services Output
+        id: set-services
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            if [[ "${{ github.event.inputs.manual_service }}" == "all" ]]; then
+             
+              echo 'services=["auth-app", "movie-app", "user-app", "friend-app", "notification-app", "api-gateway", "user-movie"]' >> $GITHUB_OUTPUT
+            else
+            
+              echo 'services=["${{ github.event.inputs.manual_service }}"]' >> $GITHUB_OUTPUT
+            fi
+          else
+           
+            echo 'services=${{ steps.filter.outputs.changes }}' >> $GITHUB_OUTPUT
+          fi
+
+  deploy:
+    needs: changes
+    # Only run if services list is not empty and not "none"
+    if: ${{ needs.changes.outputs.services != '[]' && needs.changes.outputs.services != '["none"]' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.changes.outputs.services) }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Image
+        run: |
+          IMAGE_TAG=ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}:${{ github.sha }}
+          docker build -t $IMAGE_TAG ./server/apps/${{ matrix.service }}
+          docker push $IMAGE_TAG
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy Revision to Azure Container Apps
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          containerAppName: ${{ matrix.service }}
+          resourceGroup: ${{ secrets.AZURE_RG }}
+          imageToDeploy: ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}:${{ github.sha }}
