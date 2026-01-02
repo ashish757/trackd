@@ -166,14 +166,41 @@ export default class FriendService {
             }
         });
 
+        // Get favorite movies
+        const favoriteMovies = await this.prisma.userMovie.findMany({
+            where: {
+                userId: targetUserId,
+                isFavorite: true
+            },
+            select: {
+                id: true,
+                movieId: true,
+                status: true,
+                rating: true,
+                review: true,
+                isFavorite: true,
+                createdAt: true,
+                movie: {
+                    select: {
+                        id: true,
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
         return {
             stats: {
                 watched: watchedMovies.length,
                 planned: plannedMovies.length,
+                favorites: favoriteMovies.length,
                 total: watchedMovies.length + plannedMovies.length
             },
             watchedMovies,
-            plannedMovies
+            plannedMovies,
+            favoriteMovies
         };
     }
 
