@@ -7,7 +7,7 @@ interface MovieCardProps {
     onClick?: (movie: Movie) => void;
     badge?: {
         text: string;
-        color: 'green' | 'blue' | 'purple' | 'yellow';
+        color: 'green' | 'blue' | 'purple' | 'yellow' | 'pink';
     };
 }
 
@@ -16,6 +16,7 @@ const badgeColors = {
     blue: 'bg-blue-500',
     purple: 'bg-purple-500',
     yellow: 'bg-yellow-500',
+    pink: 'bg-pink-500',
 };
 
 const MovieCard = memo(({ movie, onClick, badge }: MovieCardProps) => {

@@ -281,9 +281,10 @@ export const userApi = apiSlice.injectEndpoints({
         }),
 
         getUserMovieStats: builder.query<{
-            stats: { watched: number; planned: number; total: number };
-            watchedMovies: Array<{ id: string; movie_id: number; status: string; createdAt: string; movie: { id: number } }>;
-            plannedMovies: Array<{ id: string; movie_id: number; status: string; createdAt: string; movie: { id: number } }>;
+            stats: { watched: number; planned: number; favorites: number; total: number };
+            watchedMovies: Array<{ id: string; movieId: number; status: string; createdAt: string; movie: { id: number } }>;
+            plannedMovies: Array<{ id: string; movieId: number; status: string; createdAt: string; movie: { id: number } }>;
+            favoriteMovies: Array<{ id: string; movieId: number; status: string; isFavorite: boolean; createdAt: string; movie: { id: number } }>;
         }, string>({
             query: (userId) => ({
                 url: `${API_CONFIG.ENDPOINTS.FRIEND.GET_USER_MOVIES}/${userId}`,
@@ -291,9 +292,10 @@ export const userApi = apiSlice.injectEndpoints({
             }),
             transformResponse: (response: {
                 data: {
-                    stats: { watched: number; planned: number; total: number };
-                    watchedMovies: Array<{ id: string; movie_id: number; status: string; createdAt: string; movie: { id: number } }>;
-                    plannedMovies: Array<{ id: string; movie_id: number; status: string; createdAt: string; movie: { id: number } }>;
+                    stats: { watched: number; planned: number; favorites: number; total: number };
+                    watchedMovies: Array<{ id: string; movieId: number; status: string; createdAt: string; movie: { id: number } }>;
+                    plannedMovies: Array<{ id: string; movieId: number; status: string; createdAt: string; movie: { id: number } }>;
+                    favoriteMovies: Array<{ id: string; movieId: number; status: string; isFavorite: boolean; createdAt: string; movie: { id: number } }>;
                 }
             }) => {
                 return response.data;

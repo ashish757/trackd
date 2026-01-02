@@ -1,4 +1,4 @@
-import {Calendar, UserCheck, UserPlus, UserMinus, X, Users, Film} from "lucide-react";
+import {Calendar, UserCheck, UserPlus, UserMinus, X, Users, Film, Heart} from "lucide-react";
 import {
     useFollowUserMutation,
     useGetUserByIdQuery,
@@ -23,7 +23,7 @@ const UserPage = () => {
     const { username } = useParams();
     const currentUser = useSelector((state: RootState) => state.auth.user);
     const isInitialized = useSelector((state: RootState) => state.auth.isInitialized);
-    const [selectedTab, setSelectedTab] = useState<'watched' | 'planned'>('watched');
+    const [selectedTab, setSelectedTab] = useState<'watched' | 'planned' | 'favorites'>('watched');
     const [showFriendsModal, setShowFriendsModal] = useState(false);
 
     const navigate = useNavigate();
@@ -439,9 +439,9 @@ const UserPage = () => {
                                                     <p className="text-2xl font-bold text-blue-700">{movieStats.stats.planned}</p>
                                                     <p className="text-xs text-blue-600 font-medium">Planned</p>
                                                 </div>
-                                                <div className="bg-linear-to-br from-purple-50 to-purple-100 p-4 rounded-lg text-center">
-                                                    <p className="text-2xl font-bold text-purple-700">{movieStats.stats.total}</p>
-                                                    <p className="text-xs text-purple-600 font-medium">Total</p>
+                                                <div className="bg-linear-to-br from-pink-50 to-pink-100 p-4 rounded-lg text-center">
+                                                    <p className="text-2xl font-bold text-pink-700">{movieStats.stats.favorites}</p>
+                                                    <p className="text-xs text-pink-600 font-medium">Favorites</p>
                                                 </div>
                                             </div>
 
@@ -467,6 +467,17 @@ const UserPage = () => {
                                                 >
                                                     Plan to Watch ({movieStats.stats.planned})
                                                 </button>
+                                                <button
+                                                    onClick={() => setSelectedTab('favorites')}
+                                                    className={`flex-1 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-1 ${
+                                                        selectedTab === 'favorites'
+                                                            ? 'text-pink-600 border-b-2 border-pink-600'
+                                                            : 'text-gray-500 hover:text-gray-700'
+                                                    }`}
+                                                >
+                                                    <Heart className={`w-4 h-4 ${selectedTab === 'favorites' ? 'fill-current' : ''}`} />
+                                                    Favorites ({movieStats.stats.favorites})
+                                                </button>
                                             </div>
 
                                             {/* Movie Grid */}
@@ -474,21 +485,31 @@ const UserPage = () => {
                                                 {selectedTab === 'watched' ? (
                                                     movieStats.watchedMovies.length > 0 ? (
                                                         movieStats.watchedMovies.map((entry) => (
-                                                            <MoviePoster key={entry.id} movieId={entry.movie_id} />
+                                                            <MoviePoster key={entry.id} movieId={entry.movieId} />
                                                         ))
                                                     ) : (
                                                         <div className="col-span-full text-center py-8 text-gray-500">
                                                             No watched movies yet
                                                         </div>
                                                     )
-                                                ) : (
+                                                ) : selectedTab === 'planned' ? (
                                                     movieStats.plannedMovies.length > 0 ? (
                                                         movieStats.plannedMovies.map((entry) => (
-                                                            <MoviePoster key={entry.id} movieId={entry.movie_id} />
+                                                            <MoviePoster key={entry.id} movieId={entry.movieId} />
                                                         ))
                                                     ) : (
                                                         <div className="col-span-full text-center py-8 text-gray-500">
                                                             No planned movies yet
+                                                        </div>
+                                                    )
+                                                ) : (
+                                                    movieStats.favoriteMovies && movieStats.favoriteMovies.length > 0 ? (
+                                                        movieStats.favoriteMovies.map((entry) => (
+                                                            <MoviePoster key={entry.id} movieId={entry.movieId} />
+                                                        ))
+                                                    ) : (
+                                                        <div className="col-span-full text-center py-8 text-gray-500">
+                                                            No favorite movies yet
                                                         </div>
                                                     )
                                                 )}

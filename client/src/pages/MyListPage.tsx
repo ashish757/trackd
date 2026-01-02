@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
-import { Film, Check, Clock } from 'lucide-react';
+import { Film, Check, Clock, Heart } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar.tsx';
 import MovieCardWithDetails from '../components/MovieCardWithDetails.tsx';
 import StatCard from '../components/StatCard.tsx';
-import { useGetUserStatsQuery, useGetUserMoviesByStatusQuery, MovieStatus } from '../redux/userMovie/userMovieApi.ts';
+import { useGetUserStatsQuery, useGetUserMoviesByStatusQuery, useGetFavoriteMoviesQuery, MovieStatus } from '../redux/userMovie/userMovieApi.ts';
 import MovieInfoModel from "../components/MovieInfoModel.tsx";
 import type {Movie} from "../redux/movie/movieApi.ts";
 import { StatCardSkeleton, MovieGridSkeleton } from '../components/skeletons';
@@ -13,10 +13,9 @@ export default function MyListPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const movieId = searchParams.get('movie');
 
-    const [activeTab, setActiveTab] = useState<'all' | 'watched' | 'planned'>('all');
+    const [activeTab, setActiveTab] = useState<'all' | 'watched' | 'planned' | 'favorites'>('all');
     const [movieInfo, setMovieInfo] = useState<Movie | null>(null);
 
-    // ...existing code...
     const { data: statsData, isLoading: isStatsLoading } = useGetUserStatsQuery();
 
     // Fetch movies based on active tab
@@ -30,18 +29,24 @@ export default function MyListPage() {
         { skip: activeTab !== 'planned' && activeTab !== 'all' }
     );
 
+    const { data: favoriteMovies, isLoading: isFavoritesLoading } = useGetFavoriteMoviesQuery(
+        undefined,
+        { skip: activeTab !== 'favorites' }
+    );
+
     const stats = {
         total: statsData?.data?.total || 0,
         watched: statsData?.data?.watched || 0,
         planned: statsData?.data?.planned || 0,
+        favorites: favoriteMovies?.data?.length || 0,
     };
 
     // Determine what to show based on active tab
     const getMoviesToShow = () => {
-        // console.log("Movies ", watchedMovies);
         if (activeTab === 'watched') return watchedMovies?.data || [];
         if (activeTab === 'planned') return plannedMovies?.data || [];
-        // For 'all', combine both
+        if (activeTab === 'favorites') return favoriteMovies?.data || [];
+        // For 'all', combine both (but not favorites)
         return [...(watchedMovies?.data || []), ...(plannedMovies?.data || [])];
     };
 
@@ -60,7 +65,7 @@ export default function MyListPage() {
     }, [searchParams, setSearchParams]);
 
     const moviesToShow = getMoviesToShow();
-    const isLoading = isStatsLoading || isWatchedLoading || isPlannedLoading;
+    const isLoading = isStatsLoading || isWatchedLoading || isPlannedLoading || isFavoritesLoading;
 
     return (
         <>
@@ -140,6 +145,17 @@ export default function MyListPage() {
                             >
                                 Planned ({stats.planned})
                             </button>
+                            <button
+                                onClick={() => setActiveTab('favorites')}
+                                className={`px-4 py-2 font-medium transition-colors border-b-2 flex items-center gap-2 ${
+                                    activeTab === 'favorites'
+                                        ? 'border-pink-600 text-pink-600'
+                                        : 'border-transparent text-gray-600 hover:text-gray-900'
+                                }`}
+                            >
+                                <Heart className={`w-4 h-4 ${activeTab === 'favorites' ? 'fill-current' : ''}`} />
+                                Favorites ({stats.favorites})
+                            </button>
                         </div>
                     </div>
 
@@ -164,25 +180,18 @@ export default function MyListPage() {
                                         key={entry.id}
                                         movieId={entry.movieId}
                                         onClick={(movie) => handleCardClick(movie)}
-                                        badge={{
-                                            text: entry.status === MovieStatus.WATCHED ? 'Watched' : 'Planned',
-                                            color: entry.status === MovieStatus.WATCHED ? 'green' : 'blue',
-                                        }}
+                                        badge={
+                                            activeTab === 'favorites'
+                                                ? { text: '❤️ Favorite', color: 'pink' as const }
+                                                : {
+                                                    text: entry.status === MovieStatus.WATCHED ? 'Watched' : 'Planned',
+                                                    color: entry.status === MovieStatus.WATCHED ? 'green' as const : 'blue' as const,
+                                                }
+                                        }
                                     />
                                 ))}
                             </div>
                         )}
-                    </div>
-
-                    {/* Info Box */}
-                    <div className="max-w-6xl mx-auto mt-8 p-6 bg-blue-50 border border-blue-200 rounded-xl">
-                        <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                            Simple Movie Tracking
-                        </h3>
-                        <p className="text-blue-800">
-                            Mark movies as "Watched" or "Planned" to keep track of your viewing list.
-                            You can remove movies anytime by clicking on them and using the remove button.
-                        </p>
                     </div>
                 </div>
             </main>

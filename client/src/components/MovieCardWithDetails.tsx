@@ -8,7 +8,7 @@ interface MovieCardWithDetailsProps {
     onClick?: (movie: Movie) => void;
     badge?: {
         text: string;
-        color: 'green' | 'blue' | 'purple' | 'yellow';
+        color: 'green' | 'blue' | 'purple' | 'yellow' | 'pink';
     };
 }
 

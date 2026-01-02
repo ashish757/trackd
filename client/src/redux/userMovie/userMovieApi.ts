@@ -51,6 +51,7 @@ interface UserStatsResponse {
         watched: number;
         planned: number;
         total: number;
+        favorites: number;
     };
 }
 
