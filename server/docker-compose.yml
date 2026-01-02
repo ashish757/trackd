@@ -4,13 +4,13 @@ services:
   api-gateway:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ./Dockerfile
       args:
         APP_NAME: api-gateway
     container_name: api-gateway
     ports:
       - "3000:3000"
-    env_file: .env.docker
+    env_file: ./.env.docker
 
   redis:
     image: redis:alpine
@@ -19,47 +19,47 @@ services:
   auth-app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ./Dockerfile
       args:
         APP_NAME: auth-app
     container_name: auth-app
-    env_file: .env.docker
+    env_file: ./.env.docker
 
   user-app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ./Dockerfile
       args:
         APP_NAME: user-app
     container_name: user-app
-    env_file: .env.docker
+    env_file: ./.env.docker
 
   friend-app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ./Dockerfile
       args:
         APP_NAME: friend-app
     container_name: friend-app
-    env_file: .env.docker
+    env_file: ./.env.docker
 
   user-movie:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ./Dockerfile
       args:
         APP_NAME: user-movie
     container_name: user-movie
-    env_file: .env.docker
+    env_file: ./.env.docker
 
   notification-app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ./Dockerfile
       args:
         APP_NAME: notification-app
     container_name: notification-app
-    env_file: .env.docker
+    env_file: ./.env.docker
 
   movie-app:
     build:
@@ -68,4 +68,4 @@ services:
       args:
         APP_NAME: movie-app
     container_name: movie-app
-    env_file: .env.docker
+    env_file: ./.env.docker
