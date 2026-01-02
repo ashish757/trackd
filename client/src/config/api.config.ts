@@ -57,6 +57,8 @@ export const API_CONFIG = {
             RATE: '/user-movies/rate',
             GET_RATING: '/user-movies/rating',
             DELETE_RATING: '/user-movies/rating',
+            TOGGLE_FAVORITE: '/user-movies/favorite',
+            GET_FAVORITES: '/user-movies/favorites',
         },
         FRIEND: {
             GET_REQUESTS: '/friend/requests',

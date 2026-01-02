@@ -205,5 +205,43 @@ export class MovieController {
             data,
         };
     }
-}
 
+    /**
+     * Toggle movie as favorite
+     * POST /user-movies/favorite/:movieId
+     */
+    @Post('favorite/:movieId')
+    @Throttle({ default: RateLimitConfig.MODERATE.ADD_REMOVE_MOVIE })
+    async toggleFavorite(
+        @Param('movieId', ParseIntPipe) movieId: number,
+        @Req() req: Request & { user?: { sub: string; email: string } }
+    ) {
+        const userId = req.user?.sub!;
+        const data = await this.userMovieService.toggleFavorite(movieId, userId);
+
+        return {
+            status: 'success',
+            statusCode: HttpStatus.OK,
+            message: data.isFavorite ? 'Movie added to favorites' : 'Movie removed from favorites',
+            data,
+        };
+    }
+
+    /**
+     * Get user's favorite movies
+     * GET /user-movies/favorites
+     */
+    @Get('favorites')
+    @Throttle({ default: RateLimitConfig.RELAXED.GET_MOVIES })
+    async getFavoriteMovies(@Req() req: Request & { user?: { sub: string; email: string } }) {
+        const userId = req.user?.sub!;
+        const data = await this.userMovieService.getFavoriteMovies(userId);
+
+        return {
+            status: 'success',
+            statusCode: HttpStatus.OK,
+            message: 'Favorite movies fetched successfully',
+            data,
+        };
+    }
+}

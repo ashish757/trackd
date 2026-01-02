@@ -4,16 +4,23 @@ import { API_CONFIG } from '../../config/api.config';
 export const MovieStatus = {
     WATCHED: 'WATCHED',
     PLANNED: 'PLANNED',
+    WATCHING: 'WATCHING',
+    DROPPED: 'DROPPED',
+    ON_HOLD: 'ON_HOLD',
 } as const;
 
 export type MovieStatus = typeof MovieStatus[keyof typeof MovieStatus];
 
 export interface UserMovieEntry {
-    id: number;
-    user_id: number;
+    id: string;
+    userId: string;
     movieId: number;
     status: MovieStatus;
+    isFavorite: boolean;
+    rating: number | null;
+    review: string | null;
     createdAt: string;
+    updatedAt: string;
     movie: {
         id: number;
     };
@@ -135,6 +142,20 @@ export const userMovieApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['UserMovies', 'MovieRating'],
         }),
+        toggleFavorite: builder.mutation<MarkMovieResponse, number>({
+            query: (movieId) => ({
+                url: `${API_CONFIG.ENDPOINTS.USER_MOVIES.TOGGLE_FAVORITE}/${movieId}`,
+                method: 'POST',
+            }),
+            invalidatesTags: ['UserMovies'],
+        }),
+        getFavoriteMovies: builder.query<UserMoviesResponse, void>({
+            query: () => ({
+                url: API_CONFIG.ENDPOINTS.USER_MOVIES.GET_FAVORITES,
+                method: 'GET',
+            }),
+            providesTags: ['UserMovies'],
+        }),
     }),
 });
 
@@ -148,6 +169,8 @@ export const {
     useRateMovieMutation,
     useGetUserMovieRatingQuery,
     useRemoveRatingMutation,
+    useToggleFavoriteMutation,
+    useGetFavoriteMoviesQuery,
 } = userMovieApi;
 
 

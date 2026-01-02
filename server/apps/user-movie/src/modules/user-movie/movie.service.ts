@@ -268,5 +268,79 @@ export class UserMovieService {
         this.logger.log(`Rating removed successfully for user ${userId}, movie ${movieId}`);
         return { message: 'Rating removed successfully' };
     }
-}
 
+    /**
+     * Toggle movie as favorite
+     */
+    async toggleFavorite(movieId: number, userId: string) {
+        this.logger.log(`User ${userId} toggling favorite for movie ${movieId}`);
+
+        // Ensure movie exists in movies table
+        await this.prisma.movies.upsert({
+            where: { id: movieId },
+            update: {},
+            create: { id: movieId },
+        });
+
+        // Check if user movie entry exists
+        const existingEntry = await this.prisma.userMovie.findUnique({
+            where: {
+                userId_movieId: {
+                    userId: userId,
+                    movieId: movieId,
+                },
+            },
+        });
+
+        if (existingEntry) {
+            // Toggle favorite status
+            const updated = await this.prisma.userMovie.update({
+                where: {
+                    userId_movieId: {
+                        userId: userId,
+                        movieId: movieId,
+                    },
+                },
+                data: {
+                    isFavorite: !existingEntry.isFavorite,
+                },
+            });
+
+            this.logger.log(`Movie ${movieId} favorite status toggled to ${updated.isFavorite} for user ${userId}`);
+            return updated;
+        } else {
+            // Create new entry with favorite true and default status PLANNED
+            const created = await this.prisma.userMovie.create({
+                data: {
+                    userId: userId,
+                    movieId: movieId,
+                    isFavorite: true,
+                    status: MovieStatus.PLANNED,
+                },
+            });
+
+            this.logger.log(`Movie ${movieId} added as favorite for user ${userId}`);
+            return created;
+        }
+    }
+
+    /**
+     * Get user's favorite movies
+     */
+    async getFavoriteMovies(userId: string) {
+        this.logger.log(`Fetching favorite movies for user ${userId}`);
+
+        return this.prisma.userMovie.findMany({
+            where: {
+                userId: userId,
+                isFavorite: true,
+            },
+            include: {
+                movie: true,
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+    }
+}

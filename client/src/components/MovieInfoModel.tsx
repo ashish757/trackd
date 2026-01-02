@@ -1,7 +1,7 @@
-import { X, Calendar, Star, Film, Check, Clock, Users, Clapperboard, DollarSign, Globe } from 'lucide-react'
+import { X, Calendar, Star, Film, Check, Clock, Users, Clapperboard, DollarSign, Globe, Heart } from 'lucide-react'
 import type {Movie} from "../redux/movie/movieApi.ts";
 import Portal from "./Portal.tsx";
-import { useMarkMovieMutation, useRemoveMovieMutation, useGetMovieEntryQuery, MovieStatus, useRateMovieMutation, useGetUserMovieRatingQuery, useRemoveRatingMutation } from '../redux/userMovie/userMovieApi';
+import { useMarkMovieMutation, useRemoveMovieMutation, useGetMovieEntryQuery, MovieStatus, useRateMovieMutation, useGetUserMovieRatingQuery, useRemoveRatingMutation, useToggleFavoriteMutation } from '../redux/userMovie/userMovieApi';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useGetMovieByIdQuery } from '../redux/movie/movieApi';
 import { useSelector } from 'react-redux';
@@ -20,6 +20,7 @@ interface props {
     const [removeMovie, { isLoading: isRemoving }] = useRemoveMovieMutation();
     const [rateMovie, { isLoading: isRating }] = useRateMovieMutation();
     const [removeRatingMutation, { isLoading: isRemovingRating }] = useRemoveRatingMutation();
+    const [toggleFavorite, { isLoading: isTogglingFavorite }] = useToggleFavoriteMutation();
 
     const { data: movieEntryData, isLoading: isLoadingEntry } = useGetMovieEntryQuery(movie?.id || 0, {
         skip: !movie?.id || !isAuthenticated,
@@ -91,6 +92,7 @@ interface props {
     );
 
     const currentStatus = useMemo(() => movieEntryData?.data?.status, [movieEntryData?.data?.status]);
+    const isFavorite = useMemo(() => movieEntryData?.data?.isFavorite || false, [movieEntryData?.data?.isFavorite]);
 
     // Get director from crew
     const director = useMemo(() =>
@@ -105,8 +107,8 @@ interface props {
     );
 
     const isProcessing = useMemo(() =>
-        isMarking || isRemoving || isLoadingEntry || isRating || isRemovingRating,
-        [isMarking, isRemoving, isLoadingEntry, isRating, isRemovingRating]
+        isMarking || isRemoving || isLoadingEntry || isRating || isRemovingRating || isTogglingFavorite,
+        [isMarking, isRemoving, isLoadingEntry, isRating, isRemovingRating, isTogglingFavorite]
     );
 
     // Format runtime
@@ -211,6 +213,20 @@ interface props {
             console.error('Error removing rating:', err);
         }
     }, [removeRatingMutation, movie, userRating]);
+
+    const handleToggleFavorite = useCallback(async () => {
+        if (!movie) return;
+        try {
+            setError(null);
+            await toggleFavorite(movie.id).unwrap();
+        } catch (err: unknown) {
+            const errorMessage = err && typeof err === 'object' && 'data' in err && err.data && typeof err.data === 'object' && 'message' in err.data
+                ? String(err.data.message)
+                : 'Failed to toggle favorite';
+            setError(errorMessage);
+            console.error('Error toggling favorite:', err);
+        }
+    }, [toggleFavorite, movie]);
 
     if (!movie) return null;
 
@@ -441,6 +457,18 @@ interface props {
                                     >
                                         <Clock className="w-5 h-5" />
                                         {currentStatus === MovieStatus.PLANNED ? 'Planned' : 'Plan to Watch'}
+                                    </button>
+                                    <button
+                                        onClick={handleToggleFavorite}
+                                        disabled={isProcessing}
+                                        className={`flex items-center justify-center gap-2 font-semibold py-2.5 px-4 rounded-lg transition-all duration-200 ${
+                                            isFavorite
+                                                ? 'bg-pink-600 text-white'
+                                                : 'bg-pink-100 hover:bg-pink-200 text-pink-800 dark:bg-pink-900/30 dark:hover:bg-pink-900/50 dark:text-pink-300'
+                                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                        title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                                    >
+                                        <Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
                                     </button>
                                 </div>
 
