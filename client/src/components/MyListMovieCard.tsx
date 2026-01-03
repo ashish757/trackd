@@ -61,11 +61,11 @@ const MyListMovieCard = memo(({ movieId, onClick, badge, viewMode = 'grid', user
         return (
             <div
                 onClick={() => onClick?.(movieData)}
-                className="bg-white rounded-lg border border-gray-200 p-3 md:p-4 hover:shadow-md transition-shadow cursor-pointer group"
+                className="bg-white p-1 md:p-2 cursor-pointer group mb-0"
             >
-                <div className="flex gap-3 md:gap-4">
+                <div className="flex md:gap-4">
                     {/* Poster */}
-                    <div className="w-16 md:w-20 shrink-0">
+                    <div className="w-10 md:w-16 shrink-0">
                         <div className="aspect-2/3 bg-gray-200 rounded overflow-hidden">
                             {movieData.poster_path ? (
                                 <img
@@ -83,42 +83,41 @@ const MyListMovieCard = memo(({ movieId, onClick, badge, viewMode = 'grid', user
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
+
                         <div className="flex items-start justify-between gap-2 mb-1">
-                            <h3 className="text-base md:text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">
-                                {movieData.title}
-                            </h3>
+
+                                <div className="flex items-center gap-3 md:gap-4 text-xs md:text-sm text-gray-600">
+                                    <span className="text-base md:text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">
+                                        {movieData.title}
+                                    </span>
+                                    {movieData.release_date && (
+                                        <span className="flex items-center gap-1">
+                                            <Calendar className="w-3 h-3 md:w-4 md:h-4" />
+                                                    {new Date(movieData.release_date).getFullYear()}
+                                        </span>
+                                    )}
+                                    {movieData.vote_average && movieData.vote_average > 0 && (
+                                        <span title={"Average Rating"}  className="flex items-center gap-1">
+                                            <Star className="w-3 h-3 md:w-4 md:h-4 text-yellow-500 fill-yellow-500" />
+                                            {movieData.vote_average.toFixed(1)}
+                                        </span>
+                                    )}
+                                    {userRating && (
+                                        <span title={"Your Rating"} className="flex items-center gap-1 text-blue-600 font-medium">
+                                             <Star className="w-3 h-3 md:w-4 md:h-4 text-pink-500 fill-pink-500" />
+                                             {userRating}
+                                         </span>
+                                    )}
+                                </div>
+
                             {badge && (
                                 <span className={`${badgeColors[badge.color]} text-white px-2 md:px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap`}>
                                     {badge.text}
                                 </span>
                             )}
+
                         </div>
 
-                        <div className="flex items-center gap-3 md:gap-4 text-xs md:text-sm text-gray-600">
-                            {movieData.release_date && (
-                                <span className="flex items-center gap-1">
-                                    <Calendar className="w-3 h-3 md:w-4 md:h-4" />
-                                    {new Date(movieData.release_date).getFullYear()}
-                                </span>
-                            )}
-                            {movieData.vote_average && movieData.vote_average > 0 && (
-                                <span className="flex items-center gap-1">
-                                    <Star className="w-3 h-3 md:w-4 md:h-4 text-yellow-500 fill-yellow-500" />
-                                    {movieData.vote_average.toFixed(1)}
-                                </span>
-                            )}
-                            {userRating && (
-                                <span className="flex items-center gap-1 text-blue-600 font-medium">
-                                    Your rating: {userRating}
-                                </span>
-                            )}
-                        </div>
-
-                        {movieData.overview && (
-                            <p className="text-xs md:text-sm text-gray-600 line-clamp-2 mt-2">
-                                {movieData.overview}
-                            </p>
-                        )}
 
                         {movieData.genres && movieData.genres.length > 0 && (
                             <div className="flex flex-wrap gap-1 md:gap-2 mt-2">
@@ -141,7 +140,7 @@ const MyListMovieCard = memo(({ movieId, onClick, badge, viewMode = 'grid', user
     // Grid view rendering (default)
     return (
         <div
-            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
+            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl cursor-pointer group"
             onClick={() => onClick?.(movieData)}
         >
             {/* Poster */}
@@ -151,7 +150,7 @@ const MyListMovieCard = memo(({ movieId, onClick, badge, viewMode = 'grid', user
                         <img
                             src={`https://image.tmdb.org/t/p/w342${movieData.poster_path}`}
                             alt={movieData.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="w-full h-full object-cover scale-100 group-hover:scale-105 transition-transform duration-300"
                         />
                         {/* Rating Badge */}
                         {movieData.vote_average && movieData.vote_average > 0 && (

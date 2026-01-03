@@ -102,7 +102,7 @@ const MovieCard = memo(({ movie, onClick, badge, viewMode = 'grid' }: MovieCardP
     // Grid view rendering (default)
     return (
         <div
-            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
+            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl cursor-pointer group"
             onClick={() => onClick?.(movie)}
         >
             {/* Poster */}
