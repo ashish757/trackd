@@ -4,10 +4,12 @@ import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useLazySearchMoviesQuery, useGetMovieByIdQuery, type Movie } from '../redux/movie/movieApi';
 import MovieInfoModel from "../components/MovieInfoModel.tsx";
-import MovieCard from "../components/MovieCard.tsx";
+import MovieCardsView from "../components/MovieCardsView.tsx";
 import { useDebounce } from '../hooks/useDebounce';
 import { SEARCH_CONFIG } from '../constants/search';
 import { MovieGridSkeleton } from '../components/skeletons';
+
+const DISCOVER_VIEW_MODE_KEY = 'discover_view_mode';
 
 // Genre mapping from TMDB
 const GENRES = [
@@ -369,15 +371,20 @@ export default function DiscoverPage() {
                             {isSearching ? (
                                 <MovieGridSkeleton count={15} />
                             ) : filteredResults.length > 0 ? (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6">
-                                    {filteredResults.map((movie) => (
-                                        <MovieCard
-                                            key={movie.id}
-                                            movie={movie}
-                                            onClick={() => handleMovieClick(movie)}
-                                        />
-                                    ))}
-                                </div>
+                                <MovieCardsView
+                                    movies={filteredResults.map(movie => ({
+                                        id: movie.id.toString(),
+                                        movieId: movie.id,
+                                        movieData: movie,
+                                    }))}
+                                    isLoading={false}
+                                    onMovieClick={handleMovieClick}
+                                    showViewToggle={true}
+                                    defaultView="grid"
+                                    viewModeStorageKey={DISCOVER_VIEW_MODE_KEY}
+                                    useSimpleMovieCard={true}
+                                    emptyStateMessage="No movies found"
+                                />
                             ) : (
                                 <div className="text-center py-12 md:py-20">
                                     <Film className="h-12 w-12 md:h-16 md:w-16 mx-auto mb-4 text-gray-400" />

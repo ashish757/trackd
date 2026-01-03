@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Film, LayoutGrid, List, Calendar, Star } from 'lucide-react';
-import MovieCardWithDetails from './MovieCardWithDetails';
+import MyListMovieCard from './MyListMovieCard';
+import MovieCard from './MovieCard';
 import { useGetMovieByIdQuery, type Movie } from '../redux/movie/movieApi';
 import { MovieStatus } from '../redux/userMovie/userMovieApi';
 import { MovieGridSkeleton } from './skeletons';
+import { storage } from '../utils/config';
+
+const VIEW_MODE_KEY = 'movie_view_mode';
 
 interface MovieEntry {
     id: string;
@@ -11,6 +15,7 @@ interface MovieEntry {
     status?: MovieStatus;
     isFavorite?: boolean;
     rating?: number | null;
+    movieData?: Movie; // Optional: For when movie data is already available (trending, etc.)
 }
 
 interface MovieCardsViewProps {
@@ -21,6 +26,8 @@ interface MovieCardsViewProps {
     emptyStateMessage?: string;
     showViewToggle?: boolean;
     defaultView?: 'grid' | 'list';
+    viewModeStorageKey?: string; // Optional custom storage key for different pages
+    useSimpleMovieCard?: boolean; // If true, use MovieCard instead of MyListMovieCard (for trending, discover, etc.)
 }
 
 export default function MovieCardsView({
@@ -31,8 +38,23 @@ export default function MovieCardsView({
     emptyStateMessage = 'No movies to display',
     showViewToggle = true,
     defaultView = 'grid',
+    viewModeStorageKey,
+    useSimpleMovieCard = false,
 }: MovieCardsViewProps) {
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>(defaultView);
+    // Get initial view mode from localStorage or use default
+    const getInitialViewMode = (): 'grid' | 'list' => {
+        const storageKey = viewModeStorageKey || VIEW_MODE_KEY;
+        const savedMode = storage.getItem(storageKey) as 'grid' | 'list' | null;
+        return savedMode || defaultView;
+    };
+
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>(getInitialViewMode);
+
+    // Save view mode to localStorage whenever it changes
+    useEffect(() => {
+        const storageKey = viewModeStorageKey || VIEW_MODE_KEY;
+        storage.setItem(storageKey, viewMode);
+    }, [viewMode, viewModeStorageKey]);
 
     if (isLoading) {
         return <MovieGridSkeleton count={10} />;
@@ -84,15 +106,29 @@ export default function MovieCardsView({
 
             {/* Movie Display */}
             {viewMode === 'grid' ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {movies.map((entry) => (
-                        <MovieCardWithDetails
-                            key={entry.id}
-                            movieId={entry.movieId}
-                            onClick={onMovieClick}
-                            badge={getBadge ? getBadge(entry) : undefined}
-                        />
-                    ))}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                    {movies.map((entry) => {
+                        if (useSimpleMovieCard && entry.movieData) {
+                            // Use MovieCard for trending/discover (data already available)
+                            return (
+                                <MovieCard
+                                    key={entry.id}
+                                    movie={entry.movieData}
+                                    onClick={onMovieClick}
+                                    badge={getBadge ? getBadge(entry) : undefined}
+                                />
+                            );
+                        }
+                        // Use MyListMovieCard for user lists (fetches data by ID)
+                        return (
+                            <MyListMovieCard
+                                key={entry.id}
+                                movieId={entry.movieId}
+                                onClick={onMovieClick}
+                                badge={getBadge ? getBadge(entry) : undefined}
+                            />
+                        );
+                    })}
                 </div>
             ) : (
                 <div className="space-y-3">
@@ -118,7 +154,13 @@ interface MovieListItemProps {
 }
 
 const MovieListItem = ({ entry, onClick, badge }: MovieListItemProps) => {
-    const { data: movieData, isLoading } = useGetMovieByIdQuery(entry.movieId);
+    // Only fetch if movieData is not already provided
+    const { data: fetchedMovieData, isLoading } = useGetMovieByIdQuery(entry.movieId, {
+        skip: !!entry.movieData, // Skip fetching if data is already available
+    });
+
+    // Use provided movieData or fetched data
+    const movieData = entry.movieData || fetchedMovieData;
 
     if (isLoading) {
         return (
