@@ -1,28 +1,25 @@
 import { Film } from "lucide-react";
 import type { Movie } from "../redux/movie/movieApi.ts";
 import EmptyState from "./EmptyState.tsx";
-import { MovieGridSkeleton } from "./skeletons";
-import MovieCardsView from "./MovieCardsView.tsx";
+import { MovieCardSkeleton } from "./skeletons";
+import MovieCardsView from "./movieCards/MovieCardsView.tsx";
+import type { MovieEntry } from "../types/movie.types";
 
 interface MovieInfo {
     isTrendingLoading: boolean;
     isTrendingError?: boolean;
-
     trendingData: {
         results: Array<Movie>;
     } | undefined;
-
     handleSuggestionClick: (movie: Movie) => void;
 }
 
 const TrendingMoviesSection = ({ isTrendingLoading, trendingData, isTrendingError, handleSuggestionClick }: MovieInfo) => {
     if (isTrendingLoading) {
         return (
-            <MovieGridSkeleton
-                count={15}
-                gridCols="grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
-                gap="gap-6"
-            />
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                <MovieCardSkeleton count={15} />
+            </div>
         );
     }
 
@@ -46,11 +43,12 @@ const TrendingMoviesSection = ({ isTrendingLoading, trendingData, isTrendingErro
     }
 
     // Transform Movie[] to MovieEntry[] format expected by MovieCardsView
-    const movieEntries = trendingData.results.map((movie) => ({
+    const movieEntries: MovieEntry[] = trendingData.results.map((movie) => ({
         id: movie.id.toString(),
         movieId: movie.id,
-        // Pass the movie data directly to avoid extra fetching
         movieData: movie,
+        status: null,
+        isFavorite: false,
     }));
 
     return (
@@ -63,8 +61,8 @@ const TrendingMoviesSection = ({ isTrendingLoading, trendingData, isTrendingErro
                 showViewToggle={true}
                 defaultView="grid"
                 viewModeStorageKey="trending_view_mode"
-                // For trending, we don't use MyListMovieCard, we use the simple Movie data
                 useSimpleMovieCard={true}
+
             />
         </div>
     );
