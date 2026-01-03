@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
-import { Film, Check, Clock, Heart } from 'lucide-react';
+import { Check, Clock, Heart } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar.tsx';
 import StatCard from '../components/StatCard.tsx';
-import MovieCardsView from '../components/MovieCardsView.tsx';
+import MovieCardsView from '../components/movieCards/MovieCardsView.tsx';
 import { useGetUserStatsQuery, useGetUserMoviesByStatusQuery, useGetFavoriteMoviesQuery, MovieStatus } from '../redux/userMovie/userMovieApi.ts';
 import MovieInfoModel from "../components/MovieInfoModel.tsx";
 import type {Movie} from "../redux/movie/movieApi.ts";
@@ -90,12 +90,6 @@ export default function MyListPage() {
                             ) : (
                                 <>
                                     <StatCard
-                                        icon={Film}
-                                        value={stats.total}
-                                        label="Total Movies"
-                                        color="purple"
-                                    />
-                                    <StatCard
                                         icon={Check}
                                         value={stats.watched}
                                         label="Watched"
@@ -106,6 +100,12 @@ export default function MyListPage() {
                                         value={stats.planned}
                                         label="Planned"
                                         color="blue"
+                                    />
+                                    <StatCard
+                                        icon={Heart}
+                                        value={stats.favorites}
+                                        label="Fav Movies"
+                                        color="pink"
                                     />
                                 </>
                             )}
@@ -124,7 +124,7 @@ export default function MyListPage() {
                                             : 'border-transparent text-gray-600 hover:text-gray-900'
                                     }`}
                                 >
-                                    All ({stats.total})
+                                    All
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('watched')}
@@ -154,7 +154,6 @@ export default function MyListPage() {
                                             : 'border-transparent text-gray-600 hover:text-gray-900'
                                     }`}
                                 >
-                                <Heart className={`w-4 h-4 ${activeTab === 'favorites' ? 'fill-current' : ''}`} />
                                 Favorites ({stats.favorites})
                             </button>
                         </div>
