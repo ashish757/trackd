@@ -67,8 +67,20 @@ export default function MovieCardsView({
     }, [viewMode, viewModeStorageKey]);
 
     if (isLoading) {
-        return <MovieCardSkeleton count={10} />;
+        if(viewMode === 'list') {
+            return <div className={"flex-col space-y-3"}>
+
+                <MovieCardSkeleton count={5} layout="list" />
+            </div>
+
+        }
+        if(viewMode === 'grid') {
+            return <div className={"grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"}>
+             <MovieCardSkeleton count={10} />
+            </div>
+        }
     }
+
 
     if (movies.length === 0) {
         return (

@@ -57,8 +57,7 @@ function CardListSkeleton() {
     return (
         <div className="bg-white p-1 md:p-2 mb-0 animate-pulse">
             <div className="flex gap-2 md:gap-4">
-                {/* Poster - smaller to match list view */}
-                <div className="w-10 md:w-16 h-16 md:h-24 bg-gray-200 rounded shrink-0"></div>
+                <div className="w-16 md:w-20 h-20 md:h-26 bg-gray-200 rounded shrink-0"></div>
                 {/* Content */}
                 <div className="flex-1 space-y-2">
                     {/* Title and metadata in one line */}

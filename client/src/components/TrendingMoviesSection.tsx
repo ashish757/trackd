@@ -1,7 +1,6 @@
 import { Film } from "lucide-react";
 import type { Movie } from "../redux/movie/movieApi.ts";
 import EmptyState from "./EmptyState.tsx";
-import { MovieCardSkeleton } from "./skeletons";
 import MovieCardsView from "./movieCards/MovieCardsView.tsx";
 import type { MovieEntry } from "../types/movie.types";
 
@@ -15,13 +14,6 @@ interface MovieInfo {
 }
 
 const TrendingMoviesSection = ({ isTrendingLoading, trendingData, isTrendingError, handleSuggestionClick }: MovieInfo) => {
-    if (isTrendingLoading) {
-        return (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                <MovieCardSkeleton count={15} />
-            </div>
-        );
-    }
 
     if (isTrendingError) {
         return (
@@ -31,7 +23,8 @@ const TrendingMoviesSection = ({ isTrendingLoading, trendingData, isTrendingErro
         );
     }
 
-    if (!trendingData?.results || trendingData.results.length === 0) {
+    // Show empty state only when NOT loading and no results
+    if (!isTrendingLoading && (!trendingData?.results || trendingData.results.length === 0)) {
         return (
             <EmptyState
                 icon={Film}
@@ -43,19 +36,22 @@ const TrendingMoviesSection = ({ isTrendingLoading, trendingData, isTrendingErro
     }
 
     // Transform Movie[] to MovieEntry[] format expected by MovieCardsView
-    const movieEntries: MovieEntry[] = trendingData.results.map((movie) => ({
-        id: movie.id.toString(),
-        movieId: movie.id,
-        movieData: movie,
-        status: null,
-        isFavorite: false,
-    }));
+    // Handle loading state - provide empty array while loading
+    const movieEntries: MovieEntry[] = trendingData?.results
+        ? trendingData.results.map((movie) => ({
+            id: movie.id.toString(),
+            movieId: movie.id,
+            movieData: movie,
+            status: null,
+            isFavorite: false,
+        }))
+        : [];
 
     return (
         <div className="max-w-6xl mx-auto">
             <MovieCardsView
                 movies={movieEntries}
-                isLoading={false}
+                isLoading={isTrendingLoading}
                 onMovieClick={handleSuggestionClick}
                 emptyStateMessage="No trending movies available at the moment."
                 showViewToggle={true}
