@@ -141,7 +141,7 @@ export class UserMovieService {
      * Get stats for user movies
      */
     async getUserStats(userId: string) {
-        const [watchedCount, plannedCount, watchingCount, droppedCount, onHoldCount, total] = await Promise.all([
+        const [watchedCount, plannedCount, watchingCount, droppedCount, onHoldCount, favoritesCount, total] = await Promise.all([
             this.prisma.userMovie.count({
                 where: { userId: userId, status: MovieStatus.WATCHED },
             }),
@@ -158,6 +158,9 @@ export class UserMovieService {
                 where: { userId: userId, status: MovieStatus.ON_HOLD },
             }),
             this.prisma.userMovie.count({
+                where: { userId: userId, isFavorite: true },
+            }),
+            this.prisma.userMovie.count({
                 where: { userId: userId },
             }),
         ]);
@@ -168,6 +171,7 @@ export class UserMovieService {
             watching: watchingCount,
             dropped: droppedCount,
             onHold: onHoldCount,
+            favorites: favoritesCount,
             total,
         };
     }
