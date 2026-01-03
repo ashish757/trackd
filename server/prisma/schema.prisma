@@ -63,8 +63,8 @@ model UserMovie {
   movieId Int    @map("movie_id")
 
   // The Features: Status + Favorites
-  status     MovieStatus
-  isFavorite Boolean     @default(false)
+  status     MovieStatus?
+  isFavorite Boolean      @default(false)
 
   // User input
   rating Int?

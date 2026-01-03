@@ -16,9 +16,12 @@ export class MarkMovieDto {
     status: MovieStatus;
 }
 
-export class RemoveMovieDto {
+export class UnmarkMovieDto {
     @IsNumber()
     movieId: number;
+
+    @IsEnum(MovieStatus)
+    status: MovieStatus;
 }
 
 export class RateMovieDto {

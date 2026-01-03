@@ -15,7 +15,7 @@ export interface UserMovieEntry {
     id: string;
     userId: string;
     movieId: number;
-    status: MovieStatus;
+    status: MovieStatus | null; // Optional: allows favorite-only movies
     isFavorite: boolean;
     rating: number | null;
     review: string | null;
@@ -86,10 +86,11 @@ export const userMovieApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['UserMovies'],
         }),
-        removeMovie: builder.mutation<{ status: string; statusCode: number; message: string }, number>({
-            query: (movieId) => ({
-                url: `${API_CONFIG.ENDPOINTS.USER_MOVIES.DELETE}/${movieId}`,
-                method: 'DELETE',
+        unmarkMovie: builder.mutation<{ status: string; statusCode: number; message: string },  object>({
+            query: (dto) => ({
+                url: `${API_CONFIG.ENDPOINTS.USER_MOVIES.UNMARK}`,
+                method: 'POST',
+                body: dto,
             }),
             invalidatesTags: ['UserMovies'],
         }),
@@ -162,7 +163,7 @@ export const userMovieApi = apiSlice.injectEndpoints({
 
 export const {
     useMarkMovieMutation,
-    useRemoveMovieMutation,
+    useUnmarkMovieMutation,
     useGetUserMoviesQuery,
     useGetUserMoviesByStatusQuery,
     useGetMovieEntryQuery,

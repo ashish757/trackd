@@ -4,7 +4,7 @@ import {
     BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '@app/common/prisma/prisma.service';
-import { MarkMovieDto, RemoveMovieDto, MovieStatus, RateMovieDto } from './DTO/user-movie.dto';
+import { MarkMovieDto, UnmarkMovieDto, MovieStatus, RateMovieDto } from './DTO/user-movie.dto';
 import { CustomLoggerService } from '@app/common';
 
 @Injectable()
@@ -52,10 +52,10 @@ export class UserMovieService {
     }
 
     /**
-     * Remove a movie entry (unmark)
+     *unmark a movie (remove its status)
      */
-    async removeMovie(dto: RemoveMovieDto, userId: string) {
-        this.logger.log(`User ${userId} removing movie ${dto.movieId}`);
+    async unmarkMovie(dto: UnmarkMovieDto, userId: string) {
+        this.logger.log(`User ${userId} unmarking movie ${dto.movieId} from status ${dto.status}`);
 
         const entry = await this.prisma.userMovie.findUnique({
             where: {
@@ -71,12 +71,15 @@ export class UserMovieService {
             throw new NotFoundException('Movie entry not found');
         }
 
-        await this.prisma.userMovie.delete({
+        await this.prisma.userMovie.update({
             where: {
                 userId_movieId: {
                     userId: userId,
                     movieId: dto.movieId,
                 },
+            },
+            data: {
+              status: null
             },
         });
 
@@ -138,7 +141,7 @@ export class UserMovieService {
      * Get stats for user movies
      */
     async getUserStats(userId: string) {
-        const [watchedCount, plannedCount, watchingCount, droppedCount, onHoldCount, total] = await Promise.all([
+        const [watchedCount, plannedCount, watchingCount, droppedCount, onHoldCount, favoritesCount, total] = await Promise.all([
             this.prisma.userMovie.count({
                 where: { userId: userId, status: MovieStatus.WATCHED },
             }),
@@ -155,6 +158,9 @@ export class UserMovieService {
                 where: { userId: userId, status: MovieStatus.ON_HOLD },
             }),
             this.prisma.userMovie.count({
+                where: { userId: userId, isFavorite: true },
+            }),
+            this.prisma.userMovie.count({
                 where: { userId: userId },
             }),
         ]);
@@ -165,6 +171,7 @@ export class UserMovieService {
             watching: watchingCount,
             dropped: droppedCount,
             onHold: onHoldCount,
+            favorites: favoritesCount,
             total,
         };
     }
@@ -216,7 +223,7 @@ export class UserMovieService {
      * Get user's rating for a specific movie
      */
     async getUserMovieRating(userId: string, movieId: number) {
-        return await this.prisma.userMovie.findUnique({
+        return this.prisma.userMovie.findUnique({
             where: {
                 userId_movieId: {
                     userId: userId,
@@ -309,13 +316,12 @@ export class UserMovieService {
             this.logger.log(`Movie ${movieId} favorite status toggled to ${updated.isFavorite} for user ${userId}`);
             return updated;
         } else {
-            // Create new entry with favorite true and default status PLANNED
+            // Create new entry with favorite true
             const created = await this.prisma.userMovie.create({
                 data: {
                     userId: userId,
                     movieId: movieId,
                     isFavorite: true,
-                    status: MovieStatus.PLANNED,
                 },
             });
 

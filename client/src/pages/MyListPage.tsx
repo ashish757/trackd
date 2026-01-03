@@ -1,13 +1,13 @@
 import { useState, useCallback } from 'react';
-import { Film, Check, Clock, Heart } from 'lucide-react';
+import { Check, Clock, Heart } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar.tsx';
-import MovieCardWithDetails from '../components/MovieCardWithDetails.tsx';
 import StatCard from '../components/StatCard.tsx';
+import MovieCardsView from '../components/movieCards/MovieCardsView.tsx';
 import { useGetUserStatsQuery, useGetUserMoviesByStatusQuery, useGetFavoriteMoviesQuery, MovieStatus } from '../redux/userMovie/userMovieApi.ts';
 import MovieInfoModel from "../components/MovieInfoModel.tsx";
 import type {Movie} from "../redux/movie/movieApi.ts";
-import { StatCardSkeleton, MovieGridSkeleton } from '../components/skeletons';
+import { StatCardSkeleton } from '../components/skeletons';
 
 export default function MyListPage() {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -38,7 +38,7 @@ export default function MyListPage() {
         total: statsData?.data?.total || 0,
         watched: statsData?.data?.watched || 0,
         planned: statsData?.data?.planned || 0,
-        favorites: favoriteMovies?.data?.length || 0,
+        favorites: statsData?.data?.favorites || 0,
     };
 
     // Determine what to show based on active tab
@@ -90,12 +90,6 @@ export default function MyListPage() {
                             ) : (
                                 <>
                                     <StatCard
-                                        icon={Film}
-                                        value={stats.total}
-                                        label="Total Movies"
-                                        color="purple"
-                                    />
-                                    <StatCard
                                         icon={Check}
                                         value={stats.watched}
                                         label="Watched"
@@ -107,6 +101,12 @@ export default function MyListPage() {
                                         label="Planned"
                                         color="blue"
                                     />
+                                    <StatCard
+                                        icon={Heart}
+                                        value={stats.favorites}
+                                        label="Fav Movies"
+                                        color="pink"
+                                    />
                                 </>
                             )}
                         </div>
@@ -114,84 +114,70 @@ export default function MyListPage() {
 
                     {/* Tabs */}
                     <div className="max-w-6xl mx-auto mb-6">
-                        <div className="flex gap-2 border-b border-gray-200">
-                            <button
-                                onClick={() => setActiveTab('all')}
-                                className={`px-4 py-2 font-medium transition-colors border-b-2 ${
-                                    activeTab === 'all'
-                                        ? 'border-blue-600 text-blue-600'
-                                        : 'border-transparent text-gray-600 hover:text-gray-900'
-                                }`}
-                            >
-                                All ({stats.total})
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('watched')}
-                                className={`px-4 py-2 font-medium transition-colors border-b-2 ${
-                                    activeTab === 'watched'
-                                        ? 'border-green-600 text-green-600'
-                                        : 'border-transparent text-gray-600 hover:text-gray-900'
-                                }`}
-                            >
-                                Watched ({stats.watched})
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('planned')}
-                                className={`px-4 py-2 font-medium transition-colors border-b-2 ${
-                                    activeTab === 'planned'
-                                        ? 'border-blue-600 text-blue-600'
-                                        : 'border-transparent text-gray-600 hover:text-gray-900'
-                                }`}
-                            >
-                                Planned ({stats.planned})
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('favorites')}
-                                className={`px-4 py-2 font-medium transition-colors border-b-2 flex items-center gap-2 ${
-                                    activeTab === 'favorites'
-                                        ? 'border-pink-600 text-pink-600'
-                                        : 'border-transparent text-gray-600 hover:text-gray-900'
-                                }`}
-                            >
-                                <Heart className={`w-4 h-4 ${activeTab === 'favorites' ? 'fill-current' : ''}`} />
+                        <div className="flex items-center justify-between border-b border-gray-200">
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setActiveTab('all')}
+                                    className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+                                        activeTab === 'all'
+                                            ? 'border-blue-600 text-blue-600'
+                                            : 'border-transparent text-gray-600 hover:text-gray-900'
+                                    }`}
+                                >
+                                    All
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('watched')}
+                                    className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+                                        activeTab === 'watched'
+                                            ? 'border-green-600 text-green-600'
+                                            : 'border-transparent text-gray-600 hover:text-gray-900'
+                                    }`}
+                                >
+                                    Watched ({stats.watched})
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('planned')}
+                                    className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+                                        activeTab === 'planned'
+                                            ? 'border-blue-600 text-blue-600'
+                                            : 'border-transparent text-gray-600 hover:text-gray-900'
+                                    }`}
+                                >
+                                    Planned ({stats.planned})
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('favorites')}
+                                    className={`px-4 py-2 font-medium transition-colors border-b-2 flex items-center gap-2 ${
+                                        activeTab === 'favorites'
+                                            ? 'border-pink-600 text-pink-600'
+                                            : 'border-transparent text-gray-600 hover:text-gray-900'
+                                    }`}
+                                >
                                 Favorites ({stats.favorites})
                             </button>
+                        </div>
                         </div>
                     </div>
 
                     {/* Movie List */}
                     <div className="max-w-6xl mx-auto">
-                        {isLoading ? (
-                            <MovieGridSkeleton count={10} />
-                        ) : moviesToShow.length === 0 ? (
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-                                <Film className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                    No movies yet
-                                </h3>
-                                <p className="text-gray-600">
-                                    Start adding movies to track your watched and planned list!
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                                {moviesToShow.map((entry) => (
-                                    <MovieCardWithDetails
-                                        key={entry.id}
-                                        movieId={entry.movieId}
-                                        onClick={(movie) => handleCardClick(movie)}
-                                        badge={
-                                            activeTab === 'favorites'
-                                                ? { text: '❤️ Favorite', color: 'pink' as const }
-                                                : {
-                                                    text: entry.status === MovieStatus.WATCHED ? 'Watched' : 'Planned',
-                                                    color: entry.status === MovieStatus.WATCHED ? 'green' as const : 'blue' as const,
-                                                }
-                                        }
-                                    />
-                                ))}
-                            </div>
-                        )}
+                        <MovieCardsView
+                            movies={moviesToShow}
+                            isLoading={isLoading}
+                            onMovieClick={handleCardClick}
+                            getBadge={(entry) => {
+                                if (activeTab === 'favorites') {
+                                    return { text: '❤️ Favorite', color: 'pink' as const };
+                                }
+                                return entry.status === MovieStatus.WATCHED
+                                    ? { text: 'Watched', color: 'green' as const }
+                                    : { text: 'Planned', color: 'blue' as const };
+                            }}
+                            emptyStateMessage="Start adding movies to track your watched and planned list!"
+                            showViewToggle={true}
+                            defaultView="grid"
+                        />
                     </div>
                 </div>
             </main>
@@ -200,4 +186,5 @@ export default function MyListPage() {
         </>
     );
 }
+
 

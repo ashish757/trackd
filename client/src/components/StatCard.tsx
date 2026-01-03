@@ -4,13 +4,17 @@ interface StatCardProps {
   icon: LucideIcon;
   value: number;
   label: string;
-  color: 'purple' | 'green' | 'blue' | 'red' | 'yellow';
+  color: 'purple' | 'green' | 'blue' | 'red' | 'yellow' | 'pink';
 }
 
 const colorConfig = {
   purple: {
     bg: 'bg-purple-100',
     text: 'text-purple-600',
+  },
+  pink: {
+    bg: 'bg-pink-100',
+    text: 'text-pink-600',
   },
   green: {
     bg: 'bg-green-100',
@@ -38,7 +42,7 @@ export default function StatCard({ icon: Icon, value, label, color }: StatCardPr
   const colors = colorConfig[color];
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg border border-gray-200 p-5">
       <div className="flex items-center gap-3">
         <div className={`p-3 ${colors.bg} rounded-lg`}>
           <Icon className={`h-6 w-6 ${colors.text}`} />
