@@ -1,13 +1,15 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Search, Film, X, Filter, SlidersHorizontal } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useLazySearchMoviesQuery, useGetMovieByIdQuery, type Movie } from '../redux/movie/movieApi';
-import MovieInfoModel from "../components/MovieInfoModel.tsx";
 import MovieCardsView from "../components/movieCards/MovieCardsView.tsx";
 import { useDebounce } from '../hooks/useDebounce';
 import { SEARCH_CONFIG } from '../constants/search';
 import type { MovieEntry } from '../types/movie.types';
+
+// Lazy load heavy modal component
+const MovieInfoModel = lazy(() => import("../components/MovieInfoModel.tsx"));
 
 const DISCOVER_VIEW_MODE_KEY = 'discover_view_mode';
 
@@ -354,7 +356,11 @@ export default function DiscoverPage() {
                     </div>
 
                     {/* Movie Info Modal */}
-                    {movieId && infoMovie && <MovieInfoModel onClose={handleCloseMovie} movie={infoMovie} />}
+                    {movieId && infoMovie && (
+                        <Suspense fallback={<div />}>
+                            <MovieInfoModel onClose={handleCloseMovie} movie={infoMovie} />
+                        </Suspense>
+                    )}
 
                     {/* Search Results */}
                     {debouncedQuery && (

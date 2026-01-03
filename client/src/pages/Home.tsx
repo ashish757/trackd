@@ -1,9 +1,8 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { Search, X, TrendingUp, Rss } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useLazySearchMoviesQuery, useGetTrendingMoviesQuery, type Movie } from '../redux/movie/movieApi';
-import MovieInfoModel from "../components/MovieInfoModel.tsx";
 import TrendingMoviesSection from "../components/TrendingMoviesSection.tsx";
 import SearchDropdown from "../components/SearchDropdown.tsx";
 import Feed from "../components/Feed.tsx";
@@ -12,6 +11,9 @@ import { useClickOutside } from '../hooks/useClickOutside';
 import { SEARCH_CONFIG } from '../constants/search';
 import { logger } from '../utils/logger';
 import { storage } from '../utils/config';
+
+// Lazy load heavy modal component
+const MovieInfoModel = lazy(() => import("../components/MovieInfoModel.tsx"));
 
 type TabType = 'feed' | 'trending';
 
@@ -247,7 +249,9 @@ export default function Home() {
 
                     {/*{Movie info model}*/}
                     {movieId && infoMovie ? (
-                        <MovieInfoModel onClose={handleCloseMovie} movie={infoMovie} />
+                        <Suspense fallback={<div />}>
+                            <MovieInfoModel onClose={handleCloseMovie} movie={infoMovie} />
+                        </Suspense>
                     ) : null}
 
                 </div>

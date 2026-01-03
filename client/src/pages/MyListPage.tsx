@@ -1,13 +1,15 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, lazy, Suspense } from 'react';
 import { Check, Clock, Heart } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar.tsx';
 import StatCard from '../components/StatCard.tsx';
 import MovieCardsView from '../components/movieCards/MovieCardsView.tsx';
 import { useGetUserStatsQuery, useGetUserMoviesByStatusQuery, useGetFavoriteMoviesQuery, MovieStatus } from '../redux/userMovie/userMovieApi.ts';
-import MovieInfoModel from "../components/MovieInfoModel.tsx";
 import type {Movie} from "../redux/movie/movieApi.ts";
 import { StatCardSkeleton } from '../components/skeletons';
+
+// Lazy load heavy modal component
+const MovieInfoModel = lazy(() => import("../components/MovieInfoModel.tsx"));
 
 export default function MyListPage() {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -182,7 +184,11 @@ export default function MyListPage() {
                 </div>
             </main>
 
-            {movieId && movieInfo && <MovieInfoModel movie={movieInfo} onClose={handleCloseMovie} />}
+            {movieId && movieInfo && (
+                <Suspense fallback={<div />}>
+                    <MovieInfoModel movie={movieInfo} onClose={handleCloseMovie} />
+                </Suspense>
+            )}
         </>
     );
 }
