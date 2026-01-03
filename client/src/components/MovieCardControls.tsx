@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Eye, Clock, Heart, MoreVertical } from 'lucide-react';
-import { useMarkMovieMutation, useRemoveMovieMutation, useToggleFavoriteMutation, MovieStatus } from '../redux/userMovie/userMovieApi';
+import { useMarkMovieMutation, useUnmarkMovieMutation, useToggleFavoriteMutation, MovieStatus } from '../redux/userMovie/userMovieApi';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../redux/store';
 
@@ -21,7 +21,7 @@ export default function MovieCardControls({
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
 
     const [markMovie, { isLoading: isMarking }] = useMarkMovieMutation();
-    const [removeMovie, { isLoading: isRemoving }] = useRemoveMovieMutation();
+    const [unmarkMovie, { isLoading: isUnmarking }] = useUnmarkMovieMutation();
     const [toggleFavorite, { isLoading: isTogglingFavorite }] = useToggleFavoriteMutation();
 
     if (!isAuthenticated) {
@@ -38,9 +38,9 @@ export default function MovieCardControls({
         }
     };
 
-    const handleRemoveMovie = async () => {
+    const handleUnmarkMovie = async (status: string) => {
         try {
-            await removeMovie(movieId).unwrap();
+            await unmarkMovie({movieId, status}).unwrap();
             setShowMenu(false);
             onSuccess?.();
         } catch (error) {
@@ -57,7 +57,7 @@ export default function MovieCardControls({
         }
     };
 
-    const isLoading = isMarking || isRemoving || isTogglingFavorite;
+    const isLoading = isMarking || isUnmarking || isTogglingFavorite;
 
     return (
         <div className="relative">
@@ -68,7 +68,7 @@ export default function MovieCardControls({
                     onClick={(e) => {
                         e.stopPropagation();
                         if (currentStatus === MovieStatus.WATCHED) {
-                            handleRemoveMovie();
+                            handleUnmarkMovie(MovieStatus.WATCHED);
                         } else {
                             handleMarkMovie(MovieStatus.WATCHED);
                         }
@@ -89,7 +89,7 @@ export default function MovieCardControls({
                     onClick={(e) => {
                         e.stopPropagation();
                         if (currentStatus === MovieStatus.PLANNED) {
-                            handleRemoveMovie();
+                            handleUnmarkMovie(MovieStatus.PLANNED);
                         } else {
                             handleMarkMovie(MovieStatus.PLANNED);
                         }
@@ -168,7 +168,6 @@ export default function MovieCardControls({
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        handleRemoveMovie();
                                     }}
                                     disabled={isLoading}
                                     className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 text-red-600 transition-colors"

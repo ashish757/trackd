@@ -38,7 +38,7 @@ export default function MyListPage() {
         total: statsData?.data?.total || 0,
         watched: statsData?.data?.watched || 0,
         planned: statsData?.data?.planned || 0,
-        favorites: favoriteMovies?.data?.length || 0,
+        favorites: statsData?.data?.favorites || 0,
     };
 
     // Determine what to show based on active tab

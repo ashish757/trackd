@@ -12,7 +12,7 @@ const VIEW_MODE_KEY = 'movie_view_mode';
 interface MovieEntry {
     id: string;
     movieId: number;
-    status?: MovieStatus;
+    status: MovieStatus | null;
     isFavorite?: boolean;
     rating?: number | null;
     movieData?: Movie; // Optional: For when movie data is already available (trending, etc.)

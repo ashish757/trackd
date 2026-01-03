@@ -49,7 +49,7 @@ export const API_CONFIG = {
         },
         USER_MOVIES: {
             MARK: '/user-movies/mark',
-            DELETE: '/user-movies',
+            UNMARK: '/user-movies/unmark',
             GET_ALL: '/user-movies',
             GET_BY_STATUS: '/user-movies/by-status',
             GET_ENTRY: '/user-movies/movie',

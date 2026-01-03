@@ -1,7 +1,7 @@
 import { X, Calendar, Star, Film, Check, Clock, Users, Clapperboard, DollarSign, Globe, Heart } from 'lucide-react'
 import type {Movie} from "../redux/movie/movieApi.ts";
 import Portal from "./Portal.tsx";
-import { useMarkMovieMutation, useRemoveMovieMutation, useGetMovieEntryQuery, MovieStatus, useRateMovieMutation, useGetUserMovieRatingQuery, useRemoveRatingMutation, useToggleFavoriteMutation } from '../redux/userMovie/userMovieApi';
+import { useMarkMovieMutation, useUnmarkMovieMutation, useGetMovieEntryQuery, MovieStatus, useRateMovieMutation, useGetUserMovieRatingQuery, useRemoveRatingMutation, useToggleFavoriteMutation } from '../redux/userMovie/userMovieApi';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useGetMovieByIdQuery } from '../redux/movie/movieApi';
 import { useSelector } from 'react-redux';
@@ -17,7 +17,7 @@ interface props {
     const location = useLocation();
 
     const [markMovie, { isLoading: isMarking }] = useMarkMovieMutation();
-    const [removeMovie, { isLoading: isRemoving }] = useRemoveMovieMutation();
+    const [unmarkMovie, { isLoading: isUnmarking }] = useUnmarkMovieMutation();
     const [rateMovie, { isLoading: isRating }] = useRateMovieMutation();
     const [removeRatingMutation, { isLoading: isRemovingRating }] = useRemoveRatingMutation();
     const [toggleFavorite, { isLoading: isTogglingFavorite }] = useToggleFavoriteMutation();
@@ -107,8 +107,8 @@ interface props {
     );
 
     const isProcessing = useMemo(() =>
-        isMarking || isRemoving || isLoadingEntry || isRating || isRemovingRating || isTogglingFavorite,
-        [isMarking, isRemoving, isLoadingEntry, isRating, isRemovingRating, isTogglingFavorite]
+        isMarking || isUnmarking || isLoadingEntry || isRating || isRemovingRating || isTogglingFavorite,
+        [isMarking, isUnmarking, isLoadingEntry, isRating, isRemovingRating, isTogglingFavorite]
     );
 
     // Format runtime
@@ -143,11 +143,11 @@ interface props {
         }
     }, [markMovie, movie]);
 
-    const handleRemoveMovie = useCallback(async () => {
+    const handleUnmarkMovie = useCallback(async (status: string) => {
         if (!movie) return;
         try {
             setError(null);
-            await removeMovie(movie.id).unwrap();
+            await unmarkMovie({moviesId: movie.id, status}).unwrap();
         } catch (err: unknown) {
             const errorMessage = err && typeof err === 'object' && 'data' in err && err.data && typeof err.data === 'object' && 'message' in err.data
                 ? String(err.data.message)
@@ -155,7 +155,7 @@ interface props {
             setError(errorMessage);
             console.error('Error removing movie:', err);
         }
-    }, [removeMovie, movie]);
+    }, [unmarkMovie, movie]);
 
     const handleRateMovie = useCallback(async (rating: number) => {
         if (!movie) return;
@@ -475,7 +475,7 @@ interface props {
                                 {/* Remove Button - Only show if movie is marked */}
                                 {currentStatus && (
                                     <button
-                                        onClick={handleRemoveMovie}
+                                        onClick={() => handleUnmarkMovie(currentStatus)}
                                         disabled={isProcessing}
                                         className="w-full bg-red-100 hover:bg-red-200 text-red-800 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-300 font-semibold py-2.5 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
