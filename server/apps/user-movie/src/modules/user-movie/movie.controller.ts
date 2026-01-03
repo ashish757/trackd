@@ -16,7 +16,7 @@ import { Throttle } from '@nestjs/throttler';
 import { UserMovieService } from './movie.service';
 import { AuthGuard } from '@app/common/guards/auth.guard';
 import { RateLimitConfig } from '@app/common';
-import { MarkMovieDto, MovieStatus, RateMovieDto } from './DTO/user-movie.dto';
+import {MarkMovieDto, MovieStatus, RateMovieDto, UnmarkMovieDto} from './DTO/user-movie.dto';
 
 @Controller()
 @UseGuards(AuthGuard)
@@ -46,16 +46,16 @@ export class MovieController {
 
     /**
      * Remove a movie entry
-     * DELETE /user-movies/:movieId
+     * DELETE /user-movies/unmark
      */
-    @Delete(':movieId')
+    @Post('unmark')
     @Throttle({ default: RateLimitConfig.MODERATE.ADD_REMOVE_MOVIE })
     async removeMovie(
-        @Param('movieId', ParseIntPipe) movieId: number,
+      @Body() dto: UnmarkMovieDto,
         @Req() req: Request & { user?: { sub: string; email: string } }
     ) {
         const userId = req.user?.sub!;
-        const data = await this.userMovieService.removeMovie({ movieId }, userId);
+        const data = await this.userMovieService.unmarkMovie(dto, userId);
 
         return {
             status: 'success',
