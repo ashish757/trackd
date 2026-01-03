@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Film, LayoutGrid, List, Calendar, Star } from 'lucide-react';
+import { Film, LayoutGrid, List } from 'lucide-react';
 import MyListMovieCard from './MyListMovieCard';
 import MovieCard from './MovieCard';
-import { useGetMovieByIdQuery, type Movie } from '../redux/movie/movieApi';
+import type { Movie } from '../redux/movie/movieApi';
 import { MovieStatus } from '../redux/userMovie/userMovieApi';
 import { MovieGridSkeleton } from './skeletons';
 import { storage } from '../utils/config';
@@ -105,165 +105,36 @@ export default function MovieCardsView({
             )}
 
             {/* Movie Display */}
-            {viewMode === 'grid' ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                    {movies.map((entry) => {
-                        if (useSimpleMovieCard && entry.movieData) {
-                            // Use MovieCard for trending/discover (data already available)
-                            return (
-                                <MovieCard
-                                    key={entry.id}
-                                    movie={entry.movieData}
-                                    onClick={onMovieClick}
-                                    badge={getBadge ? getBadge(entry) : undefined}
-                                />
-                            );
-                        }
-                        // Use MyListMovieCard for user lists (fetches data by ID)
+            <div className={viewMode === 'grid'
+                ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6'
+                : 'space-y-3'
+            }>
+                {movies.map((entry) => {
+                    if (useSimpleMovieCard && entry.movieData) {
+                        // Use MovieCard for trending/discover (data already available)
                         return (
-                            <MyListMovieCard
+                            <MovieCard
                                 key={entry.id}
-                                movieId={entry.movieId}
+                                movie={entry.movieData}
                                 onClick={onMovieClick}
                                 badge={getBadge ? getBadge(entry) : undefined}
+                                viewMode={viewMode}
                             />
                         );
-                    })}
-                </div>
-            ) : (
-                <div className="space-y-3">
-                    {movies.map((entry) => (
-                        <MovieListItem
+                    }
+                    // Use MyListMovieCard for user lists (fetches data by ID)
+                    return (
+                        <MyListMovieCard
                             key={entry.id}
-                            entry={entry}
+                            movieId={entry.movieId}
                             onClick={onMovieClick}
                             badge={getBadge ? getBadge(entry) : undefined}
+                            viewMode={viewMode}
+                            userRating={entry.rating}
                         />
-                    ))}
-                </div>
-            )}
+                    );
+                })}
+            </div>
         </>
     );
 }
-
-// List view item component
-interface MovieListItemProps {
-    entry: MovieEntry;
-    onClick: (movie: Movie) => void;
-    badge?: { text: string; color: 'green' | 'blue' | 'purple' | 'yellow' | 'pink' };
-}
-
-const MovieListItem = ({ entry, onClick, badge }: MovieListItemProps) => {
-    // Only fetch if movieData is not already provided
-    const { data: fetchedMovieData, isLoading } = useGetMovieByIdQuery(entry.movieId, {
-        skip: !!entry.movieData, // Skip fetching if data is already available
-    });
-
-    // Use provided movieData or fetched data
-    const movieData = entry.movieData || fetchedMovieData;
-
-    if (isLoading) {
-        return (
-            <div className="bg-white rounded-lg border border-gray-200 p-4 animate-pulse">
-                <div className="flex gap-4">
-                    <div className="w-20 h-28 bg-gray-200 rounded"></div>
-                    <div className="flex-1 space-y-3">
-                        <div className="h-6 bg-gray-200 rounded w-3/4"></div>
-                        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                        <div className="h-4 bg-gray-200 rounded w-full"></div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    if (!movieData) return null;
-
-    const badgeColors = {
-        green: 'bg-green-500',
-        blue: 'bg-blue-500',
-        purple: 'bg-purple-500',
-        yellow: 'bg-yellow-500',
-        pink: 'bg-pink-500',
-    };
-
-    return (
-        <div
-            onClick={() => onClick(movieData)}
-            className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer group"
-        >
-            <div className="flex gap-4">
-                {/* Poster */}
-                <div className="w-20 shrink-0">
-                    <div className="aspect-2/3 bg-gray-200 rounded overflow-hidden">
-                        {movieData.poster_path ? (
-                            <img
-                                src={`https://image.tmdb.org/t/p/w185${movieData.poster_path}`}
-                                alt={movieData.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                                <Film className="w-8 h-8 text-gray-400" />
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-4 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                            {movieData.title}
-                        </h3>
-                        {badge && (
-                            <span className={`${badgeColors[badge.color]} text-white px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap`}>
-                                {badge.text}
-                            </span>
-                        )}
-                    </div>
-
-                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-                        {movieData.release_date && (
-                            <span className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
-                                {new Date(movieData.release_date).getFullYear()}
-                            </span>
-                        )}
-                        {movieData.vote_average && movieData.vote_average > 0 && (
-                            <span className="flex items-center gap-1">
-                                <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                                {movieData.vote_average.toFixed(1)}
-                            </span>
-                        )}
-                        {entry.rating && (
-                            <span className="flex items-center gap-1 text-blue-600 font-medium">
-                                Your rating: {entry.rating}/10
-                            </span>
-                        )}
-                    </div>
-
-                    {movieData.overview && (
-                        <p className="text-sm text-gray-600 line-clamp-2">
-                            {movieData.overview}
-                        </p>
-                    )}
-
-                    {movieData.genres && movieData.genres.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-3">
-                            {movieData.genres.slice(0, 3).map((genre) => (
-                                <span
-                                    key={genre.id}
-                                    className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
-                                >
-                                    {genre.name}
-                                </span>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-};
-
