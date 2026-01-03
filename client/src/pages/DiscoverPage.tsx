@@ -4,10 +4,10 @@ import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useLazySearchMoviesQuery, useGetMovieByIdQuery, type Movie } from '../redux/movie/movieApi';
 import MovieInfoModel from "../components/MovieInfoModel.tsx";
-import MovieCardsView from "../components/MovieCardsView.tsx";
+import MovieCardsView from "../components/movieCards/MovieCardsView.tsx";
 import { useDebounce } from '../hooks/useDebounce';
 import { SEARCH_CONFIG } from '../constants/search';
-import { MovieGridSkeleton } from '../components/skeletons';
+import type { MovieEntry } from '../types/movie.types';
 
 const DISCOVER_VIEW_MODE_KEY = 'discover_view_mode';
 
@@ -368,16 +368,16 @@ export default function DiscoverPage() {
                                 </p>
                             </div>
 
-                            {isSearching ? (
-                                <MovieGridSkeleton count={15} />
-                            ) : filteredResults.length > 0 ? (
+                            {filteredResults.length > 0 ? (
                                 <MovieCardsView
-                                    movies={filteredResults.map(movie => ({
+                                    movies={filteredResults.map((movie): MovieEntry => ({
                                         id: movie.id.toString(),
                                         movieId: movie.id,
                                         movieData: movie,
+                                        status: null,
+                                        isFavorite: false,
                                     }))}
-                                    isLoading={false}
+                                    isLoading={isSearching}
                                     onMovieClick={handleMovieClick}
                                     showViewToggle={true}
                                     defaultView="grid"
