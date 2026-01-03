@@ -1,33 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Film, LayoutGrid, List } from 'lucide-react';
-import MyListMovieCard from './MyListMovieCard';
-import MovieCard from './MovieCard';
-import type { Movie } from '../redux/movie/movieApi';
-import { MovieStatus } from '../redux/userMovie/userMovieApi';
-import { MovieGridSkeleton } from './skeletons';
-import { storage } from '../utils/config';
+import MyListMovieCard from './MyListMovieCard.tsx';
+import MovieCard from './MovieCard.tsx';
+import type { Movie } from '../../redux/movie/movieApi.ts';
+import { useGetUserMoviesQuery, type MovieStatus } from '../../redux/userMovie/userMovieApi.ts';
+import { MovieCardSkeleton } from '../skeletons';
+import { storage } from '../../utils/config.ts';
+import type { MovieEntry, MovieBadge, ViewMode } from '../../types/movie.types';
 
 const VIEW_MODE_KEY = 'movie_view_mode';
-
-interface MovieEntry {
-    id: string;
-    movieId: number;
-    status: MovieStatus | null;
-    isFavorite?: boolean;
-    rating?: number | null;
-    movieData?: Movie; // Optional: For when movie data is already available (trending, etc.)
-}
 
 interface MovieCardsViewProps {
     movies: MovieEntry[];
     isLoading?: boolean;
     onMovieClick: (movie: Movie) => void;
-    getBadge?: (entry: MovieEntry) => { text: string; color: 'green' | 'blue' | 'purple' | 'yellow' | 'pink' };
+    getBadge?: (entry: MovieEntry) => MovieBadge;
     emptyStateMessage?: string;
     showViewToggle?: boolean;
-    defaultView?: 'grid' | 'list';
-    viewModeStorageKey?: string; // Optional custom storage key for different pages
-    useSimpleMovieCard?: boolean; // If true, use MovieCard instead of MyListMovieCard (for trending, discover, etc.)
+    defaultView?: ViewMode;
+    viewModeStorageKey?: string;
+    useSimpleMovieCard?: boolean;
 }
 
 export default function MovieCardsView({
@@ -41,14 +33,32 @@ export default function MovieCardsView({
     viewModeStorageKey,
     useSimpleMovieCard = false,
 }: MovieCardsViewProps) {
+    // Fetch user's movies to check status and favorites
+    const { data: userMoviesData } = useGetUserMoviesQuery();
+
+    // Create a lookup map for O(1) access to user's movie data
+    const userMoviesMap = useMemo(() => {
+        if (!userMoviesData?.data) return new Map();
+
+        const map = new Map<number, { status: MovieStatus | null; isFavorite: boolean; rating: number | null }>();
+        userMoviesData.data.forEach((userMovie) => {
+            map.set(userMovie.movieId, {
+                status: userMovie.status,
+                isFavorite: userMovie.isFavorite,
+                rating: userMovie.rating,
+            });
+        });
+        return map;
+    }, [userMoviesData]);
+
     // Get initial view mode from localStorage or use default
-    const getInitialViewMode = (): 'grid' | 'list' => {
+    const getInitialViewMode = (): ViewMode => {
         const storageKey = viewModeStorageKey || VIEW_MODE_KEY;
-        const savedMode = storage.getItem(storageKey) as 'grid' | 'list' | null;
+        const savedMode = storage.getItem(storageKey) as ViewMode | null;
         return savedMode || defaultView;
     };
 
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>(getInitialViewMode);
+    const [viewMode, setViewMode] = useState<ViewMode>(getInitialViewMode);
 
     // Save view mode to localStorage whenever it changes
     useEffect(() => {
@@ -57,7 +67,7 @@ export default function MovieCardsView({
     }, [viewMode, viewModeStorageKey]);
 
     if (isLoading) {
-        return <MovieGridSkeleton count={10} />;
+        return <MovieCardSkeleton count={10} />;
     }
 
     if (movies.length === 0) {
@@ -110,6 +120,17 @@ export default function MovieCardsView({
                 : 'space-y-3'
             }>
                 {movies.map((entry) => {
+                    // Get user's data for this movie from the map
+                    const userData = userMoviesMap.get(entry.movieId);
+
+                    // Merge entry data with user data (user data takes precedence)
+                    const enrichedEntry = {
+                        ...entry,
+                        status: userData?.status ?? entry.status,
+                        isFavorite: userData?.isFavorite ?? entry.isFavorite ?? false,
+                        rating: userData?.rating ?? entry.rating,
+                    };
+
                     if (useSimpleMovieCard && entry.movieData) {
                         // Use MovieCard for trending/discover (data already available)
                         return (
@@ -117,26 +138,29 @@ export default function MovieCardsView({
                                 key={entry.id}
                                 movie={entry.movieData}
                                 onClick={onMovieClick}
-                                badge={getBadge ? getBadge(entry) : undefined}
+                                badge={getBadge ? getBadge(enrichedEntry) : undefined}
                                 viewMode={viewMode}
-                                currentStatus={entry.status}
-                                isFavorite={entry.isFavorite}
+                                currentStatus={enrichedEntry.status}
+                                isFavorite={enrichedEntry.isFavorite}
                                 onControlsSuccess={() => {
                                     // Optionally refetch data or handle success
                                 }}
                             />
                         );
                     }
-                    // Use MyListMovieCard for user lists (fetches data by ID)
+
+                    // Use MyListMovieCard for user lists
+                    // If movieData is available, pass it to avoid fetching
                     return (
                         <MyListMovieCard
                             key={entry.id}
                             movieId={entry.movieId}
+                            movieData={entry.movieData} // Pass movieData if available
                             onClick={onMovieClick}
                             viewMode={viewMode}
-                            userRating={entry.rating}
-                            currentStatus={entry.status}
-                            isFavorite={entry.isFavorite}
+                            userRating={enrichedEntry.rating}
+                            currentStatus={enrichedEntry.status}
+                            isFavorite={enrichedEntry.isFavorite}
                             onControlsSuccess={() => {
                                 // Optionally refetch data or handle success
                             }}

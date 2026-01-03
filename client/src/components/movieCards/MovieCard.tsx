@@ -1,17 +1,15 @@
 import { Film, Star, Calendar } from 'lucide-react';
-import type { Movie } from '../redux/movie/movieApi';
+import type { Movie } from '../../redux/movie/movieApi';
 import { memo } from 'react';
-import MovieCardControls from './MovieCardControls';
-import { MovieStatus } from '../redux/userMovie/userMovieApi';
+import MovieCardControls from './MovieCardControls.tsx';
+import { MovieStatus } from '../../redux/userMovie/userMovieApi';
+import type { MovieBadge, ViewMode } from '../../types/movie.types';
 
 interface MovieCardProps {
     movie: Movie;
     onClick?: (movie: Movie) => void;
-    badge?: {
-        text: string;
-        color: 'green' | 'blue' | 'purple' | 'yellow' | 'pink';
-    };
-    viewMode?: 'grid' | 'list';
+    badge?: MovieBadge;
+    viewMode?: ViewMode;
     currentStatus?: MovieStatus | null;
     isFavorite?: boolean;
     onControlsSuccess?: () => void;
@@ -35,6 +33,9 @@ const MovieCard = memo(({
     isFavorite = false,
     onControlsSuccess
 }: MovieCardProps) => {
+
+
+
     // List view rendering
     if (viewMode === 'list') {
         return (

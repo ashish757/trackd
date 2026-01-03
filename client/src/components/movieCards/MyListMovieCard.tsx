@@ -1,23 +1,25 @@
-import { useGetMovieByIdQuery, type Movie } from '../redux/movie/movieApi';
+import { useGetMovieByIdQuery, type Movie } from '../../redux/movie/movieApi.ts';
 import { Film, Star, Calendar } from 'lucide-react';
-import { MovieCardSkeleton } from './skeletons';
+import { MovieCardSkeleton } from '../skeletons';
 import { memo } from 'react';
-import MovieCardControls from './MovieCardControls';
-import { MovieStatus } from '../redux/userMovie/userMovieApi';
+import MovieCardControls from './MovieCardControls.tsx';
+import { MovieStatus } from '../../redux/userMovie/userMovieApi.ts';
+import type { ViewMode } from '../../types/movie.types';
 
 interface MyListMovieCardProps {
     movieId: number;
+    movieData?: Movie;
     onClick?: (movie: Movie) => void;
-    viewMode?: 'grid' | 'list';
+    viewMode?: ViewMode;
     userRating?: number | null;
     currentStatus?: MovieStatus | null;
     isFavorite?: boolean;
     onControlsSuccess?: () => void;
 }
 
-
 const MyListMovieCard = memo(({
     movieId,
+    movieData: providedMovieData,
     onClick,
     viewMode = 'grid',
     userRating,
@@ -25,23 +27,16 @@ const MyListMovieCard = memo(({
     isFavorite = false,
     onControlsSuccess
 }: MyListMovieCardProps) => {
-    const { data: movieData, isLoading, isError } = useGetMovieByIdQuery(movieId);
+    // Only fetch if movieData is not provided
+    const { data: fetchedMovieData, isLoading, isError } = useGetMovieByIdQuery(movieId, {
+        skip: !!providedMovieData, // Skip fetching if data is already provided
+    });
+
+    // Use provided movieData or fetched data
+    const movieData = providedMovieData || fetchedMovieData;
 
     if (isLoading) {
-        return viewMode === 'list' ? (
-            <div className="bg-white rounded-lg border border-gray-200 p-4 animate-pulse">
-                <div className="flex gap-4">
-                    <div className="w-20 h-28 bg-gray-200 rounded"></div>
-                    <div className="flex-1 space-y-3">
-                        <div className="h-6 bg-gray-200 rounded w-3/4"></div>
-                        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                        <div className="h-4 bg-gray-200 rounded w-full"></div>
-                    </div>
-                </div>
-            </div>
-        ) : (
-            <MovieCardSkeleton />
-        );
+        return <MovieCardSkeleton count={1} layout={viewMode} />;
     }
 
     if (isError || !movieData) {

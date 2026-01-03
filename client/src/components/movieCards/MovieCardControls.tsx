@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Eye, Clock, Heart, MoreVertical } from 'lucide-react';
-import { useMarkMovieMutation, useUnmarkMovieMutation, useToggleFavoriteMutation, MovieStatus } from '../redux/userMovie/userMovieApi';
+import { useMarkMovieMutation, useUnmarkMovieMutation, useToggleFavoriteMutation, MovieStatus } from '../../redux/userMovie/userMovieApi.ts';
 import { useSelector } from 'react-redux';
-import type { RootState } from '../redux/store';
+import type { RootState } from '../../redux/store.ts';
 
 interface MovieCardControlsProps {
-    movieId: number;
+    movieId: number; // Changed from string to number for consistency
     currentStatus?: MovieStatus | null;
     isFavorite?: boolean;
     onSuccess?: () => void;
