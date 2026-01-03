@@ -7,6 +7,7 @@ import { useState, useRef, useEffect } from 'react';
 import type { RootState } from '../redux/store';
 import type { User } from '../redux/user/userApi';
 import Notifications from "./Notifications.tsx";
+import NavbarSkeleton from "./NavbarSkeleton.tsx";
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -18,6 +19,7 @@ const Navbar = () => {
 
     const user = useSelector((state: RootState) => state.auth.user) as User | null;
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+    const isInitialized = useSelector((state: RootState) => state.auth.isInitialized);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -112,7 +114,10 @@ const Navbar = () => {
                     </div>
 
                     {/* Right side - Desktop Only */}
-                    {isAuthenticated ? (
+                    {!isInitialized ? (
+                        /* Show skeleton while checking auth status */
+                        <NavbarSkeleton />
+                    ) : isAuthenticated ? (
                         <div className="hidden md:flex items-center gap-4">
                             {/* Notifications - Desktop Only */}
                             <Notifications />
