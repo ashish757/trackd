@@ -36,11 +36,11 @@ const UserPage = () => {
         skip: shouldSkipQuery,
         refetchOnMountOrArgChange: true, // Always fetch fresh data when component mounts
     });
-    const [followUser, { isLoading: isFollowLoading }] = useFollowUserMutation();
-    const [unfollowUser, { isLoading: isUnfollowLoading }] = useUnfollowUserMutation();
-    const [cancelFollowRequest, { isLoading: isCancelLoading }] = useCancelFollowRequestMutation();
-    const [acceptFollowRequest, { isLoading: isAcceptLoading }] = useAcceptFollowRequestMutation();
-    const [rejectFollowRequest, { isLoading: isRejectLoading }] = useRejectFollowRequestMutation();
+    const [followUser] = useFollowUserMutation();
+    const [unfollowUser] = useUnfollowUserMutation();
+    const [cancelFollowRequest] = useCancelFollowRequestMutation();
+    const [acceptFollowRequest] = useAcceptFollowRequestMutation();
+    const [rejectFollowRequest] = useRejectFollowRequestMutation();
 
     // Only fetch friend list and movie stats if the user is a friend
     const isFriend = user?.relationshipStatus === 'FOLLOWING';
@@ -50,7 +50,6 @@ const UserPage = () => {
         (user?.id && isFriend) ? user.id : skipToken
     );
 
-    const isAnyActionLoading = isFollowLoading || isUnfollowLoading || isCancelLoading || isAcceptLoading || isRejectLoading;
 
     const handleFollowUser = async (id: string | undefined) => {
         if (user?.relationshipStatus === null) {
@@ -105,16 +104,6 @@ const UserPage = () => {
     const getFollowButtonContent = () => {
         const status = user?.relationshipStatus;
 
-        if (isAnyActionLoading) {
-            return {
-                text: 'Loading...',
-                icon: null,
-                disabled: true,
-                className: 'px-6 py-1.5 bg-gray-300 text-gray-700 font-medium text-sm rounded-lg cursor-not-allowed',
-                action: () => {},
-                showSecondaryButton: false
-            };
-        }
 
         switch (status) {
             case 'FOLLOWING':

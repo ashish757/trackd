@@ -53,6 +53,22 @@ export const userApi = apiSlice.injectEndpoints({
                     id: id
                 }
             }),
+            // Optimistic update
+            async onQueryStarted({ username }, { dispatch, queryFulfilled }) {
+                // Optimistically update the cache
+                const patchResult = username ? dispatch(
+                    userApi.util.updateQueryData('getUserById', username, (draft) => {
+                        draft.relationshipStatus = 'REQUEST_SENT';
+                    })
+                ) : null;
+
+                try {
+                    await queryFulfilled;
+                } catch {
+                    // Undo optimistic update on error
+                    patchResult?.undo();
+                }
+            },
             invalidatesTags: (_result, _error, { id, username }) => {
                 const tags: Array<{ type: 'User'; id: string }> = [
                     { type: 'User' as const, id },
@@ -73,6 +89,26 @@ export const userApi = apiSlice.injectEndpoints({
                     userId: userId
                 }
             }),
+            // Optimistic update
+            async onQueryStarted({ username }, { dispatch, queryFulfilled }) {
+                // Optimistically update the cache
+                const patchResult = username ? dispatch(
+                    userApi.util.updateQueryData('getUserById', username, (draft) => {
+                        draft.relationshipStatus = 'NONE';
+                        // Decrement friend count
+                        if (draft.friendCount !== undefined && draft.friendCount > 0) {
+                            draft.friendCount -= 1;
+                        }
+                    })
+                ) : null;
+
+                try {
+                    await queryFulfilled;
+                } catch {
+                    // Undo optimistic update on error
+                    patchResult?.undo();
+                }
+            },
             invalidatesTags: (_result, _error, { userId, username }) => {
                 const tags: Array<{ type: 'User'; id: string }> = [
                     { type: 'User' as const, id: userId },
@@ -92,6 +128,22 @@ export const userApi = apiSlice.injectEndpoints({
                     receiverId: receiverId
                 }
             }),
+            // Optimistic update
+            async onQueryStarted({ username }, { dispatch, queryFulfilled }) {
+                // Optimistically update the cache
+                const patchResult = username ? dispatch(
+                    userApi.util.updateQueryData('getUserById', username, (draft) => {
+                        draft.relationshipStatus = 'NONE';
+                    })
+                ) : null;
+
+                try {
+                    await queryFulfilled;
+                } catch {
+                    // Undo optimistic update on error
+                    patchResult?.undo();
+                }
+            },
             invalidatesTags: (_result, _error, { receiverId, username }) => {
                 const tags: Array<{ type: 'User'; id: string }> = [
                     { type: 'User' as const, id: receiverId },
