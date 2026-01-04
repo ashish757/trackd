@@ -14,6 +14,7 @@ interface props {
     onClose: () => void
 }const MovieInfoModel = ({onClose, movie}: props) => {
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+    const isInitialized = useSelector((state: RootState) => state.auth.isInitialized);
     const location = useLocation();
 
     const [markMovie, { isLoading: isMarking }] = useMarkMovieMutation();
@@ -23,11 +24,11 @@ interface props {
     const [toggleFavorite, { isLoading: isTogglingFavorite }] = useToggleFavoriteMutation();
 
     const { data: movieEntryData, isLoading: isLoadingEntry } = useGetMovieEntryQuery(movie?.id || 0, {
-        skip: !movie?.id || !isAuthenticated,
+        skip: !movie?.id || !isAuthenticated || !isInitialized,
     });
 
     const { data: userRatingData, isLoading: isLoadingRating } = useGetUserMovieRatingQuery(movie?.id || 0, {
-        skip: !movie?.id || !isAuthenticated,
+        skip: !movie?.id || !isAuthenticated || !isInitialized,
     });
 
     // Fetch detailed movie info
@@ -338,7 +339,17 @@ interface props {
                         </div>
 
                         {/* User Rating Section - Only show for authenticated users */}
-                        {isAuthenticated && (
+                        {!isInitialized ? (
+                            // Skeleton while checking auth
+                            <div className="mb-6 p-4 bg-gray-100 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 animate-pulse">
+                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-40 mb-3"></div>
+                                <div className="flex gap-1">
+                                    {[...Array(10)].map((_, i) => (
+                                        <div key={i} className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : isAuthenticated && (
                             <div className="mb-6 p-4 bg-linear-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-xl border border-yellow-200 dark:border-yellow-800/30">
                                 <div className="flex items-center justify-between mb-3">
                                     {userRating > 0 && (
@@ -430,8 +441,17 @@ interface props {
 
 
 
-                        {/* Action Buttons - Only show for authenticated users */}
-                        {isAuthenticated ? (
+                        {/* Action Buttons - Show skeleton while checking auth, then show for authenticated users */}
+                        {!isInitialized ? (
+                            // Skeleton for action buttons
+                            <div className="flex flex-col gap-3 py-4 mb-4 border-y border-gray-200 dark:border-gray-700 animate-pulse">
+                                <div className="flex gap-3">
+                                    <div className="flex-1 h-11 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                                    <div className="flex-1 h-11 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                                </div>
+                                <div className="h-11 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                            </div>
+                        ) : isAuthenticated ? (
                             <div className="flex flex-col gap-3 py-4 mb-4 border-y border-gray-200 dark:border-gray-700">
                                 <div className="flex gap-3">
                                     <button

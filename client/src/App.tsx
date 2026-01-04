@@ -22,6 +22,7 @@ import ForgetPassword from "./pages/ForgetPassword.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import ChangeEmail from "./components/ChangeEmail.tsx";
 import OauthSuccessPage from "./pages/OauthSuccessPage.tsx";
+import { ProfilePageSkeleton, SettingsPageSkeleton, MyListPageSkeleton } from "./components/skeletons/index.ts";
 
 function App() {
   // Automatically refresh access token on page load/reload
@@ -36,9 +37,24 @@ function App() {
                     <Route path="/home" element={<Home />} />
                     <Route path="/discover" element={<DiscoverPage />} />
 
-                    <Route path="/my-list" element={<ProtectedRoute authorized={<MyListPage />} />} />
-                    <Route path="/profile" element={<ProtectedRoute authorized={<ProfilePage />} />} />
-                    <Route path="/settings" element={<ProtectedRoute authorized={<SettingsPage />} />} />
+                    <Route path="/my-list" element={
+                        <ProtectedRoute
+                            authorized={<MyListPage />}
+                            loadingFallback={<MyListPageSkeleton />}
+                        />
+                    } />
+                    <Route path="/profile" element={
+                        <ProtectedRoute
+                            authorized={<ProfilePage />}
+                            loadingFallback={<ProfilePageSkeleton />}
+                        />
+                    } />
+                    <Route path="/settings" element={
+                        <ProtectedRoute
+                            authorized={<SettingsPage />}
+                            loadingFallback={<SettingsPageSkeleton />}
+                        />
+                    } />
                     <Route path="/forget-password" element={<ForgetPassword />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/change/email" element={<ProtectedRoute authorized={<ChangeEmail />} />} />
