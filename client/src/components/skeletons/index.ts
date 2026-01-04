@@ -10,3 +10,7 @@ export { default as FriendListItemSkeleton } from './FriendListItemSkeleton';
 export { default as MovieCardSkeleton } from './MovieCardSkeleton';
 export { default as UserCardSkeleton } from './UserCardSkeleton';
 
+// Page Skeletons
+export { default as ProfilePageSkeleton } from './ProfilePageSkeleton';
+export { default as SettingsPageSkeleton } from './SettingsPageSkeleton';
+export { default as MyListPageSkeleton } from './MyListPageSkeleton';
