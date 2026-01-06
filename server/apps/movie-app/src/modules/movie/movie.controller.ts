@@ -38,17 +38,39 @@ export class MovieController {
     }
 
     /**
-     * Get movie details by ID
-     * GET /movies/:id
+     * Get TV show season details with episodes
+     * GET /movies/:tvId/season/:seasonNumber
      */
-    @Get(':id')
-    async getMovieById(@Param('id', ParseIntPipe) id: number) {
-        const data = await this.movieService.getMovieById(id);
+    @Get(':tvId/season/:seasonNumber')
+    async getSeasonDetails(
+        @Param('tvId', ParseIntPipe) tvId: number,
+        @Param('seasonNumber', ParseIntPipe) seasonNumber: number
+    ) {
+        const data = await this.movieService.getSeasonDetails(tvId, seasonNumber);
 
         return {
             status: 'success',
             statusCode: HttpStatus.OK,
-            message: 'Movie details',
+            message: 'Season details',
+            data,
+        };
+    }
+
+    /**
+     * Get movie or TV show details by ID
+     * GET /movies/:id?mediaType=tv
+     */
+    @Get(':id')
+    async getMovieById(
+        @Param('id', ParseIntPipe) id: number,
+        @Query('mediaType') mediaType?: 'movie' | 'tv'
+    ) {
+        const data = await this.movieService.getMovieById(id, mediaType || 'movie');
+
+        return {
+            status: 'success',
+            statusCode: HttpStatus.OK,
+            message: mediaType === 'tv' ? 'TV show details' : 'Movie details',
             data,
         };
     }

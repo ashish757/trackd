@@ -51,6 +51,7 @@ const YEARS = Array.from({ length: 50 }, (_, i) => currentYear - i);
 export default function DiscoverPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const movieId = searchParams.get('movie');
+    const mediaType = searchParams.get('mediaType') as 'movie' | 'tv' | null;
     const urlQuery = searchParams.get('q') || '';
 
     const [searchQuery, setSearchQuery] = useState(urlQuery);
@@ -70,10 +71,11 @@ export default function DiscoverPage() {
     // RTK Query hooks
     const [triggerSearch, { data: searchResults, isLoading, isFetching }] = useLazySearchMoviesQuery();
 
-    // Fetch movie details if movieId in URL
-    const { data: movieFromUrl } = useGetMovieByIdQuery(Number(movieId), {
-        skip: !movieId,
-    });
+    // Fetch movie/TV show details if movieId in URL
+    const { data: movieFromUrl } = useGetMovieByIdQuery(
+        { id: Number(movieId), mediaType: mediaType || undefined },
+        { skip: !movieId }
+    );
 
     // Set infoMovie when movie is fetched from URL
     useEffect(() => {
@@ -117,6 +119,9 @@ export default function DiscoverPage() {
         setInfoMovie(movie);
         const newParams = new URLSearchParams(searchParams);
         newParams.set('movie', movie.id.toString());
+        if (movie.media_type) {
+            newParams.set('mediaType', movie.media_type);
+        }
         setSearchParams(newParams);
     }, [searchParams, setSearchParams]);
 
@@ -125,6 +130,7 @@ export default function DiscoverPage() {
         setInfoMovie(null);
         const newParams = new URLSearchParams(searchParams);
         newParams.delete('movie');
+        newParams.delete('mediaType');
         setSearchParams(newParams);
     }, [searchParams, setSearchParams]);
 
@@ -201,10 +207,10 @@ export default function DiscoverPage() {
                     <div className="max-w-6xl mx-auto mb-4 md:mb-8">
                         <div className="text-center mb-4 md:mb-8">
                             <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2 md:mb-3">
-                                Advanced Movie Discovery
+                                Advanced Discovery
                             </h1>
                             <p className="text-gray-600 text-sm md:text-lg">
-                                Search with filters to find exactly what you're looking for
+                                Search for movies and TV shows with filters
                             </p>
                         </div>
 
@@ -218,7 +224,7 @@ export default function DiscoverPage() {
                                             type="text"
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            placeholder="Search for movies..."
+                                            placeholder="Search for movies and TV shows..."
                                             className="w-full pl-10 md:pl-12 pr-10 md:pr-12 py-3 md:py-4 text-sm md:text-lg border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none transition-colors shadow-xm"
                                             autoComplete="off"
                                         />
@@ -395,13 +401,13 @@ export default function DiscoverPage() {
                                     defaultView="grid"
                                     viewModeStorageKey={DISCOVER_VIEW_MODE_KEY}
                                     useSimpleMovieCard={true}
-                                    emptyStateMessage="No movies found"
+                                    emptyStateMessage="No results found"
                                 />
                             ) : (
                                 <div className="text-center py-12 md:py-20">
                                     <Film className="h-12 w-12 md:h-16 md:w-16 mx-auto mb-4 text-gray-400" />
                                     <p className="text-gray-600 text-sm md:text-lg">
-                                        No movies match your filters. Try adjusting your search criteria.
+                                        No results match your filters. Try adjusting your search criteria.
                                     </p>
                                 </div>
                             )}
@@ -416,7 +422,7 @@ export default function DiscoverPage() {
                                 Start Your Search
                             </h3>
                             <p className="text-gray-600 text-sm md:text-lg">
-                                Use the search bar and filters above to discover movies
+                                Use the search bar and filters above to discover movies and TV shows
                             </p>
                         </div>
                     )}
