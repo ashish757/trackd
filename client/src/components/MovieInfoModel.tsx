@@ -1,9 +1,9 @@
-import { X, Calendar, Star, Film, Check, Clock, Users, Clapperboard, DollarSign, Globe, Heart, Tv } from 'lucide-react'
-import type {Movie} from "../redux/movie/movieApi.ts";
+import { X, Calendar, Star, Film, Check, Clock, Users, Clapperboard, DollarSign, Globe, Heart, Tv, ChevronDown, ChevronUp } from 'lucide-react'
+import type {Movie, SeasonDetails, Episode} from "../redux/movie/movieApi.ts";
 import Portal from "./Portal.tsx";
 import { useMarkMovieMutation, useUnmarkMovieMutation, useGetMovieEntryQuery, MovieStatus, useRateMovieMutation, useGetUserMovieRatingQuery, useRemoveRatingMutation, useToggleFavoriteMutation } from '../redux/userMovie/userMovieApi';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useGetMovieByIdQuery } from '../redux/movie/movieApi';
+import { useGetMovieByIdQuery, useLazyGetSeasonDetailsQuery } from '../redux/movie/movieApi';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../redux/store';
 import { Link, useLocation } from 'react-router-dom';
@@ -40,6 +40,10 @@ interface props {
     const [error, setError] = useState<string | null>(null);
     const [userRating, setUserRating] = useState<number>(0);
     const [showSeasons, setShowSeasons] = useState<boolean>(false);
+    const [expandedSeasons, setExpandedSeasons] = useState<Set<number>>(new Set());
+    const [seasonDetailsCache, setSeasonDetailsCache] = useState<Record<number, SeasonDetails>>({});
+
+    const [getSeasonDetails, { isLoading: isLoadingSeasonDetails }] = useLazyGetSeasonDetailsQuery();
 
     // Update user rating when data is fetched
     useEffect(() => {
@@ -231,6 +235,35 @@ interface props {
         }
     }, [toggleFavorite, movie]);
 
+    const handleToggleSeason = useCallback(async (seasonNumber: number) => {
+        if (!movie) return;
+
+        const newExpandedSeasons = new Set(expandedSeasons);
+
+        if (newExpandedSeasons.has(seasonNumber)) {
+            // Collapse the season
+            newExpandedSeasons.delete(seasonNumber);
+            setExpandedSeasons(newExpandedSeasons);
+        } else {
+            // Expand the season
+            newExpandedSeasons.add(seasonNumber);
+            setExpandedSeasons(newExpandedSeasons);
+
+            // Fetch episode details if not already cached
+            if (!seasonDetailsCache[seasonNumber]) {
+                try {
+                    const result = await getSeasonDetails({ tvId: movie.id, seasonNumber }).unwrap();
+                    setSeasonDetailsCache(prev => ({
+                        ...prev,
+                        [seasonNumber]: result
+                    }));
+                } catch (err) {
+                    console.error('Error fetching season details:', err);
+                }
+            }
+        }
+    }, [movie, expandedSeasons, seasonDetailsCache, getSeasonDetails]);
+
     if (!movie) return null;
 
     return (
@@ -375,62 +408,132 @@ interface props {
                                     <div className="mt-3">
                                         <button
                                             onClick={() => setShowSeasons(!showSeasons)}
-                                            className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg transition-colors duration-200 text-sm md:text-base font-medium"
+                                            className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg transition-colors duration-200 text-sm md:text-base font-medium flex items-center justify-center gap-2"
                                         >
-                                            {showSeasons ? 'Hide Seasons' : 'View All Seasons'}
+                                            {showSeasons ? (
+                                                <>
+                                                    <ChevronUp className="w-4 h-4" />
+                                                    Hide Seasons & Episodes
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <ChevronDown className="w-4 h-4" />
+                                                    View Seasons & Episodes
+                                                </>
+                                            )}
                                         </button>
                                     </div>
                                 )}
 
                                 {/* Expandable Seasons Section */}
                                 {showSeasons && movieDetails.seasons && movieDetails.seasons.length > 0 && (
-                                    <div className="mt-4 space-y-3 max-h-96 overflow-y-auto">
+                                    <div className="mt-4 space-y-2 max-h-[500px] overflow-y-auto pr-1">
                                         {movieDetails.seasons
-                                            .filter(season => season.season_number > 0) // Filter out special seasons (season 0)
-                                            .map((season) => (
+                                            .filter(season => season.season_number > 0)
+                                            .map((season) => {
+                                                const isExpanded = expandedSeasons.has(season.season_number);
+                                                const seasonDetails = seasonDetailsCache[season.season_number];
+
+                                                return (
                                             <div
                                                 key={season.id}
-                                                className="bg-white dark:bg-gray-800/50 p-3 md:p-4 rounded-lg border border-indigo-100 dark:border-indigo-800/50"
+                                                className="bg-white dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all"
                                             >
-                                                <div className="flex items-start gap-3">
-                                                    {season.poster_path && (
-                                                        <img
-                                                            src={`https://image.tmdb.org/t/p/w92${season.poster_path}`}
-                                                            alt={season.name}
-                                                            className="w-16 h-24 md:w-20 md:h-30 object-cover rounded"
-                                                        />
-                                                    )}
-                                                    <div className="flex-1 min-w-0">
-                                                        <h4 className="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                                                            {season.name}
-                                                        </h4>
-
-                                                        <div className="flex flex-wrap gap-2 mb-2">
-                                                            <span className="text-xs bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 px-2 py-1 rounded">
-                                                                {season.episode_count} {season.episode_count === 1 ? 'Episode' : 'Episodes'}
-                                                            </span>
-                                                            {season.air_date && (
-                                                                <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded">
-                                                                    {new Date(season.air_date).getFullYear()}
-                                                                </span>
-                                                            )}
-                                                            {season.vote_average && season.vote_average > 0 && (
-                                                                <span className="flex items-center gap-1 text-xs bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded">
-                                                                    <Star className="w-3 h-3 fill-current" />
-                                                                    {season.vote_average.toFixed(1)}
-                                                                </span>
+                                                {/* Season Header - Clickable */}
+                                                <button
+                                                    onClick={() => handleToggleSeason(season.season_number)}
+                                                    className="w-full p-3 md:p-4 hover:bg-gray-50 dark:hover:bg-gray-800/70 transition-colors text-left"
+                                                >
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <h4 className="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100">
+                                                                    {season.name}
+                                                                </h4>
+                                                                {season.vote_average && season.vote_average > 0 && (
+                                                                    <span className="flex items-center gap-1 text-xs text-yellow-600 dark:text-yellow-400">
+                                                                        <Star className="w-3 h-3 fill-current" />
+                                                                        {season.vote_average.toFixed(1)}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                                                <span>{season.episode_count} episodes</span>
+                                                                {season.air_date && (
+                                                                    <>
+                                                                        <span>•</span>
+                                                                        <span>{new Date(season.air_date).getFullYear()}</span>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <div className="shrink-0">
+                                                            {isExpanded ? (
+                                                                <ChevronUp className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                                            ) : (
+                                                                <ChevronDown className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                                                             )}
                                                         </div>
+                                                    </div>
+                                                </button>
 
-                                                        {season.overview && (
-                                                            <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
-                                                                {season.overview}
-                                                            </p>
+                                                {/* Episodes List */}
+                                                {isExpanded && (
+                                                    <div className="border-t border-gray-200 dark:border-gray-700">
+                                                        {isLoadingSeasonDetails && !seasonDetails ? (
+                                                            <div className="p-6 flex items-center justify-center gap-2">
+                                                                <div className="inline-block animate-spin rounded-full h-5 w-5 border-2 border-indigo-500 border-t-transparent"></div>
+                                                                <span className="text-sm text-gray-600 dark:text-gray-400">Loading episodes...</span>
+                                                            </div>
+                                                        ) : seasonDetails?.episodes ? (
+                                                            <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                                                                {seasonDetails.episodes.map((episode: Episode) => (
+                                                                    <div
+                                                                        key={episode.id}
+                                                                        className="p-3 md:p-4 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors"
+                                                                    >
+                                                                        <div className="flex items-start justify-between gap-3 mb-2">
+                                                                            <h5 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                                                <span className="text-indigo-600 dark:text-indigo-400 font-semibold">
+                                                                                    {episode.episode_number}.
+                                                                                </span>{' '}
+                                                                                {episode.name}
+                                                                            </h5>
+                                                                            {episode.vote_average && episode.vote_average > 0 && (
+                                                                                <span className="flex items-center gap-1 text-xs text-yellow-600 dark:text-yellow-400 shrink-0">
+                                                                                    <Star className="w-3 h-3 fill-current" />
+                                                                                    {episode.vote_average.toFixed(1)}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-2">
+                                                                            {episode.air_date && (
+                                                                                <span>{new Date(episode.air_date).toLocaleDateString()}</span>
+                                                                            )}
+                                                                            {episode.runtime && (
+                                                                                <>
+                                                                                    <span>•</span>
+                                                                                    <span>{episode.runtime}m</span>
+                                                                                </>
+                                                                            )}
+                                                                        </div>
+                                                                        {episode.overview && (
+                                                                            <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+                                                                                {episode.overview}
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        ) : (
+                                                            <div className="p-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                                                                No episode information available
+                                                            </div>
                                                         )}
                                                     </div>
-                                                </div>
+                                                )}
                                             </div>
-                                        ))}
+                                        )})}
                                     </div>
                                 )}
 

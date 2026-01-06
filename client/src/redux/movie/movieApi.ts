@@ -135,8 +135,21 @@ export const movieApi = apiSlice.injectEndpoints({
                 return response as Movie;
             },
         }),
+        getSeasonDetails: builder.query<SeasonDetails, { tvId: number; seasonNumber: number }>({
+            query: ({ tvId, seasonNumber }) => ({
+                url: `${API_CONFIG.ENDPOINTS.MOVIE.GET_BY_ID}/${tvId}/season/${seasonNumber}`,
+                method: 'GET',
+            }),
+            // Transform the response
+            transformResponse: (response: { data?: SeasonDetails }) => {
+                if (response?.data) {
+                    return response.data;
+                }
+                return response as SeasonDetails;
+            },
+        }),
     }),
 });
 
-export const { useLazySearchMoviesQuery, useGetTrendingMoviesQuery, useGetMovieByIdQuery } = movieApi;
+export const { useLazySearchMoviesQuery, useGetTrendingMoviesQuery, useGetMovieByIdQuery, useLazyGetSeasonDetailsQuery } = movieApi;
 
