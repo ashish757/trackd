@@ -11,6 +11,7 @@ import type { RootState } from '../redux/store';
 const BottomNav = () => {
     const location = useLocation();
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+    const isInitialized = useSelector((state: RootState) => state.auth.isInitialized);
 
     const isActive = (path: string) => location.pathname === path;
 
@@ -31,6 +32,22 @@ const BottomNav = () => {
         { path: '/signin', icon: LogIn, label: 'Sign In' },
         { path: '/signup', icon: UserPlus, label: 'Sign Up' },
     ];
+
+    // Show loading skeleton while checking auth status
+    if (!isInitialized) {
+        return (
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 safe-area-bottom">
+                <div className="flex justify-around items-center h-16 px-2">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="flex flex-col items-center justify-center flex-1 h-full">
+                            <div className="h-6 w-6 rounded bg-gray-200 animate-pulse"></div>
+                            <div className="h-3 w-10 rounded bg-gray-200 animate-pulse mt-1"></div>
+                        </div>
+                    ))}
+                </div>
+            </nav>
+        );
+    }
 
     const navItems = isAuthenticated ? authenticatedNavItems : unauthenticatedNavItems;
 

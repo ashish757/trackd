@@ -370,11 +370,17 @@ export default function DiscoverPage() {
                                     Search Results for "{debouncedQuery}"
                                 </h2>
                                 <p className="text-gray-600 text-sm md:text-base mt-1">
-                                    {filteredResults.length} {filteredResults.length === 1 ? 'movie' : 'movies'} found
+                                    {
+                                        isSearching
+                                            ? 'Searching...'
+                                            : filteredResults.length === searchResults?.results.length
+                                                ? `Showing all ${filteredResults.length} results`
+                                                : `Showing ${filteredResults.length} of ${searchResults?.results.length} results`
+                                    }
                                 </p>
                             </div>
 
-                            {filteredResults.length > 0 ? (
+                            {filteredResults.length > 0 || isSearching ? (
                                 <MovieCardsView
                                     movies={filteredResults.map((movie): MovieEntry => ({
                                         id: movie.id.toString(),
