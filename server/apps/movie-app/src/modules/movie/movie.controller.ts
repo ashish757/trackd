@@ -38,17 +38,20 @@ export class MovieController {
     }
 
     /**
-     * Get movie details by ID
-     * GET /movies/:id
+     * Get movie or TV show details by ID
+     * GET /movies/:id?mediaType=tv
      */
     @Get(':id')
-    async getMovieById(@Param('id', ParseIntPipe) id: number) {
-        const data = await this.movieService.getMovieById(id);
+    async getMovieById(
+        @Param('id', ParseIntPipe) id: number,
+        @Query('mediaType') mediaType?: 'movie' | 'tv'
+    ) {
+        const data = await this.movieService.getMovieById(id, mediaType || 'movie');
 
         return {
             status: 'success',
             statusCode: HttpStatus.OK,
-            message: 'Movie details',
+            message: mediaType === 'tv' ? 'TV show details' : 'Movie details',
             data,
         };
     }
