@@ -38,6 +38,25 @@ export class MovieController {
     }
 
     /**
+     * Get TV show season details with episodes
+     * GET /movies/:tvId/season/:seasonNumber
+     */
+    @Get(':tvId/season/:seasonNumber')
+    async getSeasonDetails(
+        @Param('tvId', ParseIntPipe) tvId: number,
+        @Param('seasonNumber', ParseIntPipe) seasonNumber: number
+    ) {
+        const data = await this.movieService.getSeasonDetails(tvId, seasonNumber);
+
+        return {
+            status: 'success',
+            statusCode: HttpStatus.OK,
+            message: 'Season details',
+            data,
+        };
+    }
+
+    /**
      * Get movie or TV show details by ID
      * GET /movies/:id?mediaType=tv
      */

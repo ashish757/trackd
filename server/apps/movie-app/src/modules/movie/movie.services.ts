@@ -101,6 +101,16 @@ class MovieService {
 
         return res.data;
     }
+
+    /**
+     * Get TV show season details with episodes from TMDB
+     */
+    async getSeasonDetails(tvId: number, seasonNumber: number) {
+        const endpoint = `tv/${tvId}/season/${seasonNumber}?language=en-US`;
+        const res = await fetchFromTmdb(endpoint);
+        if (res.error) return null;
+        return res.data;
+    }
 }
 
 export default MovieService;
