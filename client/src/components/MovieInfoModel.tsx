@@ -32,9 +32,10 @@ interface props {
     });
 
     // Fetch detailed movie info
-    const { data: detailedMovieData, isLoading: isLoadingDetails } = useGetMovieByIdQuery(movie?.id || 0, {
-        skip: !movie?.id,
-    });
+    const { data: detailedMovieData, isLoading: isLoadingDetails } = useGetMovieByIdQuery(
+        { id: movie?.id || 0, mediaType: movie?.media_type as 'movie' | 'tv' | undefined },
+        { skip: !movie?.id }
+    );
 
     const [error, setError] = useState<string | null>(null);
     const [userRating, setUserRating] = useState<number>(0);

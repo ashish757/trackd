@@ -519,7 +519,7 @@ const UserPage = () => {
 
 // Helper component to fetch and display movie poster
 const MoviePoster = ({ movieId }: { movieId: number }) => {
-    const { data: movie, isLoading } = useGetMovieByIdQuery(movieId);
+    const { data: movie, isLoading } = useGetMovieByIdQuery({ id: movieId });
 
     if (isLoading) {
         return (

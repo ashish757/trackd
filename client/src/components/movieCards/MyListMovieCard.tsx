@@ -28,9 +28,10 @@ const MyListMovieCard = memo(({
     onControlsSuccess
 }: MyListMovieCardProps) => {
     // Only fetch if movieData is not provided
-    const { data: fetchedMovieData, isLoading, isError } = useGetMovieByIdQuery(movieId, {
-        skip: !!providedMovieData, // Skip fetching if data is already provided
-    });
+    const { data: fetchedMovieData, isLoading, isError } = useGetMovieByIdQuery(
+        { id: movieId, mediaType: providedMovieData?.media_type as 'movie' | 'tv' | undefined },
+        { skip: !!providedMovieData } // Skip fetching if data is already provided
+    );
 
     // Use provided movieData or fetched data
     const movieData = providedMovieData || fetchedMovieData;

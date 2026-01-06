@@ -84,9 +84,9 @@ export const movieApi = apiSlice.injectEndpoints({
                 return response as MovieSearchResponse;
             },
         }),
-        getMovieById: builder.query<Movie, number>({
-            query: (movieId) => ({
-                url: `${API_CONFIG.ENDPOINTS.MOVIE.GET_BY_ID}/${movieId}`,
+        getMovieById: builder.query<Movie, { id: number; mediaType?: 'movie' | 'tv' }>({
+            query: ({ id, mediaType = 'movie' }) => ({
+                url: `${API_CONFIG.ENDPOINTS.MOVIE.GET_BY_ID}/${id}${mediaType ? `?mediaType=${mediaType}` : ''}`,
                 method: 'GET',
             }),
             // Transform the response
