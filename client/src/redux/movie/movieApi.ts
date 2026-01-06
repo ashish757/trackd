@@ -27,6 +27,33 @@ export interface Credits {
     crew: CrewMember[];
 }
 
+export interface Episode {
+    id: number;
+    name: string;
+    episode_number: number;
+    air_date?: string;
+    overview?: string;
+    still_path?: string | null;
+    vote_average?: number;
+    vote_count?: number;
+    runtime?: number;
+}
+
+export interface Season {
+    id: number;
+    name: string;
+    season_number: number;
+    episode_count: number;
+    air_date?: string;
+    poster_path?: string | null;
+    overview?: string;
+    vote_average?: number;
+}
+
+export interface SeasonDetails extends Season {
+    episodes: Episode[];
+}
+
 export interface Movie {
     id: number;
     title: string;
@@ -47,6 +74,17 @@ export interface Movie {
     production_companies?: { id: number; name: string; logo_path: string | null; }[];
     credits?: Credits;
     media_type?: string;
+
+    // TV Show specific fields
+    number_of_seasons?: number;
+    number_of_episodes?: number;
+    seasons?: Season[];
+    episode_run_time?: number[];
+    first_air_date?: string;
+    last_air_date?: string;
+    in_production?: boolean;
+    networks?: { id: number; name: string; logo_path: string | null; }[];
+    created_by?: { id: number; name: string; profile_path: string | null; }[];
 }
 
 export interface MovieSearchResponse {

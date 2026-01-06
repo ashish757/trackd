@@ -1,4 +1,4 @@
-import { X, Calendar, Star, Film, Check, Clock, Users, Clapperboard, DollarSign, Globe, Heart } from 'lucide-react'
+import { X, Calendar, Star, Film, Check, Clock, Users, Clapperboard, DollarSign, Globe, Heart, Tv } from 'lucide-react'
 import type {Movie} from "../redux/movie/movieApi.ts";
 import Portal from "./Portal.tsx";
 import { useMarkMovieMutation, useUnmarkMovieMutation, useGetMovieEntryQuery, MovieStatus, useRateMovieMutation, useGetUserMovieRatingQuery, useRemoveRatingMutation, useToggleFavoriteMutation } from '../redux/userMovie/userMovieApi';
@@ -39,6 +39,7 @@ interface props {
 
     const [error, setError] = useState<string | null>(null);
     const [userRating, setUserRating] = useState<number>(0);
+    const [showSeasons, setShowSeasons] = useState<boolean>(false);
 
     // Update user rating when data is fetched
     useEffect(() => {
@@ -319,12 +320,14 @@ interface props {
                                 </span>
                             </div>
 
-                            {/* Runtime */}
-                            {movieDetails?.runtime && (
+                            {/* Runtime - Show episode runtime for TV shows, movie runtime for movies */}
+                            {(movieDetails?.runtime || movieDetails?.episode_run_time?.[0]) && (
                                 <div className="flex items-center gap-2 bg-purple-100 dark:bg-purple-900/30 px-2 md:px-3 py-1 md:py-1.5 rounded-full">
                                     <Clock className="w-3 h-3 md:w-4 md:h-4 text-purple-600 dark:text-purple-400" />
                                     <span className="text-xs md:text-sm font-semibold text-purple-800 dark:text-purple-300">
-                                        {formatRuntime(movieDetails.runtime)}
+                                        {movieDetails.media_type === 'tv' && movieDetails.episode_run_time?.[0]
+                                            ? `${movieDetails.episode_run_time[0]}m/ep`
+                                            : formatRuntime(movieDetails.runtime)}
                                     </span>
                                 </div>
                             )}
@@ -338,6 +341,110 @@ interface props {
                                 </div>
                             )}
                         </div>
+
+                        {/* TV Show Specific Information */}
+                        {movieDetails?.media_type === 'tv' && (movieDetails.number_of_seasons || movieDetails.number_of_episodes) && (
+                            <div className="mb-4 md:mb-6 p-3 md:p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-200 dark:border-indigo-800/30">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <Tv className="w-4 h-4 md:w-5 md:h-5 text-indigo-600 dark:text-indigo-400" />
+                                    <h3 className="text-sm md:text-base font-semibold text-indigo-900 dark:text-indigo-100">
+                                        TV Show Information
+                                    </h3>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3 md:gap-4">
+                                    {movieDetails.number_of_seasons && (
+                                        <div className="bg-white dark:bg-gray-800/50 p-3 rounded-lg">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Seasons</p>
+                                            <p className="text-lg md:text-xl font-bold text-indigo-600 dark:text-indigo-400">
+                                                {movieDetails.number_of_seasons}
+                                            </p>
+                                        </div>
+                                    )}
+                                    {movieDetails.number_of_episodes && (
+                                        <div className="bg-white dark:bg-gray-800/50 p-3 rounded-lg">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Episodes</p>
+                                            <p className="text-lg md:text-xl font-bold text-indigo-600 dark:text-indigo-400">
+                                                {movieDetails.number_of_episodes}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* View All Seasons Button */}
+                                {movieDetails.seasons && movieDetails.seasons.length > 0 && (
+                                    <div className="mt-3">
+                                        <button
+                                            onClick={() => setShowSeasons(!showSeasons)}
+                                            className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg transition-colors duration-200 text-sm md:text-base font-medium"
+                                        >
+                                            {showSeasons ? 'Hide Seasons' : 'View All Seasons'}
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* Expandable Seasons Section */}
+                                {showSeasons && movieDetails.seasons && movieDetails.seasons.length > 0 && (
+                                    <div className="mt-4 space-y-3 max-h-96 overflow-y-auto">
+                                        {movieDetails.seasons
+                                            .filter(season => season.season_number > 0) // Filter out special seasons (season 0)
+                                            .map((season) => (
+                                            <div
+                                                key={season.id}
+                                                className="bg-white dark:bg-gray-800/50 p-3 md:p-4 rounded-lg border border-indigo-100 dark:border-indigo-800/50"
+                                            >
+                                                <div className="flex items-start gap-3">
+                                                    {season.poster_path && (
+                                                        <img
+                                                            src={`https://image.tmdb.org/t/p/w92${season.poster_path}`}
+                                                            alt={season.name}
+                                                            className="w-16 h-24 md:w-20 md:h-30 object-cover rounded"
+                                                        />
+                                                    )}
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                                                            {season.name}
+                                                        </h4>
+
+                                                        <div className="flex flex-wrap gap-2 mb-2">
+                                                            <span className="text-xs bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 px-2 py-1 rounded">
+                                                                {season.episode_count} {season.episode_count === 1 ? 'Episode' : 'Episodes'}
+                                                            </span>
+                                                            {season.air_date && (
+                                                                <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded">
+                                                                    {new Date(season.air_date).getFullYear()}
+                                                                </span>
+                                                            )}
+                                                            {season.vote_average && season.vote_average > 0 && (
+                                                                <span className="flex items-center gap-1 text-xs bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded">
+                                                                    <Star className="w-3 h-3 fill-current" />
+                                                                    {season.vote_average.toFixed(1)}
+                                                                </span>
+                                                            )}
+                                                        </div>
+
+                                                        {season.overview && (
+                                                            <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
+                                                                {season.overview}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {movieDetails.in_production !== undefined && (
+                                    <div className="mt-3 pt-3 border-t border-indigo-200 dark:border-indigo-800/30">
+                                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                                            Status: <span className={`font-semibold ${movieDetails.in_production ? 'text-green-600 dark:text-green-400' : 'text-gray-700 dark:text-gray-300'}`}>
+                                                {movieDetails.in_production ? 'In Production' : 'Ended'}
+                                            </span>
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {/* User Rating Section - Only show for authenticated users */}
                         {!isInitialized ? (
@@ -529,14 +636,27 @@ interface props {
                             </div>
                         )}
 
-                        {/* Director */}
-                        {director && (
+                        {/* Director (for Movies) */}
+                        {director && movieDetails?.media_type !== 'tv' && (
                             <div className="mb-4">
                                 <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide flex items-center gap-2">
                                     <Clapperboard className="w-4 h-4" />
                                     Director
                                 </h3>
                                 <p className="text-gray-900 dark:text-white font-medium">{director.name}</p>
+                            </div>
+                        )}
+
+                        {/* Creator (for TV Shows) */}
+                        {movieDetails?.media_type === 'tv' && movieDetails.created_by && movieDetails.created_by.length > 0 && (
+                            <div className="mb-4">
+                                <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide flex items-center gap-2">
+                                    <Clapperboard className="w-4 h-4" />
+                                    {movieDetails.created_by.length > 1 ? 'Creators' : 'Creator'}
+                                </h3>
+                                <p className="text-gray-900 dark:text-white font-medium">
+                                    {movieDetails.created_by.map((creator) => creator.name).join(', ')}
+                                </p>
                             </div>
                         )}
 
@@ -565,6 +685,33 @@ interface props {
                                                 <p className="font-medium text-gray-900 dark:text-white">{actor.name}</p>
                                                 <p className="text-xs text-gray-600 dark:text-gray-400">{actor.character}</p>
                                             </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Networks (for TV Shows) */}
+                        {movieDetails?.media_type === 'tv' && movieDetails.networks && movieDetails.networks.length > 0 && (
+                            <div className="mb-4">
+                                <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide flex items-center gap-2">
+                                    <Tv className="w-4 h-4" />
+                                    {movieDetails.networks.length > 1 ? 'Networks' : 'Network'}
+                                </h3>
+                                <div className="flex flex-wrap gap-3">
+                                    {movieDetails.networks.map(network => (
+                                        <div key={network.id} className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700 rounded-lg p-2 px-3">
+                                            {network.logo_path ? (
+                                                <img
+                                                    src={`https://image.tmdb.org/t/p/w92${network.logo_path}`}
+                                                    alt={network.name}
+                                                    className="h-6 object-contain"
+                                                />
+                                            ) : (
+                                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                                    {network.name}
+                                                </span>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
