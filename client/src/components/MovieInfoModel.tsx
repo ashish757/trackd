@@ -109,7 +109,7 @@ interface props {
 
     // Get top cast members (first 5)
     const topCast = useMemo(() =>
-        movieDetails?.credits?.cast?.slice(0, 5) || [],
+        movieDetails?.credits?.cast?.slice(0, 10) || [],
         [movieDetails?.credits?.cast]
     );
 
@@ -450,12 +450,12 @@ interface props {
                                                                 <h4 className="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100">
                                                                     {season.name}
                                                                 </h4>
-                                                                {season.vote_average && season.vote_average > 0 && (
+                                                                {season.vote_average && season.vote_average > 0 ? (
                                                                     <span className="flex items-center gap-1 text-xs text-yellow-600 dark:text-yellow-400">
                                                                         <Star className="w-3 h-3 fill-current" />
                                                                         {season.vote_average.toFixed(1)}
                                                                     </span>
-                                                                )}
+                                                                ) : null}
                                                             </div>
                                                             <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                                                                 <span>{season.episode_count} episodes</span>
@@ -499,12 +499,12 @@ interface props {
                                                                                 </span>{' '}
                                                                                 {episode.name}
                                                                             </h5>
-                                                                            {episode.vote_average && episode.vote_average > 0 && (
+                                                                            {episode.vote_average && episode.vote_average > 0 ? (
                                                                                 <span className="flex items-center gap-1 text-xs text-yellow-600 dark:text-yellow-400 shrink-0">
                                                                                     <Star className="w-3 h-3 fill-current" />
                                                                                     {episode.vote_average.toFixed(1)}
                                                                                 </span>
-                                                                            )}
+                                                                            ) : null}
                                                                         </div>
                                                                         <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-2">
                                                                             {episode.air_date && (
@@ -764,7 +764,7 @@ interface props {
                         )}
 
                         {/* Cast */}
-                        {topCast.length > 0 && (
+                        {topCast.length > 0 ? (
                             <div className="mb-4">
                                 <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide flex items-center gap-2">
                                     <Users className="w-4 h-4" />
@@ -792,10 +792,10 @@ interface props {
                                     ))}
                                 </div>
                             </div>
-                        )}
+                        ): null}
 
                         {/* Networks (for TV Shows) */}
-                        {movieDetails?.media_type === 'tv' && movieDetails.networks && movieDetails.networks.length > 0 && (
+                        {movieDetails?.media_type === 'tv' && movieDetails.networks && movieDetails.networks.length > 0 ? (
                             <div className="mb-4">
                                 <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide flex items-center gap-2">
                                     <Tv className="w-4 h-4" />
@@ -819,12 +819,12 @@ interface props {
                                     ))}
                                 </div>
                             </div>
-                        )}
+                        ): null}
 
                         {/* Additional Info */}
                         {(movieDetails?.budget || movieDetails?.revenue || movieDetails?.original_language) && (
                             <div className="grid grid-cols-2 gap-4 mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                                {movieDetails?.budget && movieDetails.budget > 0 && (
+                                {movieDetails?.budget && movieDetails.budget > 0 ? (
                                     <div>
                                         <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide flex items-center gap-1">
                                             <DollarSign className="w-3 h-3" />
@@ -834,8 +834,8 @@ interface props {
                                             {formatMoney(movieDetails.budget)}
                                         </p>
                                     </div>
-                                )}
-                                {movieDetails?.revenue && movieDetails.revenue > 0 && (
+                                ): null}
+                                {movieDetails?.revenue && movieDetails.revenue > 0 ? (
                                     <div>
                                         <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide flex items-center gap-1">
                                             <DollarSign className="w-3 h-3" />
@@ -845,8 +845,8 @@ interface props {
                                             {formatMoney(movieDetails.revenue)}
                                         </p>
                                     </div>
-                                )}
-                                {movieDetails?.original_language && (
+                                ) : null}
+                                {movieDetails?.original_language ? (
                                     <div>
                                         <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide flex items-center gap-1">
                                             <Globe className="w-3 h-3" />
@@ -856,7 +856,7 @@ interface props {
                                             {movieDetails.original_language}
                                         </p>
                                     </div>
-                                )}
+                                ): null}
                             </div>
                         )}
                     </div>
