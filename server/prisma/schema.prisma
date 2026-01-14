@@ -38,9 +38,12 @@ model User {
   PasswordResetToken     PasswordResetToken? @relation("UserPasswordResetToken")
 
   // Notifications
-  sentNotifications     Notification[] @relation("SentNotifications")
-  receivedNotifications Notification[] @relation("ReceivedNotifications")
+  sentNotifications       Notification[]        @relation("SentNotifications")
+  receivedNotifications   Notification[]        @relation("ReceivedNotifications")
+  sentRecommendations     MovieRecommendation[] @relation("SentMovieRecommendations")
+  receivedRecommendations MovieRecommendation[] @relation("ReceivedMovieRecommendations")
 
+  @@index([username])
   @@map("users")
 }
 
@@ -52,7 +55,8 @@ model Movies {
   id Int @id
 
   // Updated Relation
-  userMovies UserMovie[]
+  userMovies           UserMovie[]
+  movieRecommendations MovieRecommendation[]
 
   @@map("movies")
 }
@@ -166,4 +170,20 @@ enum NotificationType {
   FRIEND_REQUEST
   FRIEND_REQUEST_ACCEPTED
   FRIEND_REQUEST_REJECTED
+}
+
+model MovieRecommendation {
+  id            String   @id @default(cuid())
+  recommenderId String
+  receiverId    String
+  movieId       Int
+  createdAt     DateTime @default(now())
+
+  recommender User   @relation("SentMovieRecommendations", fields: [recommenderId], references: [id], onDelete: Cascade)
+  receiver    User   @relation("ReceivedMovieRecommendations", fields: [receiverId], references: [id], onDelete: Cascade)
+  movie       Movies @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@unique([recommenderId, receiverId, movieId])
+  @@index([receiverId])
+  @@map("movie_recommendations")
 }
