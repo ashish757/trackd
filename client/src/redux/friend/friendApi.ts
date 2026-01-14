@@ -80,11 +80,20 @@ export const friendApi = apiSlice.injectEndpoints({
                 return response.data ?? [];
             },
         }),
+
+        recommendMovieToFriends: builder.mutation<void, { movieId: number, receiverId: Array<string> }>({
+            query: (data) => ({
+                url: API_CONFIG.ENDPOINTS.FRIEND.RECOMMEND_MOVIE,
+                method: 'POST',
+                body: data,
+            }),
+        }),
     }),
 });
 
 export const {
     useGetFriendRequestsQuery,
+    useRecommendMovieToFriendsMutation,
     useGetMyFriendsQuery,
     useGetMutualFriendsQuery
 } = friendApi;

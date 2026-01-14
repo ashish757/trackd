@@ -66,6 +66,7 @@ export const API_CONFIG = {
             GET_MUTUAL: '/friend/mutual',
             GET_FRIEND_LIST: '/friend/list',
             GET_USER_MOVIES: '/friend/movies',
+            RECOMMEND_MOVIE: '/friend/recommend',
         },
         NOTIFICATIONS: {
             GET_ALL: '/notifications',
