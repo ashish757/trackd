@@ -1,9 +1,8 @@
 import { Eye, Clock, Heart, Send } from 'lucide-react';
 import { useMarkMovieMutation, useUnmarkMovieMutation, useToggleFavoriteMutation, MovieStatus } from '../../redux/userMovie/userMovieApi.ts';
-import { useSelector } from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import type { RootState } from '../../redux/store.ts';
-import { useState } from 'react';
-import ShareMovieModal from "./ShareMovieModal.tsx";
+import {showShareModal} from "../../redux/modal/modalSlice.ts";
 
 interface MovieCardControlsProps {
     movieId: number; // Changed from string to number for consistency
@@ -16,14 +15,14 @@ export default function MovieCardControls({
     movieId,
     currentStatus,
     isFavorite = false,
-    onSuccess
+    onSuccess,
 }: MovieCardControlsProps) {
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+    const dispatch = useDispatch();
 
     const [markMovie, { isLoading: isMarking }] = useMarkMovieMutation();
     const [unmarkMovie, { isLoading: isUnmarking }] = useUnmarkMovieMutation();
     const [toggleFavorite, { isLoading: isTogglingFavorite }] = useToggleFavoriteMutation();
-    const [showModal, setShowModal] = useState(false);
 
     if (!isAuthenticated) {
         return null;
@@ -55,12 +54,9 @@ export default function MovieCardControls({
             console.error('Failed to toggle favorite:', error);
         }
     };
-    const handleShowFriendModal = () => {
-        setShowModal(true);
-    }
 
-    const onClose = () => {
-        setShowModal(false);
+    const handleShare = () => {
+        dispatch(showShareModal(movieId));
     }
     const isLoading = isMarking || isUnmarking || isTogglingFavorite;
 
@@ -131,7 +127,7 @@ export default function MovieCardControls({
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
-                        handleShowFriendModal();
+                        handleShare();
                     }}
                     className="p-1 md:p-1.5 rounded-full  text-gray-800 hover:bg-gray-200 transition-colors"
                     title="Recommend To Friends"
@@ -139,10 +135,6 @@ export default function MovieCardControls({
                     <Send className="w-4 h-4" />
                 </button>
             </div>
-
-            {
-                showModal ? <ShareMovieModal onClose={onClose} /> : null
-            }
 
         </div>
     );

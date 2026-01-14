@@ -19,6 +19,7 @@ import OauthSuccessPage from "./pages/OauthSuccessPage.tsx";
 import { ProfilePageSkeleton, SettingsPageSkeleton, MyListPageSkeleton } from "./components/skeletons/index.ts";
 import {Suspense, lazy} from "react";
 import LoadingSpinner   from "./components/LoadingSpinner.tsx";
+import ShareMovieModal from "./components/movieCards/ShareMovieModal.tsx";
 
 const MyListPage =  lazy(() => import('./pages/MyListPage.tsx'));
 const ProfilePage =  lazy(() => import('./pages/ProfilePage.tsx'));
@@ -103,6 +104,9 @@ function App() {
 
           {/* Global Toast Listener - Redux Connected */}
           <ToastListener />
+
+          {/* Modals Portal */}
+          <ShareMovieModal />
       </>
   )
 }

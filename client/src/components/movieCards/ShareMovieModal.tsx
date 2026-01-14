@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { Send, X, CheckCircle2 } from "lucide-react";
-import { useGetMyFriendsQuery } from "../../redux/friend/friendApi.ts";
+import {useGetMyFriendsQuery, useRecommendMovieToFriendsMutation} from "../../redux/friend/friendApi.ts";
+import {useDispatch, useSelector} from "react-redux";
+import {hideShareModal} from "../../redux/modal/modalSlice.ts";
+import type { RootState } from "../../redux/store.ts";
 
-interface Props {
-    onClose: () => void;
-    movieTitle?: string;
-}
 
-const ShareMovieModal = ({ onClose, movieTitle }: Props) => {
+const ShareMovieModal = () => {
     const { data: friendList, isLoading: isFriendListLoading } = useGetMyFriendsQuery(undefined);
 
+    const [trigger] = useRecommendMovieToFriendsMutation();
+    const dispatch = useDispatch();
+
+    const modalState = useSelector((state: RootState) => state.modal);
 
     const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
 
@@ -21,9 +24,18 @@ const ShareMovieModal = ({ onClose, movieTitle }: Props) => {
         );
     };
 
-    const handleSend = () => {
+    const onClose = () => {
+        dispatch(hideShareModal())
+    }
+
+    const handleSend = async () => {
         console.log("Sending to:", selectedFriends);
-        onClose();
+        try {
+            await trigger({movieId: modalState.movieId || 0, receiverId: selectedFriends }).unwrap();
+
+        } catch (error) {
+            console.error("Failed to send recommendations:", error);
+        }
     };
 
     return (
@@ -34,7 +46,7 @@ const ShareMovieModal = ({ onClose, movieTitle }: Props) => {
                 <div className="flex items-center justify-between p-6 border-b border-gray-100">
                     <div className="flex items-center gap-2">
                         <Send className="h-5 w-5 text-blue-600" />
-                        <h2 className="text-xl font-semibold text-gray-900">Recommend {movieTitle ? `"${movieTitle}"` : ""}</h2>
+                        <h2 className="text-xl font-semibold text-gray-900">Recommend</h2>
                             { selectedFriends.length > 0 ? (
                                 <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
                                 {selectedFriends.length} selected

@@ -3,6 +3,7 @@ import { apiSlice } from './apiSlice.ts';
 import authReducer from './auth/authSlice.ts';
 import userReducer from "./user/userSlice.ts";
 import toastReducer from './toast/toastSlice.ts';
+import modalReducer from './modal/modalSlice.ts';
 import { notificationApi } from './notification/notificationApi.ts';
 
 export const store = configureStore({
@@ -12,6 +13,7 @@ export const store = configureStore({
         auth: authReducer,
         user: userReducer,
         toast: toastReducer,
+        modal: modalReducer,
     },
 
     // Add the API middleware to enable caching, fetching, and listener management
