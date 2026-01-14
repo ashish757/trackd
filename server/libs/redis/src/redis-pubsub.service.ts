@@ -2,8 +2,14 @@ import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import Redis from 'ioredis';
 import { CustomLoggerService } from '@app/common';
 
+export enum NotificationType {
+    FRIEND_REQUEST = 'FRIEND_REQUEST',
+    FRIEND_REQUEST_ACCEPTED = 'FRIEND_REQUEST_ACCEPTED',
+    FRIEND_REQUEST_REJECTED = 'FRIEND_REQUEST_REJECTED',
+    MOVIE_RECOMMENDATION = 'MOVIE_RECOMMENDATION',
+}
 export interface NotificationEvent {
-    type: 'FRIEND_REQUEST' | 'FRIEND_REQUEST_ACCEPTED' | 'FRIEND_REQUEST_REJECTED';
+    type: NotificationType;
     userId: string;
     senderId?: string;
     message: string;

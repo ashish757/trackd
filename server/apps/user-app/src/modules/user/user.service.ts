@@ -1,16 +1,26 @@
 import {
     BadRequestException,
-    ConflictException, Injectable, InternalServerErrorException, NotFoundException,
+    ConflictException,
+    Injectable,
+    InternalServerErrorException,
+    NotFoundException,
 } from "@nestjs/common";
 import {PrismaService} from "@app/common/prisma/prisma.service";
 import {
-    AcceptFollowRequestDTO, CancelFollowRequestDTO, ChangeBioDTO, ChangeNameDTO,
-    ChangePasswordDTO, ChangeUsernameDTO, FollowUserDTO, RejectFollowRequestDTO, UnfollowUserDTO
+    AcceptFollowRequestDTO,
+    CancelFollowRequestDTO,
+    ChangeBioDTO,
+    ChangeNameDTO,
+    ChangePasswordDTO,
+    ChangeUsernameDTO,
+    FollowUserDTO,
+    RejectFollowRequestDTO,
+    UnfollowUserDTO
 } from "./DTO/user.dto";
 import * as bcrypt from 'bcrypt';
 import {JwtService} from "@app/common/jwt/jwt.service";
-import { PASSWORD_SALT_ROUNDS, CustomLoggerService } from '@app/common';
-import { RedisPubSubService } from '@app/redis';
+import {CustomLoggerService, PASSWORD_SALT_ROUNDS} from '@app/common';
+import {NotificationType, RedisPubSubService} from '@app/redis';
 
 @Injectable()
 export class UserService {
@@ -83,7 +93,7 @@ export class UserService {
         await this.redisPubSub.publishNotification({
             userId: followDto.id,
             senderId: id,
-            type: 'FRIEND_REQUEST',
+            type: NotificationType.FRIEND_REQUEST,
             message: `${sender?.name || 'Someone'} sent you a friend request`,
         });
 
@@ -146,7 +156,7 @@ export class UserService {
         await this.redisPubSub.publishNotification({
             userId: dto.requesterId,
             senderId: currentUserId,
-            type: 'FRIEND_REQUEST_ACCEPTED',
+            type: NotificationType.FRIEND_REQUEST_ACCEPTED,
             message: `${accepter?.name || 'Someone'} accepted your friend request`,
         });
 
@@ -192,7 +202,7 @@ export class UserService {
         await this.redisPubSub.publishNotification({
             userId: dto.requesterId,
             senderId: currentUserId,
-            type: 'FRIEND_REQUEST_REJECTED',
+            type: NotificationType.FRIEND_REQUEST_REJECTED,
             message: `${rejecter?.name || 'Someone'} rejected your friend request`,
         });
 
