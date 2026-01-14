@@ -1,13 +1,14 @@
-import {Injectable, ForbiddenException} from "@nestjs/common";
-import {FriendRequestDto} from "./DTO/friend.dto";
+import {ForbiddenException, Injectable} from "@nestjs/common";
+import {FriendRequestDto, RecommendMovieDto} from "./DTO/friend.dto";
 import {PrismaService} from "@app/common/prisma/prisma.service";
-import { CustomLoggerService } from '@app/common';
+import {CustomLoggerService} from '@app/common';
+import {NotificationType, RedisPubSubService} from "@app/redis";
 
 @Injectable()
 export default class FriendService {
     private readonly logger: CustomLoggerService;
 
-    constructor(private readonly prisma: PrismaService) {
+    constructor(private readonly prisma: PrismaService, private readonly redisPubSub: RedisPubSubService) {
         this.logger = new CustomLoggerService();
         this.logger.setContext(FriendService.name);
     }
@@ -314,6 +315,71 @@ export default class FriendService {
                 friendCount: true,
             }
         });
+
+    }
+
+    /**
+     * Recommend movies to a friend
+     */
+    async recommendMovieToFriends(dto: RecommendMovieDto) {
+
+        const { recommenderId, receiverIds, movieId } = dto;
+
+        const validFriendships = await this.prisma.friendship.findMany({
+            where: {
+                OR: [
+                    {
+                        friend_a_id: recommenderId,
+                        friend_b_id: { in: receiverIds }
+                    },
+                    {
+                        friend_b_id: recommenderId,
+                        friend_a_id: { in: receiverIds }
+                    }
+                ]
+            }
+        });
+
+        if (validFriendships.length !== receiverIds.length) {
+            this.logger.error(`Validation failed: Some users in the list are not friends with ${recommenderId}`);
+            throw new ForbiddenException('You can only recommend movies to confirmed friends.');
+        }
+
+        // 3. Prepare data for insertion
+        const recommendationData = receiverIds.map((id) => ({
+            recommenderId,
+            receiverId: id,
+            movieId,
+        }));
+
+        // Database Operation & Notifications
+        // Using a transaction ensures both the DB records and notifications are handled
+        return this.prisma.$transaction(async (tx) => {
+
+            // Creating all
+            await tx.movieRecommendation.createMany({
+                data: recommendationData,
+                skipDuplicates: true, // Useful if the unique constraint (recommender-receiver-movie) is triggered
+            });
+
+            // Send Notifications
+            const notificationPromises = dto.receiverIds.map(id =>
+                this.redisPubSub.publishNotification({
+                    userId: id,
+                    senderId: dto.recommenderId,
+                    type: NotificationType.MOVIE_RECOMMENDATION,
+                    message: `${dto.recommenderId} Sent you a movie recommendation!`,
+                })
+            );
+
+            await Promise.all(notificationPromises);
+
+            return {
+                message: `Successfully recommended movie to ${dto.receiverIds.length} friends`,
+                count: dto.receiverIds.length
+            };
+        });
+
 
     }
 }

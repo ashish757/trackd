@@ -1,5 +1,5 @@
 import {Body, Get, Controller, HttpStatus, Post, Req, UseGuards, Param} from "@nestjs/common";
-import {FriendRequestDto} from "./DTO/friend.dto";
+import {FriendRequestDto, RecommendMovieDto} from "./DTO/friend.dto";
 import FriendService from "./friend.service";
 import {AuthGuard} from "@app/common/guards/auth.guard";
 import {Request} from "express";
@@ -52,6 +52,25 @@ export default class FriendController {
             status: 'success',
             statusCode: HttpStatus.OK,
             message: 'Friend list fetched successfully',
+            data: data
+        };
+    }
+
+    /**
+     * recommend movie to a friend
+     */
+    @Post('/recommend')
+    async recommendMovieToFriend(
+        @Body() dto: RecommendMovieDto,
+        @Req() req: Request & { user?: { sub: string; email: string }}
+    ) {
+        const senderId = req.user.sub;
+        const data = await this.friendService.recommendMovieToFriends(dto);
+
+        return {
+            status: 'success',
+            statusCode: HttpStatus.OK,
+            message: 'Movie recommendation sent successfully',
             data: data
         };
     }
