@@ -65,7 +65,7 @@ export default class FriendController {
         @Req() req: Request & { user?: { sub: string; email: string }}
     ) {
         const senderId = req.user.sub;
-        const data = await this.friendService.recommendMovieToFriends(dto);
+        const data = await this.friendService.recommendMovieToFriends(dto, senderId);
 
         return {
             status: 'success',

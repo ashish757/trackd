@@ -6,7 +6,6 @@ export class FriendRequestDto {
 }
 
 export class RecommendMovieDto {
-    @IsString() recommenderId: string;
     receiverIds: string[];
     @IsNumber() movieId: number;
 }

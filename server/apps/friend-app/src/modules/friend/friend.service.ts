@@ -321,10 +321,10 @@ export default class FriendService {
     /**
      * Recommend movies to a friend
      */
-    async recommendMovieToFriends(dto: RecommendMovieDto) {
+    async recommendMovieToFriends(dto: RecommendMovieDto, senderId) {
 
-        const { recommenderId, receiverIds, movieId } = dto;
-
+        const { receiverIds, movieId } = dto;
+        const recommenderId = senderId;
         const validFriendships = await this.prisma.friendship.findMany({
             where: {
                 OR: [
@@ -366,9 +366,9 @@ export default class FriendService {
             const notificationPromises = dto.receiverIds.map(id =>
                 this.redisPubSub.publishNotification({
                     userId: id,
-                    senderId: dto.recommenderId,
+                    senderId: recommenderId,
                     type: NotificationType.MOVIE_RECOMMENDATION,
-                    message: `${dto.recommenderId} Sent you a movie recommendation!`,
+                    message: `${recommenderId} Sent you a movie recommendation!`,
                 })
             );
 
