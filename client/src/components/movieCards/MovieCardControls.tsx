@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { Eye, Clock, Heart, MoreVertical } from 'lucide-react';
+import { Eye, Clock, Heart, Send } from 'lucide-react';
 import { useMarkMovieMutation, useUnmarkMovieMutation, useToggleFavoriteMutation, MovieStatus } from '../../redux/userMovie/userMovieApi.ts';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../redux/store.ts';
+import { useState } from 'react';
+import ShareMovieModal from "./ShareMovieModal.tsx";
 
 interface MovieCardControlsProps {
     movieId: number; // Changed from string to number for consistency
@@ -17,12 +18,12 @@ export default function MovieCardControls({
     isFavorite = false,
     onSuccess
 }: MovieCardControlsProps) {
-    const [showMenu, setShowMenu] = useState(false);
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
 
     const [markMovie, { isLoading: isMarking }] = useMarkMovieMutation();
     const [unmarkMovie, { isLoading: isUnmarking }] = useUnmarkMovieMutation();
     const [toggleFavorite, { isLoading: isTogglingFavorite }] = useToggleFavoriteMutation();
+    const [showModal, setShowModal] = useState(false);
 
     if (!isAuthenticated) {
         return null;
@@ -31,7 +32,6 @@ export default function MovieCardControls({
     const handleMarkMovie = async (status: MovieStatus) => {
         try {
             await markMovie({ movieId, status }).unwrap();
-            setShowMenu(false);
             onSuccess?.();
         } catch (error) {
             console.error('Failed to mark movie:', error);
@@ -41,7 +41,6 @@ export default function MovieCardControls({
     const handleUnmarkMovie = async (status: string) => {
         try {
             await unmarkMovie({movieId, status}).unwrap();
-            setShowMenu(false);
             onSuccess?.();
         } catch (error) {
             console.error('Failed to remove movie:', error);
@@ -56,7 +55,13 @@ export default function MovieCardControls({
             console.error('Failed to toggle favorite:', error);
         }
     };
+    const handleShowFriendModal = () => {
+        setShowModal(true);
+    }
 
+    const onClose = () => {
+        setShowModal(false);
+    }
     const isLoading = isMarking || isUnmarking || isTogglingFavorite;
 
     return (
@@ -103,7 +108,6 @@ export default function MovieCardControls({
                     title="Plan to Watch"
                 >
                  <Clock className={`w-4 h-4`} />
-
                 </button>
 
                 {/* Favorite Button */}
@@ -123,62 +127,23 @@ export default function MovieCardControls({
                     <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
                 </button>
 
-                {/* More Options */}
+                {/* Recommend To */}
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
-                        setShowMenu(!showMenu);
+                        handleShowFriendModal();
                     }}
                     className="p-1 md:p-1.5 rounded-full  text-gray-800 hover:bg-gray-200 transition-colors"
-                    title="More Options"
+                    title="Recommend To Friends"
                 >
-                    <MoreVertical className="w-4 h-4" />
+                    <Send className="w-4 h-4" />
                 </button>
             </div>
 
-            {/* Dropdown Menu */}
-            {showMenu && (
-                <>
-                    {/* Backdrop */}
-                    <div
-                        className="fixed inset-0 z-40"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setShowMenu(false);
-                        }}
-                    />
+            {
+                showModal ? <ShareMovieModal onClose={onClose} /> : null
+            }
 
-                    {/* Menu */}
-                    <div className="absolute left-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleMarkMovie(MovieStatus.PLANNED);
-                            }}
-                            disabled={isLoading}
-                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 transition-colors flex items-center gap-2"
-                        >
-                            <Clock className="w-4 h-4" />
-                            coming soon...
-                        </button>
-
-                        {currentStatus && (
-                            <>
-                                <hr className="my-1 text-gray-300" />
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                    }}
-                                    disabled={isLoading}
-                                    className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 text-red-600 transition-colors"
-                                >
-                                    Remove from List
-                                </button>
-                            </>
-                        )}
-                    </div>
-                </>
-            )}
         </div>
     );
 }
