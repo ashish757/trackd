@@ -1,4 +1,4 @@
-import {IsNumber, IsString} from "class-validator";
+import {IsArray, IsNumber, IsString} from "class-validator";
 
 export class FriendRequestDto {
     @IsString() senderId: string;
@@ -6,6 +6,6 @@ export class FriendRequestDto {
 }
 
 export class RecommendMovieDto {
-    receiverIds: string[];
+    @IsArray() receiverIds: string[];
     @IsNumber() movieId: number;
 }

@@ -31,12 +31,14 @@ const ShareMovieModal = () => {
     const handleSend = async () => {
         console.log("Sending to:", selectedFriends);
         try {
-            await trigger({movieId: modalState.movieId || 0, receiverId: selectedFriends }).unwrap();
+            await trigger({movieId: modalState.movieId || 0, receiverIds: selectedFriends }).unwrap();
 
         } catch (error) {
             console.error("Failed to send recommendations:", error);
         }
     };
+
+    if(!modalState.showShareModal) return null
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
