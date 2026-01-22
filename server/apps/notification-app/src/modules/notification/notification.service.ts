@@ -3,11 +3,13 @@ import { PrismaService } from '@app/common/prisma/prisma.service';
 import { CustomLoggerService } from '@app/common';
 import { RedisPubSubService, NotificationEvent } from '@app/redis';
 import { NotificationGateway } from './notification.gateway';
+import type {NotificationType} from "@app/redis";
+
 
 export interface CreateNotificationDto {
     userId: string;
     senderId?: string;
-    type: 'FRIEND_REQUEST' | 'FRIEND_REQUEST_ACCEPTED' | 'FRIEND_REQUEST_REJECTED';
+    type: NotificationType;
     message: string;
 }
 

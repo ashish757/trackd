@@ -7,6 +7,8 @@ import { useGetUserMoviesQuery, type MovieStatus } from '../../redux/userMovie/u
 import { MovieCardSkeleton } from '../skeletons';
 import { storage } from '../../utils/config.ts';
 import type { MovieEntry, MovieBadge, ViewMode } from '../../types/movie.types';
+import {useSelector} from "react-redux";
+import type {RootState} from "../../redux/store.ts";
 
 const VIEW_MODE_KEY = 'movie_view_mode';
 
@@ -33,8 +35,10 @@ export default function MovieCardsView({
     viewModeStorageKey,
     useSimpleMovieCard = false,
 }: MovieCardsViewProps) {
+    const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+    const isInitialized = useSelector((state: RootState) => state.auth.isInitialized);
     // Fetch user's movies to check status and favorites
-    const { data: userMoviesData } = useGetUserMoviesQuery();
+    const { data: userMoviesData } = useGetUserMoviesQuery(undefined, {skip: !isAuthenticated || !isInitialized});
 
     // Create a lookup map for O(1) access to user's movie data
     const userMoviesMap = useMemo(() => {

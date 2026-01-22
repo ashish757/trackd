@@ -7,12 +7,16 @@ import type { RootState } from "../../redux/store.ts";
 
 
 const ShareMovieModal = () => {
-    const { data: friendList, isLoading: isFriendListLoading } = useGetMyFriendsQuery(undefined);
+
+    const modalState = useSelector((state: RootState) => state.modal);
+
+    const { data: friendList, isLoading: isFriendListLoading } = useGetMyFriendsQuery(undefined, {
+        skip: !modalState.showShareModal,
+    });
 
     const [trigger] = useRecommendMovieToFriendsMutation();
     const dispatch = useDispatch();
 
-    const modalState = useSelector((state: RootState) => state.modal);
 
     const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
 
