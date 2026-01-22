@@ -1,18 +1,32 @@
 import { X, Calendar, Star, Film, Check, Clock, Users, Clapperboard, DollarSign, Globe, Heart, Tv, ChevronDown, ChevronUp } from 'lucide-react'
-import type {Movie, SeasonDetails, Episode} from "../redux/movie/movieApi.ts";
+import type { SeasonDetails, Episode } from "../redux/movie/movieApi.ts";
 import Portal from "./Portal.tsx";
 import { useMarkMovieMutation, useUnmarkMovieMutation, useGetMovieEntryQuery, MovieStatus, useRateMovieMutation, useGetUserMovieRatingQuery, useRemoveRatingMutation, useToggleFavoriteMutation } from '../redux/userMovie/userMovieApi';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useGetMovieByIdQuery, useLazyGetSeasonDetailsQuery } from '../redux/movie/movieApi';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../redux/store';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import StarRating from './StarRating';
 
-interface props {
-    movie: Movie | null,
-    onClose: () => void
-}const MovieInfoModel = ({onClose, movie}: props) => {
+const MovieInfoModel = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const movieId = searchParams.get('movie');
+    const mediaType = searchParams.get('mediaType') as 'movie' | 'tv' | null;
+    const scrollPositionRef = useRef<number>(0);
+
+    // Fetch movie/TV show details from URL params
+    const { data: movie } = useGetMovieByIdQuery(
+        { id: Number(movieId), mediaType: mediaType || undefined },
+        { skip: !movieId }
+    );
+
+    const onClose = useCallback(() => {
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete('movie');
+        newParams.delete('mediaType');
+        setSearchParams(newParams);
+    }, [searchParams, setSearchParams]);
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
     const isInitialized = useSelector((state: RootState) => state.auth.isInitialized);
     const location = useLocation();
@@ -54,19 +68,50 @@ interface props {
         }
     }, [userRatingData]);
 
-    // Prevent body scroll when modal is open
+    // Prevent body scroll when modal is open and preserve scroll position
     useEffect(() => {
-        // Store original overflow value
+        if (!movieId) return;
+
+        // Store current scroll position
+        scrollPositionRef.current = window.scrollY;
+
+        // Store original overflow and position values
         const originalOverflow = document.body.style.overflow;
+        const originalPosition = document.body.style.position;
+        const originalTop = document.body.style.top;
+        const originalWidth = document.body.style.width;
 
-        // Lock body scroll
+        // Lock body scroll and maintain scroll position
         document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${scrollPositionRef.current}px`;
+        document.body.style.width = '100%';
 
-        // Cleanup: restore original overflow when modal closes
+        // Cleanup: restore original values and scroll position when modal closes
         return () => {
             document.body.style.overflow = originalOverflow;
+            document.body.style.position = originalPosition;
+            document.body.style.top = originalTop;
+            document.body.style.width = originalWidth;
+
+            // Restore scroll position
+            window.scrollTo(0, scrollPositionRef.current);
         };
-    }, []);
+    }, [movieId]);
+
+    // Handle ESC key to close modal
+    useEffect(() => {
+        if (!movieId) return;
+
+        const handleEscKey = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        document.addEventListener('keydown', handleEscKey);
+        return () => document.removeEventListener('keydown', handleEscKey);
+    }, [movieId, onClose]);
 
     // Use detailed movie data if available, otherwise fallback to basic movie data
     const movieDetails = useMemo(() => detailedMovieData || movie, [detailedMovieData, movie]);
@@ -264,7 +309,7 @@ interface props {
         }
     }, [movie, expandedSeasons, seasonDetailsCache, getSeasonDetails]);
 
-    if (!movie) return null;
+    if (!movieId || !movie) return null;
 
     return (
         <Portal layer={"modal"}>

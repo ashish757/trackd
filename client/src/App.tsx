@@ -27,6 +27,7 @@ const SettingsPage =  lazy(() => import('./pages/SettingsPage.tsx'));
 const UserPage =  lazy(() => import('./pages/UserPage.tsx'));
 const SigninPage =  lazy(() => import('./pages/SigninPage.tsx'));
 const SignupPage =  lazy(() => import('./pages/SignupPage.tsx'));
+const MovieInfoModal = lazy(() => import('./components/MovieInfoModel.tsx'));
 
 function App() {
   // Automatically refresh access token on page load/reload
@@ -107,6 +108,11 @@ function App() {
 
           {/* Modals Portal */}
           <ShareMovieModal />
+
+          {/* Global Movie Info Modal - URL Driven */}
+          <Suspense fallback={null}>
+              <MovieInfoModal />
+          </Suspense>
       </>
   )
 }
