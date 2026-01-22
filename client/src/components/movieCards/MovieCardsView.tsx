@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { Film, LayoutGrid, List } from 'lucide-react';
 import MyListMovieCard from './MyListMovieCard.tsx';
 import MovieCard from './MovieCard.tsx';
-import type { Movie } from '../../redux/movie/movieApi.ts';
 import { useGetUserMoviesQuery, type MovieStatus } from '../../redux/userMovie/userMovieApi.ts';
 import { MovieCardSkeleton } from '../skeletons';
 import { storage } from '../../utils/config.ts';
@@ -15,7 +14,6 @@ const VIEW_MODE_KEY = 'movie_view_mode';
 interface MovieCardsViewProps {
     movies: MovieEntry[];
     isLoading?: boolean;
-    onMovieClick: (movie: Movie) => void;
     getBadge?: (entry: MovieEntry) => MovieBadge;
     emptyStateMessage?: string;
     showViewToggle?: boolean;
@@ -27,7 +25,6 @@ interface MovieCardsViewProps {
 export default function MovieCardsView({
     movies,
     isLoading = false,
-    onMovieClick,
     getBadge,
     emptyStateMessage = 'No movies to display',
     showViewToggle = true,
@@ -153,7 +150,6 @@ export default function MovieCardsView({
                             <MovieCard
                                 key={entry.id}
                                 movie={entry.movieData}
-                                onClick={onMovieClick}
                                 badge={getBadge ? getBadge(enrichedEntry) : undefined}
                                 viewMode={viewMode}
                                 currentStatus={enrichedEntry.status}
@@ -172,7 +168,6 @@ export default function MovieCardsView({
                             key={entry.id}
                             movieId={entry.movieId}
                             movieData={entry.movieData} // Pass movieData if available
-                            onClick={onMovieClick}
                             viewMode={viewMode}
                             userRating={enrichedEntry.rating}
                             currentStatus={enrichedEntry.status}

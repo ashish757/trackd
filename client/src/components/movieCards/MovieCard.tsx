@@ -4,10 +4,10 @@ import { memo } from 'react';
 import MovieCardControls from './MovieCardControls.tsx';
 import { MovieStatus } from '../../redux/userMovie/userMovieApi';
 import type { MovieBadge, ViewMode } from '../../types/movie.types';
+import {useSearchParams} from "react-router-dom";
 
 interface MovieCardProps {
     movie: Movie;
-    onClick?: (movie: Movie) => void;
     badge?: MovieBadge;
     viewMode?: ViewMode;
     currentStatus?: MovieStatus | null;
@@ -26,7 +26,6 @@ const badgeColors = {
 // Simple MovieCard - Just poster, year, genre, rating (supports both grid and list views)
 const MovieCard = memo(({
     movie,
-    onClick,
     badge,
     viewMode = 'grid',
     currentStatus,
@@ -34,13 +33,23 @@ const MovieCard = memo(({
     onControlsSuccess
 }: MovieCardProps) => {
 
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const handleCardClick = () => {
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set('movie', movie.id.toString());
+        if (movie.media_type) {
+            newParams.set('mediaType', movie.media_type);
+        }
+        setSearchParams(newParams);
+    }
 
 
     // List view rendering
     if (viewMode === 'list') {
         return (
             <div
-                onClick={() => onClick?.(movie)}
+                onClick={handleCardClick}
                 className="bg-white rounded-lg border border-gray-200 p-3 md:p-4 hover:shadow-md transition-shadow cursor-pointer group"
             >
                 <div className="flex gap-3 md:gap-4">
@@ -130,7 +139,7 @@ const MovieCard = memo(({
     return (
         <div
             className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl cursor-pointer group"
-            onClick={() => onClick?.(movie)}
+            onClick={handleCardClick}
         >
             {/* Poster */}
             <div className="aspect-[2/3] bg-gradient-to-br from-gray-300 to-gray-200 flex items-center justify-center overflow-hidden relative">

@@ -5,11 +5,11 @@ import { memo } from 'react';
 import MovieCardControls from './MovieCardControls.tsx';
 import { MovieStatus } from '../../redux/userMovie/userMovieApi.ts';
 import type { ViewMode } from '../../types/movie.types';
+import {useSearchParams} from "react-router-dom";
 
 interface MyListMovieCardProps {
     movieId: number;
     movieData?: Movie;
-    onClick?: (movie: Movie) => void;
     viewMode?: ViewMode;
     userRating?: number | null;
     currentStatus?: MovieStatus | null;
@@ -20,7 +20,6 @@ interface MyListMovieCardProps {
 const MyListMovieCard = memo(({
     movieId,
     movieData: providedMovieData,
-    onClick,
     viewMode = 'grid',
     userRating,
     currentStatus,
@@ -35,6 +34,21 @@ const MyListMovieCard = memo(({
 
     // Use provided movieData or fetched data
     const movieData = providedMovieData || fetchedMovieData;
+
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const handleCardClick = () => {
+        if(movieData === undefined) return;
+
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set('movie', movieData.id.toString());
+        if (movieData.media_type) {
+            newParams.set('mediaType', movieData.media_type);
+        }
+        setSearchParams(newParams);
+    }
+
+
 
     if (isLoading) {
         return <MovieCardSkeleton count={1} layout={viewMode} />;
@@ -58,7 +72,7 @@ const MyListMovieCard = memo(({
     if (viewMode === 'list') {
         return (
             <div
-                onClick={() => onClick?.(movieData)}
+                onClick={handleCardClick}
                 className="bg-white p-1 md:p-2 cursor-pointer group mb-0"
             >
                 <div className="flex gap-2 md:gap-4">
@@ -142,7 +156,7 @@ const MyListMovieCard = memo(({
     return (
         <div
             className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl cursor-pointer group"
-            onClick={() => onClick?.(movieData)}
+            onClick={handleCardClick}
         >
             {/* Poster */}
             <div className="aspect-2/3 bg-linear-to-br from-gray-300 to-gray-200 flex items-center justify-center overflow-hidden relative">

@@ -10,10 +10,9 @@ interface MovieInfo {
     trendingData: {
         results: Array<Movie>;
     } | undefined;
-    handleSuggestionClick: (movie: Movie) => void;
 }
 
-const TrendingMoviesSection = ({ isTrendingLoading, trendingData, isTrendingError, handleSuggestionClick }: MovieInfo) => {
+const TrendingMoviesSection = ({ isTrendingLoading, trendingData, isTrendingError }: MovieInfo) => {
 
     if (isTrendingError) {
         return (
@@ -52,7 +51,6 @@ const TrendingMoviesSection = ({ isTrendingLoading, trendingData, isTrendingErro
             <MovieCardsView
                 movies={movieEntries}
                 isLoading={isTrendingLoading}
-                onMovieClick={handleSuggestionClick}
                 emptyStateMessage="No trending movies available at the moment."
                 showViewToggle={true}
                 defaultView="grid"

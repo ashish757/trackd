@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Search, Film, X, Filter, SlidersHorizontal } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { useLazySearchMoviesQuery, type Movie } from '../redux/movie/movieApi';
+import { useLazySearchMoviesQuery } from '../redux/movie/movieApi';
 import MovieCardsView from "../components/movieCards/MovieCardsView.tsx";
 import { useDebounce } from '../hooks/useDebounce';
 import { SEARCH_CONFIG } from '../constants/search';
@@ -96,20 +96,6 @@ export default function DiscoverPage() {
             triggerSearch(debouncedQuery);
         }
     }, [debouncedQuery, triggerSearch]);
-
-    // Handle opening movie modal via URL
-    const handleOpenMovie = useCallback((movie: Movie) => {
-        const newParams = new URLSearchParams(searchParams);
-        newParams.set('movie', movie.id.toString());
-        if (movie.media_type) {
-            newParams.set('mediaType', movie.media_type);
-        }
-        setSearchParams(newParams);
-    }, [searchParams, setSearchParams]);
-
-    const handleMovieClick = useCallback((movie: Movie) => {
-        handleOpenMovie(movie);
-    }, [handleOpenMovie]);
 
     const clearSearch = useCallback(() => {
         setSearchQuery('');
@@ -363,7 +349,6 @@ export default function DiscoverPage() {
                                         isFavorite: false,
                                     }))}
                                     isLoading={isSearching}
-                                    onMovieClick={handleMovieClick}
                                     showViewToggle={true}
                                     defaultView="grid"
                                     viewModeStorageKey={DISCOVER_VIEW_MODE_KEY}

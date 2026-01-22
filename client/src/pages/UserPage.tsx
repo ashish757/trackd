@@ -18,6 +18,7 @@ import {useState} from "react";
 import { skipToken } from '@reduxjs/toolkit/query';
 import MutualFriends from "../components/MutualFriends.tsx";
 import { ProfileHeaderSkeleton, MovieCardSkeleton } from "../components/skeletons";
+import MovieCard from "../components/movieCards/MovieCard.tsx";
 
 const UserPage = () => {
     const { username } = useParams();
@@ -535,26 +536,7 @@ const MoviePoster = ({ movieId }: { movieId: number }) => {
         );
     }
 
-    return (
-        <div className="group cursor-pointer">
-            <div className="aspect-2/3 bg-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow">
-                {movie.poster_path ? (
-                    <img
-                        src={`https://image.tmdb.org/t/p/w342${movie.poster_path}`}
-                        alt={movie.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                ) : (
-                    <div className="w-full h-full bg-linear-to-br from-gray-300 to-gray-400 flex items-center justify-center">
-                        <Film className="h-12 w-12 text-gray-500" />
-                    </div>
-                )}
-            </div>
-            <p className="mt-2 text-xs text-gray-700 font-medium truncate" title={movie.title}>
-                {movie.title}
-            </p>
-        </div>
-    );
+    return <MovieCard movie={movie} />;
 };
 
 export default UserPage;

@@ -115,10 +115,6 @@ export default function Home() {
         handleOpenMovie(movie);
     }, [handleOpenMovie]);
 
-    const handleCardClick = useCallback((movie: Movie) => {
-        setShowSuggestions(false);
-        handleOpenMovie(movie);
-    }, [handleOpenMovie]);
 
     const clearSearch = useCallback(() => {
         setSearchQuery('');
@@ -229,7 +225,6 @@ export default function Home() {
                         <Feed />
                     ) : (
                         <TrendingMoviesSection
-                            handleSuggestionClick={handleCardClick}
                             isTrendingLoading={isTrendingLoading}
                             isTrendingError={isTrendingError}
                             trendingData={trendingData}
