@@ -8,18 +8,15 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '../redux/store';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import StarRating from './StarRating';
+import MovieInfoModelSkeleton from "./skeletons/MovieInfoModelSkeleton.tsx";
 
 const MovieInfoModel = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const movieId = searchParams.get('movie');
-    const mediaType = searchParams.get('mediaType') as 'movie' | 'tv' | null;
-    const scrollPositionRef = useRef<number>(0);
 
-    // Fetch movie/TV show details from URL params
-    const { data: movie } = useGetMovieByIdQuery(
-        { id: Number(movieId), mediaType: mediaType || undefined },
-        { skip: !movieId }
-    );
+    const mediaType = searchParams.get('mediaType') as 'movie' | 'tv' | undefined;
+
+    const scrollPositionRef = useRef<number>(0);
 
     const onClose = useCallback(() => {
         const newParams = new URLSearchParams(searchParams);
@@ -37,18 +34,18 @@ const MovieInfoModel = () => {
     const [removeRatingMutation, { isLoading: isRemovingRating }] = useRemoveRatingMutation();
     const [toggleFavorite, { isLoading: isTogglingFavorite }] = useToggleFavoriteMutation();
 
-    const { data: movieEntryData, isLoading: isLoadingEntry } = useGetMovieEntryQuery(movie?.id || 0, {
-        skip: !movie?.id || !isAuthenticated || !isInitialized,
+    const { data: movieEntryData, isLoading: isLoadingEntry } = useGetMovieEntryQuery(Number(movieId) || 0, {
+        skip: !movieId || !isAuthenticated || !isInitialized,
     });
 
-    const { data: userRatingData, isLoading: isLoadingRating } = useGetUserMovieRatingQuery(movie?.id || 0, {
-        skip: !movie?.id || !isAuthenticated || !isInitialized,
+    const { data: userRatingData, isLoading: isLoadingRating } = useGetUserMovieRatingQuery(Number(movieId) || 0, {
+        skip: !movieId || !isAuthenticated || !isInitialized,
     });
 
     // Fetch detailed movie info
-    const { data: detailedMovieData, isLoading: isLoadingDetails } = useGetMovieByIdQuery(
-        { id: movie?.id || 0, mediaType: movie?.media_type as 'movie' | 'tv' | undefined },
-        { skip: !movie?.id }
+    const { data: movieDetails, isFetching: isLoadingDetails } = useGetMovieByIdQuery(
+        { id: Number(movieId) || 0, mediaType: mediaType },
+        { skip: !movieId }
     );
 
     const [error, setError] = useState<string | null>(null);
@@ -57,7 +54,7 @@ const MovieInfoModel = () => {
     const [expandedSeasons, setExpandedSeasons] = useState<Set<number>>(new Set());
     const [seasonDetailsCache, setSeasonDetailsCache] = useState<Record<number, SeasonDetails>>({});
 
-    const [getSeasonDetails, { isLoading: isLoadingSeasonDetails }] = useLazyGetSeasonDetailsQuery();
+    const [getSeasonDetails, { isFetching: isLoadingSeasonDetails }] = useLazyGetSeasonDetailsQuery();
 
     // Update user rating when data is fetched
     useEffect(() => {
@@ -113,8 +110,6 @@ const MovieInfoModel = () => {
         return () => document.removeEventListener('keydown', handleEscKey);
     }, [movieId, onClose]);
 
-    // Use detailed movie data if available, otherwise fallback to basic movie data
-    const movieDetails = useMemo(() => detailedMovieData || movie, [detailedMovieData, movie]);
 
     // Memoize computed values
     const imageUrl = useMemo(() =>
@@ -152,7 +147,7 @@ const MovieInfoModel = () => {
         [movieDetails?.credits?.crew]
     );
 
-    // Get top cast members (first 5)
+    // Get top cast members (first 10)
     const topCast = useMemo(() =>
         movieDetails?.credits?.cast?.slice(0, 10) || [],
         [movieDetails?.credits?.cast]
@@ -182,10 +177,10 @@ const MovieInfoModel = () => {
     }, []);
 
     const handleMarkMovie = useCallback(async (status: MovieStatus) => {
-        if (!movie) return;
+        if (!movieDetails) return;
         try {
             setError(null);
-            await markMovie({ movieId: movie.id, status }).unwrap();
+            await markMovie({ movieId: movieDetails.id, status }).unwrap();
         } catch (err: unknown) {
             const errorMessage = err && typeof err === 'object' && 'data' in err && err.data && typeof err.data === 'object' && 'message' in err.data
                 ? String(err.data.message)
@@ -193,13 +188,13 @@ const MovieInfoModel = () => {
             setError(errorMessage);
             console.error('Error marking movie:', err);
         }
-    }, [markMovie, movie]);
+    }, [markMovie, movieDetails]);
 
     const handleUnmarkMovie = useCallback(async (status: string) => {
-        if (!movie) return;
+        if (!movieDetails) return;
         try {
             setError(null);
-            await unmarkMovie({moviesId: movie.id, status}).unwrap();
+            await unmarkMovie({moviesId: movieDetails.id, status}).unwrap();
         } catch (err: unknown) {
             const errorMessage = err && typeof err === 'object' && 'data' in err && err.data && typeof err.data === 'object' && 'message' in err.data
                 ? String(err.data.message)
@@ -207,10 +202,10 @@ const MovieInfoModel = () => {
             setError(errorMessage);
             console.error('Error removing movie:', err);
         }
-    }, [unmarkMovie, movie]);
+    }, [unmarkMovie, movieDetails]);
 
     const handleRateMovie = useCallback(async (rating: number) => {
-        if (!movie) return;
+        if (!movieDetails) return;
 
         // Frontend validation
         if (rating < 1 || rating > 10 || !Number.isInteger(rating)) {
@@ -227,7 +222,7 @@ const MovieInfoModel = () => {
             setUserRating(rating);
 
             // Make API call
-            await rateMovie({ movieId: movie.id, rating }).unwrap();
+            await rateMovie({ movieId: movieDetails.id, rating }).unwrap();
             // Success - optimistic update is already applied
         } catch (err: unknown) {
             // Rollback on error
@@ -239,10 +234,10 @@ const MovieInfoModel = () => {
             setError(errorMessage);
             console.error('Error rating movie:', err);
         }
-    }, [rateMovie, movie, userRating]);
+    }, [rateMovie, movieDetails, userRating]);
 
     const handleRemoveRating = useCallback(async () => {
-        if (!movie) return;
+        if (!movieDetails) return;
         // Store previous rating for rollback
         const previousRating = userRating;
 
@@ -252,7 +247,7 @@ const MovieInfoModel = () => {
             setUserRating(0);
 
             // Make API call
-            await removeRatingMutation(movie.id).unwrap();
+            await removeRatingMutation(movieDetails.id).unwrap();
             // Success - optimistic update is already applied
         } catch (err: unknown) {
             // Rollback on error
@@ -264,13 +259,13 @@ const MovieInfoModel = () => {
             setError(errorMessage);
             console.error('Error removing rating:', err);
         }
-    }, [removeRatingMutation, movie, userRating]);
+    }, [removeRatingMutation, movieDetails, userRating]);
 
     const handleToggleFavorite = useCallback(async () => {
-        if (!movie) return;
+        if (!movieDetails) return;
         try {
             setError(null);
-            await toggleFavorite(movie.id).unwrap();
+            await toggleFavorite(movieDetails.id).unwrap();
         } catch (err: unknown) {
             const errorMessage = err && typeof err === 'object' && 'data' in err && err.data && typeof err.data === 'object' && 'message' in err.data
                 ? String(err.data.message)
@@ -278,10 +273,10 @@ const MovieInfoModel = () => {
             setError(errorMessage);
             console.error('Error toggling favorite:', err);
         }
-    }, [toggleFavorite, movie]);
+    }, [toggleFavorite, movieDetails]);
 
     const handleToggleSeason = useCallback(async (seasonNumber: number) => {
-        if (!movie) return;
+        if (!movieDetails) return;
 
         const newExpandedSeasons = new Set(expandedSeasons);
 
@@ -297,7 +292,7 @@ const MovieInfoModel = () => {
             // Fetch episode details if not already cached
             if (!seasonDetailsCache[seasonNumber]) {
                 try {
-                    const result = await getSeasonDetails({ tvId: movie.id, seasonNumber }).unwrap();
+                    const result = await getSeasonDetails({ tvId: movieDetails.id, seasonNumber }).unwrap();
                     setSeasonDetailsCache(prev => ({
                         ...prev,
                         [seasonNumber]: result
@@ -307,9 +302,11 @@ const MovieInfoModel = () => {
                 }
             }
         }
-    }, [movie, expandedSeasons, seasonDetailsCache, getSeasonDetails]);
+    }, [movieDetails, expandedSeasons, seasonDetailsCache, getSeasonDetails]);
 
-    if (!movieId || !movie) return null;
+    if(!movieId) return null;
+    if (isLoadingDetails) return <MovieInfoModelSkeleton/>;
+
 
     return (
         <Portal layer={"modal"}>
@@ -909,7 +906,6 @@ const MovieInfoModel = () => {
             </div>
         </div>
         </Portal>
-
     );
 };
 
