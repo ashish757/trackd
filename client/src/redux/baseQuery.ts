@@ -1,10 +1,11 @@
-import { type BaseQueryApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query';
-import { tokenManager } from '../utils/tokenManager';
-import { API_CONFIG } from '../config/api.config';
-import { logout, setUser } from './auth/authSlice';
-import { addToast } from './toast/toastSlice';
-import type { User } from './user/userApi';
+import {type BaseQueryApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
+import type {BaseQueryFn, FetchArgs, FetchBaseQueryError} from '@reduxjs/toolkit/query';
+import {tokenManager} from '../utils/tokenManager';
+import {API_CONFIG} from '../config/api.config';
+import {logout, setUser} from './auth/authSlice';
+import {addToast} from './toast/toastSlice';
+import type {User} from './user/userApi';
+import logger from '../utils/logger';
 
 
 /**
@@ -73,14 +74,14 @@ const handleSuccessfulRefresh = (
         api.dispatch(setUser(user));
     }
 
-    console.log('Token refreshed successfully');
+    logger.log('Token refreshed successfully');
 };
 
 /**
  * Handle failed token refresh
  */
 const handleFailedRefresh = (api: BaseQueryApi, errorMessage: string): void => {
-    console.error(`${errorMessage}`);
+    logger.error(`${errorMessage}`);
     tokenManager.clearAccessToken();
     api.dispatch(logout());
 };
@@ -145,7 +146,7 @@ const handle401Error = async (
     api: BaseQueryApi,
     extraOptions: object
 ): Promise<ReturnType<typeof baseQuery>> => {
-    console.warn('Received 401, attempting token refresh...');
+    logger.warn('Received 401, attempting token refresh...');
 
     if (!isRefreshing) {
         isRefreshing = true;
@@ -158,7 +159,7 @@ const handle401Error = async (
                     return;
                 }
 
-                console.log('Token refreshed after 401');
+                logger.log('Token refreshed after 401');
             } catch (error) {
                 handleFailedRefresh(api, `Refresh error after 401: ${error}`);
                 return;
@@ -184,7 +185,7 @@ export const baseQueryWithReauth: BaseQueryFn<
     unknown,
     FetchBaseQueryError
 > = async (args, api: BaseQueryApi, extraOptions) => {
-    console.log('baseQueryWithReauth called with:', {
+    logger.log('baseQueryWithReauth called with:', {
         args,
         hasToken: tokenManager.getAccessToken() !== null,
     });
@@ -193,15 +194,15 @@ export const baseQueryWithReauth: BaseQueryFn<
 
     // Proactive token refresh if token is expiring soon
     if (hasToken && tokenManager.isTokenExpired(TOKEN_EXPIRY_THRESHOLD_SECONDS)) {
-        console.log('Access token expired/expiring soon, refreshing proactively...');
+        logger.log('Access token expired/expiring soon, refreshing proactively...');
         await tryRefreshToken(api, extraOptions);
     }
 
     // Execute the actual request
-    console.log('Making request to baseQuery...');
+    logger.log('Making request to baseQuery...');
     let result = await baseQuery(args, api, extraOptions);
 
-    console.log('baseQuery result:', {
+    logger.log('baseQuery result:', {
         hasError: !!result.error,
         status: result.error?.status,
         data: result.data,
@@ -219,7 +220,7 @@ export const baseQueryWithReauth: BaseQueryFn<
             duration: 10000, // Show for 10 seconds since it's important
         }));
 
-        console.warn('Rate limit exceeded:', errorData);
+        logger.warn('Rate limit exceeded:', errorData);
         return result;
     }
 

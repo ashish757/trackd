@@ -5,46 +5,32 @@
 
 const isDevelopment = import.meta.env.DEV;
 
-export const logger = {
-  /**
-   * Log general information (only in development)
-   */
+const logger = {
+
   log: (...args: unknown[]): void => {
     if (isDevelopment) {
-      console.log(...args);
+      console.log("LOG ", ...args);
     }
   },
 
-  /**
-   * Log errors (only in development)
-   */
   error: (...args: unknown[]): void => {
     if (isDevelopment) {
-      console.error(...args);
+      console.error("LOG ", ...args);
     }
   },
 
-  /**
-   * Log warnings (only in development)
-   */
   warn: (...args: unknown[]): void => {
     if (isDevelopment) {
-      console.warn(...args);
+      console.warn("LOG ", ...args);
     }
   },
 
-  /**
-   * Log debug information (only in development)
-   */
   debug: (...args: unknown[]): void => {
     if (isDevelopment) {
-      console.debug(...args);
+      console.debug("LOG ", ...args);
     }
   },
 
-  /**
-   * Log with a table format (only in development)
-   */
   table: (data: unknown): void => {
     if (isDevelopment) {
       console.table(data);

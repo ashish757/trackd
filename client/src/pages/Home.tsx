@@ -9,7 +9,7 @@ import Feed from "../components/Feed.tsx";
 import { useDebounce } from '../hooks/useDebounce';
 import { useClickOutside } from '../hooks/useClickOutside';
 import { SEARCH_CONFIG } from '../constants/search';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 import { storage } from '../utils/config';
 
 // Lazy load heavy modal component

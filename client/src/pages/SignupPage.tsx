@@ -7,6 +7,7 @@ import { storage } from "../utils/config.ts";
 import { getSafeRedirect } from "../utils/redirect.ts";
 import GoogleLoginButton from "../components/GoogleLoginButton.tsx";
 import { useKeyboardHandler } from "../hooks/useKeyboardHandler.ts";
+import logger from "../utils/logger";
 
 function SignupPage() {
 
@@ -188,7 +189,7 @@ function SignupPage() {
 
             // Step 1: Verify OTP
             const verifyRes = await verifyOtp({otpToken: token, otp: otpString, user: formData}).unwrap();
-            console.log('OTP Verification Response:', verifyRes);
+            logger.log('OTP Verification Response:', verifyRes);
 
             if(verifyRes.statusCode !== 200) {
                 setError(verifyRes.message || 'Invalid OTP. Please try again.');
@@ -198,7 +199,7 @@ function SignupPage() {
             // Step 2: Register the user after successful OTP verification
             setIsCreatingAccount(true);
             const registerRes = await register({otpToken: token, otp: otpString, user: formData}).unwrap();
-            console.log('Registration Response:', registerRes);
+            logger.log('Registration Response:', registerRes);
 
             if(registerRes.status === 'success' || registerRes.statusCode === 201) {
                 // Clear OTP token from storage
@@ -211,7 +212,7 @@ function SignupPage() {
                 setError(registerRes.message || 'Registration failed. Please try again.');
             }
         } catch (e: unknown) {
-            console.error('Error during verification/registration:', e);
+            logger.error('Error during verification/registration:', e);
             const errorMessage = (e as { data?: { message?: string } })?.data?.message || 'An error occurred. Please try again.';
             setError(errorMessage);
         } finally {
