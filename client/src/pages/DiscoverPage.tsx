@@ -1,15 +1,13 @@
-import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Search, Film, X, Filter, SlidersHorizontal } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { useLazySearchMoviesQuery, useGetMovieByIdQuery, type Movie } from '../redux/movie/movieApi';
+import { useLazySearchMoviesQuery, type Movie } from '../redux/movie/movieApi';
 import MovieCardsView from "../components/movieCards/MovieCardsView.tsx";
 import { useDebounce } from '../hooks/useDebounce';
 import { SEARCH_CONFIG } from '../constants/search';
 import type { MovieEntry } from '../types/movie.types';
 
-// Lazy load heavy modal component
-const MovieInfoModel = lazy(() => import("../components/MovieInfoModel.tsx"));
 
 const DISCOVER_VIEW_MODE_KEY = 'discover_view_mode';
 
@@ -50,13 +48,10 @@ const YEARS = Array.from({ length: 50 }, (_, i) => currentYear - i);
 
 export default function DiscoverPage() {
     const [searchParams, setSearchParams] = useSearchParams();
-    const movieId = searchParams.get('movie');
-    const mediaType = searchParams.get('mediaType') as 'movie' | 'tv' | null;
     const urlQuery = searchParams.get('q') || '';
 
     const [searchQuery, setSearchQuery] = useState(urlQuery);
     const [showFilters, setShowFilters] = useState(false);
-    const [infoMovie, setInfoMovie] = useState<Movie | null>(null);
     const isInitialMount = useRef(true);
 
     // Filter states
@@ -71,18 +66,6 @@ export default function DiscoverPage() {
     // RTK Query hooks
     const [triggerSearch, { data: searchResults, isLoading, isFetching }] = useLazySearchMoviesQuery();
 
-    // Fetch movie/TV show details if movieId in URL
-    const { data: movieFromUrl } = useGetMovieByIdQuery(
-        { id: Number(movieId), mediaType: mediaType || undefined },
-        { skip: !movieId }
-    );
-
-    // Set infoMovie when movie is fetched from URL
-    useEffect(() => {
-        if (movieFromUrl && movieId && !infoMovie) {
-            setInfoMovie(movieFromUrl);
-        }
-    }, [movieFromUrl, movieId, infoMovie]);
 
     // Sync search query with URL parameter
     useEffect(() => {
@@ -116,21 +99,11 @@ export default function DiscoverPage() {
 
     // Handle opening movie modal via URL
     const handleOpenMovie = useCallback((movie: Movie) => {
-        setInfoMovie(movie);
         const newParams = new URLSearchParams(searchParams);
         newParams.set('movie', movie.id.toString());
         if (movie.media_type) {
             newParams.set('mediaType', movie.media_type);
         }
-        setSearchParams(newParams);
-    }, [searchParams, setSearchParams]);
-
-    // Handle closing movie modal
-    const handleCloseMovie = useCallback(() => {
-        setInfoMovie(null);
-        const newParams = new URLSearchParams(searchParams);
-        newParams.delete('movie');
-        newParams.delete('mediaType');
         setSearchParams(newParams);
     }, [searchParams, setSearchParams]);
 
@@ -361,12 +334,6 @@ export default function DiscoverPage() {
                         </div>
                     </div>
 
-                    {/* Movie Info Modal */}
-                    {movieId && infoMovie && (
-                        <Suspense fallback={<div />}>
-                            <MovieInfoModel onClose={handleCloseMovie} movie={infoMovie} />
-                        </Suspense>
-                    )}
 
                     {/* Search Results */}
                     {debouncedQuery && (

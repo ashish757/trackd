@@ -1,4 +1,4 @@
-import { useState, useCallback, lazy, Suspense } from 'react';
+import { useState, useCallback } from 'react';
 import { Check, Clock, Heart } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar.tsx';
@@ -8,15 +8,11 @@ import { useGetUserStatsQuery, useGetUserMoviesByStatusQuery, useGetFavoriteMovi
 import type {Movie} from "../redux/movie/movieApi.ts";
 import { StatCardSkeleton } from '../components/skeletons';
 
-// Lazy load heavy modal component
-const MovieInfoModel = lazy(() => import("../components/MovieInfoModel.tsx"));
 
 export default function MyListPage() {
     const [searchParams, setSearchParams] = useSearchParams();
-    const movieId = searchParams.get('movie');
 
     const [activeTab, setActiveTab] = useState<'all' | 'watched' | 'planned' | 'favorites'>('all');
-    const [movieInfo, setMovieInfo] = useState<Movie | null>(null);
 
     const { data: statsData, isLoading: isStatsLoading } = useGetUserStatsQuery();
 
@@ -53,16 +49,11 @@ export default function MyListPage() {
     };
 
     const handleCardClick = useCallback((movie: Movie) => {
-        setMovieInfo(movie);
         const newParams = new URLSearchParams(searchParams);
         newParams.set('movie', movie.id.toString());
-        setSearchParams(newParams);
-    }, [searchParams, setSearchParams]);
-
-    const handleCloseMovie = useCallback(() => {
-        setMovieInfo(null);
-        const newParams = new URLSearchParams(searchParams);
-        newParams.delete('movie');
+        if (movie.media_type) {
+            newParams.set('mediaType', movie.media_type);
+        }
         setSearchParams(newParams);
     }, [searchParams, setSearchParams]);
 
@@ -183,12 +174,6 @@ export default function MyListPage() {
                     </div>
                 </div>
             </main>
-
-            {movieId && movieInfo && (
-                <Suspense fallback={<div />}>
-                    <MovieInfoModel movie={movieInfo} onClose={handleCloseMovie} />
-                </Suspense>
-            )}
         </>
     );
 }

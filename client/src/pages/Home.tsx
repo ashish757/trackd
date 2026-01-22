@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, X, TrendingUp, Rss } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
@@ -12,8 +12,6 @@ import { SEARCH_CONFIG } from '../constants/search';
 import logger from '../utils/logger';
 import { storage } from '../utils/config';
 
-// Lazy load heavy modal component
-const MovieInfoModel = lazy(() => import("../components/MovieInfoModel.tsx"));
 
 type TabType = 'feed' | 'trending';
 
@@ -32,12 +30,10 @@ export default function Home() {
     };
 
     const activeTab = getInitialTab();
-    const movieId = searchParams.get('movie');
 
     const [searchQuery, setSearchQuery] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
-    const [infoMovie, setInfoMovie] = useState<Movie | null>(null);
     const isInitialMount = useRef(true);
 
     // Custom hooks
@@ -105,17 +101,11 @@ export default function Home() {
     // Handle opening movie modal via URL
     const handleOpenMovie = useCallback((movie: Movie) => {
         logger.log('Opening movie:', movie);
-        setInfoMovie(movie);
         const newParams = new URLSearchParams(searchParams);
         newParams.set('movie', movie.id.toString());
-        setSearchParams(newParams);
-    }, [searchParams, setSearchParams]);
-
-    // Handle closing movie modal
-    const handleCloseMovie = useCallback(() => {
-        setInfoMovie(null);
-        const newParams = new URLSearchParams(searchParams);
-        newParams.delete('movie');
+        if (movie.media_type) {
+            newParams.set('mediaType', movie.media_type);
+        }
         setSearchParams(newParams);
     }, [searchParams, setSearchParams]);
 
@@ -247,12 +237,6 @@ export default function Home() {
                     )}
 
 
-                    {/*{Movie info model}*/}
-                    {movieId && infoMovie ? (
-                        <Suspense fallback={<div />}>
-                            <MovieInfoModel onClose={handleCloseMovie} movie={infoMovie} />
-                        </Suspense>
-                    ) : null}
 
                 </div>
             </main>
